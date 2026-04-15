@@ -20,7 +20,7 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:15px}
 .app{max-width:700px;margin:0 auto;padding:0 0 80px}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;max-width:700px;margin:0 auto;left:50%;transform:translateX(-50%)}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 14px;cursor:pointer;gap:3px;color:var(--gray)}
 .nav-item.active{color:var(--teal)}
 .nav-icon{font-size:22px}
@@ -32,6 +32,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .header-star-box{background:rgba(255,255,255,0.2);border-radius:var(--radius-sm);padding:8px 14px;text-align:center}
 .header-star-count{font-size:28px;font-weight:700;line-height:1}
 .header-star-label{font-size:10px;opacity:0.9;margin-top:1px}
+.sync-bar{background:rgba(255,255,255,0.15);padding:6px 16px;font-size:11px;display:flex;align-items:center;gap:6px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#fff;flex-shrink:0}
+.sync-dot.syncing{background:#FFD700;animation:pulse 1s infinite}
+.sync-dot.ok{background:#90EE90}
+.sync-dot.err{background:#FF6B6B}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px;margin-top:-8px}
 .metric-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .metric-val{font-size:22px;font-weight:700;color:var(--dark)}
@@ -61,7 +67,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cel-title{font-size:18px;font-weight:700;color:var(--teal-dark)}
 .cel-sub{font-size:13px;color:var(--teal-mid);margin-top:4px}
 .save-area{padding:16px;display:flex;gap:10px}
-.btn-save{flex:2;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);padding:14px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-save{flex:2;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);padding:14px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.15s}
+.btn-save:active{opacity:0.8}
 .btn-reset{flex:1;background:var(--card);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;font-weight:500;cursor:pointer}
 .page-title{font-size:18px;font-weight:700;color:var(--dark);padding:16px 16px 8px}
 .week-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px 12px}
@@ -95,24 +102,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .day-cell-num{font-size:13px;font-weight:600;color:var(--dark);margin-top:2px}
 .day-cell-star{font-size:11px;color:var(--amber);margin-top:2px;font-weight:600}
 .rozet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 16px}
-.rozet-card{background:var(--card);border-radius:var(--radius);padding:16px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:2px solid transparent}
+.rozet-card{background:var(--card);border-radius:var(--radius);padding:16px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:2px solid transparent;transition:all 0.3s}
 .rozet-card.earned{border-color:var(--teal);background:var(--teal-light)}
-.rozet-icon{font-size:36px;margin-bottom:6px;filter:grayscale(1);opacity:0.35}
+.rozet-icon{font-size:36px;margin-bottom:6px;filter:grayscale(1);opacity:0.35;transition:all 0.3s}
 .rozet-card.earned .rozet-icon{filter:none;opacity:1}
 .rozet-name{font-size:12px;font-weight:600;color:var(--mid)}
 .rozet-card.earned .rozet-name{color:var(--teal-dark)}
 .rozet-cond{font-size:10px;color:var(--gray);margin-top:3px;line-height:1.3}
 .page{display:none}
 .page.active{display:block}
-.wgoal{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-light);cursor:pointer;transition:opacity 0.15s}
-.wgoal:last-child{border-bottom:none}
-.wgoal:active{opacity:0.7}
-.wgoal-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:transparent;transition:all 0.2s}
-.wgoal.done .wgoal-chk{background:var(--teal);border-color:var(--teal);color:white}
-.wgoal-label{flex:1;font-size:13px;color:var(--dark)}
-.wgoal.done .wgoal-label{color:var(--teal-dark)}
-.wgoal-stars{font-size:12px;font-weight:600;color:var(--amber-dark);background:var(--amber-light);padding:2px 8px;border-radius:20px;white-space:nowrap}
-.wgoal.done .wgoal-stars{background:var(--teal-light);color:var(--teal-dark)}
+.loading{text-align:center;padding:40px;color:var(--mid);font-size:14px}
 </style>
 </head>
 <body>
@@ -124,6 +123,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div><div class="header-name">🦕 Emir Yavuz</div><div class="header-sub" id="date-label"></div></div>
       <div class="header-star-box"><div class="header-star-count" id="today-stars">0</div><div class="header-star-label">⭐ bugün</div></div>
     </div>
+    <div class="sync-bar"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-label">Bulut bağlantısı hazır</span></div>
   </div>
   <div class="metrics">
     <div class="metric-card"><div class="metric-val" id="m-done">0</div><div class="metric-lbl">tamamlanan</div></div>
@@ -145,7 +145,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div id="tasks-area"></div>
   <div class="save-area">
-    <button class="btn-save" onclick="saveDay()">✓ Günü Kaydet</button>
+    <button class="btn-save" onclick="saveDay()">☁️ Kaydet ve Senkronize Et</button>
     <button class="btn-reset" onclick="resetToday()">Sıfırla</button>
   </div>
 </div>
@@ -154,7 +154,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page-title">📊 Haftalık İlerleme</div>
   <div class="week-metrics">
     <div class="w-metric"><div class="w-metric-val" id="w-stars">0</div><div class="w-metric-lbl">⭐ haftalık yıldız</div></div>
-    <div class="w-metric"><div class="w-metric-val" id="w-pct">%0</div><div class="w-metric-lbl">hedefe göre (146)</div></div>
+    <div class="w-metric"><div class="w-metric-val" id="w-pct">%0</div><div class="w-metric-lbl">hedefe göre (112)</div></div>
   </div>
   <div class="prog-section" style="margin-bottom:16px">
     <div class="prog-header"><span id="w-prog-l">0 / 112</span><span></span></div>
@@ -165,15 +165,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="week-chart"></div>
   </div>
   <div class="target-card">
-    <div class="target-title">📊 Haftalık Bilgi</div>
-    <div class="target-row"><span class="t-label">Haftalık maksimum</span><span class="t-val">~209 yıldız</span></div>
-    <div class="target-row"><span class="t-label">Haftalık minimum hedef</span><span class="t-val">146 yıldız</span></div>
-    <div class="target-row"><span class="t-label">Aylık minimum hedef</span><span class="t-val">584 yıldız</span></div>
+    <div class="target-title">Haftalık Hedefler</div>
+    <div class="target-row"><span class="t-label">Haftalık minimum</span><span class="t-val">112 yıldız</span></div>
+    <div class="target-row"><span class="t-label">Kitap bonusu (450 sayfa)</span><span class="t-val">+5 yıldız</span></div>
+    <div class="target-row"><span class="t-label">Sunum (haftada 1)</span><span class="t-val">+3 yıldız</span></div>
+    <div class="target-row"><span class="t-label">Aylık minimum</span><span class="t-val">448 yıldız</span></div>
     <div class="target-row"><span class="t-label">İstiklal Marşı (10 kıta)</span><span class="t-val">+50 yıldız</span></div>
   </div>
   <div class="target-card">
-    <div class="target-title">🎯 Haftalık Hedefler <span style="font-size:11px;font-weight:400;color:var(--mid)">— tıklayarak tamamla</span></div>
-    <div id="weekly-goals-list"></div>
+    <div class="target-title">Bu Haftanın Rozet Konusu</div>
+    <div class="target-row"><span class="t-label">Arkadaşım Eşek şarkısı</span><span class="badge-a">Bu hafta</span></div>
+    <div class="target-row"><span class="t-label">İstiklal Marşı — 1. kıta</span><span class="badge-g">Gelecek hafta</span></div>
   </div>
 </div>
 
@@ -181,7 +183,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page-title">📅 Aylık Takip</div>
   <div class="week-metrics">
     <div class="w-metric"><div class="w-metric-val" id="ay-stars">0</div><div class="w-metric-lbl">⭐ aylık yıldız</div></div>
-    <div class="w-metric"><div class="w-metric-val" id="ay-pct">%0</div><div class="w-metric-lbl">hedefe göre (584)</div></div>
+    <div class="w-metric"><div class="w-metric-val" id="ay-pct">%0</div><div class="w-metric-lbl">hedefe göre (448)</div></div>
   </div>
   <div class="month-label" id="month-label"></div>
   <div id="monthly-grid"></div>
@@ -202,7 +204,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-const TASKS={
+// ── SUPABASE CONFIG ──────────────────────────────────────────────
+var SUPA_URL = 'https://rkeuvdjbjzxkbcezftyf.supabase.co';
+var SUPA_KEY = 'sb_publishable_TW3AMDJFXgzWKwfjuWcbRg_rSZK_yH6';
+var TABLE = 'Gunler_EY';
+
+function supaFetch(method, path, body) {
+  return fetch(SUPA_URL + '/rest/v1/' + path, {
+    method: method,
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r){ return r.json(); });
+}
+
+// ── GÖREV LİSTESİ ────────────────────────────────────────────────
+var TASKS={
   haftaici:[
     {s:"🌅 Sabah Rutini",items:[
       {id:"a1",t:"Uyan, yüzünü yıka",y:1},
@@ -247,15 +268,10 @@ const TASKS={
     {s:"🕌 Dini Görevler",items:[
       {id:"s4",t:"Kuran oku — 1. ayet",y:1},
       {id:"s5",t:"Kuran oku — 2. ayet",y:1},
-      {id:"s4b",t:"Kuran oku — 3. ayet",y:1},
-      {id:"s4c",t:"Kuran oku — 4. ayet",y:1},
-      {id:"s4d",t:"Kuran oku — 5. ayet",y:1},
       {id:"s6",t:"Babamla 1 vakit namaz kıl",y:2}
     ]},
     {s:"🦕 Keşif ve Öğrenme",items:[
-      {id:"s7a",t:"Kitap oku — 1-30. sayfa",y:1},
-      {id:"s7b",t:"Kitap oku — 31-60. sayfa",y:1},
-      {id:"s7c",t:"Kitap oku — 61-90. sayfa",y:1},
+      {id:"s7",t:"66 sayfa kitap oku",y:1},
       {id:"s8",t:"Haftanın dinozoru — 3 bilgi söyle",y:2},
       {id:"s9",t:"Haftanın belgeseli — 3 şey anlat",y:2},
       {id:"s10",t:"Lego serbest yapı — fotoğrafını çek",y:2},
@@ -279,38 +295,90 @@ const TASKS={
   ]
 };
 
-const BADGES=[
-  {id:"r1",icon:"⭐",name:"İlk gün",cond:"1 gün tamamla",check:(d,s)=>d.length>=1},
-  {id:"r2",icon:"🦁",name:"3 gün savaşçı",cond:"3 gün tamamla",check:(d,s)=>d.length>=3},
-  {id:"r3",icon:"⚡",name:"Hafta kahramanı",cond:"7 gün tamamla",check:(d,s)=>d.length>=7},
-  {id:"r4",icon:"🔥",name:"Yıldız toplayıcı",cond:"100 yıldız biriktir",check:(d,s)=>s>=100},
-  {id:"r5",icon:"🏆",name:"300 yıldız",cond:"300 yıldız biriktir",check:(d,s)=>s>=300},
-  {id:"r6",icon:"👑",name:"Ay şampiyonu",cond:"448 aylık yıldız",check:(d,s)=>s>=448},
-  {id:"r7",icon:"📚",name:"Kitap kurdu",cond:"7 gün kitap oku",check:(d,s,st)=>(st.book||0)>=7},
-  {id:"r8",icon:"🦕",name:"Dinozor bilgesi",cond:"4 haftanın dinozoru",check:(d,s,st)=>(st.dino||0)>=4},
-  {id:"r9",icon:"🙏",name:"Namaz yolcusu",cond:"7 gün namaz",check:(d,s,st)=>(st.namaz||0)>=7},
-  {id:"r10",icon:"🎤",name:"Sunum ustası",cond:"İlk sunum",check:(d,s,st)=>(st.pres||0)>=1},
-  {id:"r11",icon:"🌍",name:"30 gün efsane",cond:"30 gün tamamla",check:(d,s)=>d.length>=30},
-  {id:"r12",icon:"🎯",name:"Hedef avcısı",cond:"1000 yıldız biriktir",check:(d,s)=>s>=1000}
+var BADGES=[
+  {id:"r1",icon:"⭐",name:"İlk gün",cond:"1 gün tamamla",check:function(d,s){return d.length>=1;}},
+  {id:"r2",icon:"🦁",name:"3 gün savaşçı",cond:"3 gün tamamla",check:function(d,s){return d.length>=3;}},
+  {id:"r3",icon:"⚡",name:"Hafta kahramanı",cond:"7 gün tamamla",check:function(d,s){return d.length>=7;}},
+  {id:"r4",icon:"🔥",name:"Yıldız toplayıcı",cond:"100 yıldız biriktir",check:function(d,s){return s>=100;}},
+  {id:"r5",icon:"🏆",name:"300 yıldız",cond:"300 yıldız biriktir",check:function(d,s){return s>=300;}},
+  {id:"r6",icon:"👑",name:"Ay şampiyonu",cond:"448 aylık yıldız",check:function(d,s){return s>=448;}},
+  {id:"r7",icon:"📚",name:"Kitap kurdu",cond:"7 gün kitap oku",check:function(d,s,st){return (st.book||0)>=7;}},
+  {id:"r8",icon:"🦕",name:"Dinozor bilgesi",cond:"4 haftanın dinozoru",check:function(d,s,st){return (st.dino||0)>=4;}},
+  {id:"r9",icon:"🙏",name:"Namaz yolcusu",cond:"7 gün namaz",check:function(d,s,st){return (st.namaz||0)>=7;}},
+  {id:"r10",icon:"🎤",name:"Sunum ustası",cond:"İlk sunum",check:function(d,s,st){return (st.pres||0)>=1;}},
+  {id:"r11",icon:"🌍",name:"30 gün efsane",cond:"30 gün tamamla",check:function(d,s){return d.length>=30;}},
+  {id:"r12",icon:"🎯",name:"Hedef avcısı",cond:"1000 yıldız biriktir",check:function(d,s){return s>=1000;}}
 ];
 
-var ST={mode:'haftaici',done:{},days:[],stats:{book:0,dino:0,namaz:0,pres:0},weeklyDone:{}};
+// ── STATE ────────────────────────────────────────────────────────
+var ST={mode:'haftaici',done:{},days:[],stats:{book:0,dino:0,namaz:0,pres:0}};
 
-const WEEKLY_GOALS=[
-  {id:"wg1",label:"Saatleri öğren",stars:5,week:1},
-  {id:"wg2",label:"İngilizce günleri ezberle",stars:5,week:1},
-  {id:"wg3",label:"İngilizce ayları ezberle",stars:5,week:2},
-  {id:"wg4",label:"Sunum yap",stars:3,week:0},
-  {id:"wg5",label:"Kitap bonusu — 450 sayfa",stars:5,week:0},
-  {id:"wg6",label:"İstiklal Marşı — 1. kıta",stars:5,week:0},
-  {id:"wg7",label:"İstiklal Marşı — 2. kıta",stars:5,week:0},
-  {id:"wg8",label:"İstiklal Marşı — 3. kıta",stars:5,week:0},
-  {id:"wg9",label:"İstiklal Marşı — 4. kıta",stars:5,week:0},
-  {id:"wg10",label:"İstiklal Marşı — 5. kıta",stars:5,week:0},
-];
+function setSyncStatus(status, msg){
+  var dot=document.getElementById('sync-dot');
+  var lbl=document.getElementById('sync-label');
+  if(!dot) return;
+  dot.className='sync-dot '+status;
+  lbl.textContent=msg;
+}
 
-function load(){try{var r=localStorage.getItem('ey_v3');if(r){var p=JSON.parse(r);ST.days=p.days||[];ST.stats=p.stats||{book:0,dino:0,namaz:0,pres:0};ST.weeklyDone=p.weeklyDone||{};}}catch(e){}}
-function save(){try{localStorage.setItem('ey_v3',JSON.stringify({days:ST.days,stats:ST.stats,weeklyDone:ST.weeklyDone}));}catch(e){}}
+// ── SUPABASE VERİ ÇEKME ──────────────────────────────────────────
+function loadFromCloud(){
+  setSyncStatus('syncing','Veriler yükleniyor...');
+  supaFetch('GET', TABLE + '?select=*&order=tarih.asc')
+    .then(function(rows){
+      if(!Array.isArray(rows)){setSyncStatus('err','Bağlantı hatası');return;}
+      ST.days=rows.map(function(r){
+        return {date:r.tarih, stars:r.yildiz, mode:r.mod};
+      });
+      var lastStats=null;
+      rows.forEach(function(r){if(r.stats)lastStats=r.stats;});
+      if(lastStats) ST.stats=lastStats;
+      setSyncStatus('ok','Senkronize edildi');
+      renderToday();
+    })
+    .catch(function(){setSyncStatus('err','Bağlantı yok — çevrimdışı');});
+}
+
+// ── KAYDET ───────────────────────────────────────────────────────
+function saveDay(){
+  var stars=calcStars();
+  if(stars===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
+  var today=new Date().toISOString().slice(0,10);
+  if(ST.done['b3']||ST.done['s6']) ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
+  if(ST.done['c2']||ST.done['s7']) ST.stats.book=Math.min((ST.stats.book||0)+1,999);
+  if(ST.done['s8']) ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
+  setSyncStatus('syncing','Kaydediliyor...');
+  supaFetch('POST', TABLE, {
+    tarih: today,
+    yildiz: stars,
+    mod: ST.mode,
+    stats: ST.stats
+  }).then(function(res){
+    var idx=ST.days.findIndex(function(d){return d.date===today;});
+    if(idx>=0) ST.days[idx].stars=stars;
+    else ST.days.push({date:today,stars:stars,mode:ST.mode});
+    setSyncStatus('ok','Kaydedildi! '+stars+' yıldız ☁️');
+    alert('Kaydedildi ve senkronize edildi! '+stars+' yıldız ⭐');
+  }).catch(function(){
+    setSyncStatus('err','Kaydetme hatası');
+    alert('Bağlantı hatası, tekrar dene.');
+  });
+}
+
+function resetToday(){
+  if(confirm('Bugünkü görevler ve kayıt sıfırlansın mı?')){
+    var today=new Date().toISOString().slice(0,10);
+    ST.done={};
+    ST.days=ST.days.filter(function(d){return d.date!==today;});
+    setSyncStatus('syncing','Siliniyor...');
+    supaFetch('DELETE', TABLE+'?tarih=eq.'+today)
+      .then(function(){setSyncStatus('ok','Sıfırlandı');})
+      .catch(function(){setSyncStatus('err','Hata');});
+    renderToday();
+  }
+}
+
+// ── HESAPLAMALAR ─────────────────────────────────────────────────
 function getTasks(){return TASKS[ST.mode];}
 function calcStars(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){if(ST.done[t.id])s+=t.y;});});return s;}
 function calcMax(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){s+=t.y;});});return s;}
@@ -329,35 +397,12 @@ function showPage(p,el){
   document.getElementById('page-'+p).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   el.classList.add('active');
-  if(p==='hafta')renderWeek();
-  if(p==='ay')renderMonth();
-  if(p==='rozetler')renderBadges();
+  if(p==='hafta') renderWeek();
+  if(p==='ay') renderMonth();
+  if(p==='rozetler') renderBadges();
 }
 
-function saveDay(){
-  var stars=calcStars();
-  if(stars===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
-  var today=new Date().toISOString().slice(0,10);
-  var idx=ST.days.findIndex(function(d){return d.date===today;});
-  if(idx>=0)ST.days[idx].stars=stars;
-  else ST.days.push({date:today,stars:stars,mode:ST.mode});
-  if(ST.done['b3']||ST.done['s6'])ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
-  if(ST.done['c2']||ST.done['s7'])ST.stats.book=Math.min((ST.stats.book||0)+1,999);
-  if(ST.done['s8'])ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
-  save();
-  alert('Gün kaydedildi! '+stars+' yıldız kazandın!');
-}
-
-function resetToday(){
-  if(confirm('Bugünkü görevler ve kaydedilen veriler sıfırlansın mı?')){
-    ST.done={};
-    var today=new Date().toISOString().slice(0,10);
-    ST.days=ST.days.filter(function(d){return d.date!==today;});
-    save();
-    renderToday();
-  }
-}
-
+// ── RENDER BUGÜN ─────────────────────────────────────────────────
 function renderToday(){
   var stars=calcStars();var max=calcMax();
   var res=calcDone();var d=res.d;var total=res.total;
@@ -379,8 +424,6 @@ function renderToday(){
       var isDone=!!ST.done[task.id];
       var el=document.createElement('div');
       el.className='task-card'+(isDone?' done':'');
-      el.setAttribute('data-id',task.id);
-      el.setAttribute('data-stars',task.y);
       el.onclick=function(){ST.done[task.id]=!ST.done[task.id];renderToday();};
       var starsStr='⭐'.repeat(task.y)+' +'+task.y;
       el.innerHTML='<div class="task-chk">'+(isDone?'✓':'')+'</div><div class="task-body"><div class="task-text">'+task.t+'</div></div><span class="star-badge">'+starsStr+'</span>';
@@ -389,8 +432,9 @@ function renderToday(){
   });
 }
 
+// ── RENDER HAFTA ─────────────────────────────────────────────────
 function renderWeek(){
-  var dayNames=['Pzt','Sal','Car','Per','Cum','Cmt','Paz'];
+  var dayNames=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
   var today=new Date();var todayStr=today.toISOString().slice(0,10);
   var dow=today.getDay();
   var weekStart=new Date(today);weekStart.setDate(today.getDate()-(dow===0?6:dow-1));
@@ -407,60 +451,18 @@ function renderWeek(){
     var displayCum=isPast?cum:0;
     var barW=displayCum>0?Math.min(Math.round(displayCum/160*100),100):0;
     var div=document.createElement('div');div.className='day-bar';
-    var label=isPast?(displayCum+' yildiz'):'—';
-    div.innerHTML='<div class="day-bar-top"><span>'+dayNames[i]+(isToday?' (bugun)':'')+'</span><span>'+label+'</span></div><div class="day-bar-bg"><div class="day-bar-fill'+(isToday?' today':'')+'" style="width:'+barW+'%">'+(displayCum>15?displayCum:'')+'</div></div>';
+    var label=isPast?(displayCum+' yıldız'):'—';
+    div.innerHTML='<div class="day-bar-top"><span>'+dayNames[i]+(isToday?' (bugün)':'')+'</span><span>'+label+'</span></div><div class="day-bar-bg"><div class="day-bar-fill'+(isToday?' today':'')+'" style="width:'+barW+'%">'+(displayCum>15?displayCum:'')+'</div></div>';
     chart.appendChild(div);
   }
   var wPct=Math.min(Math.round(weekTotal/112*100),100);
   document.getElementById('w-stars').textContent=weekTotal;
   document.getElementById('w-pct').textContent='%'+wPct;
   document.getElementById('w-prog-fill').style.width=wPct+'%';
-  document.getElementById('w-prog-l').textContent=weekTotal+' / 146';
-  renderWeeklyGoals(weekTotal);}
-
-function renderWeeklyGoals(weekTotal){
-  var list=document.getElementById('weekly-goals-list');
-  if(!list)return;
-  list.innerHTML='';
-  var weekKey=getWeekKey();
-  var extraStars=0;
-  WEEKLY_GOALS.forEach(function(g){
-    var key=weekKey+'_'+g.id;
-    var isDone=!!ST.weeklyDone[key];
-    if(isDone)extraStars+=g.stars;
-    var el=document.createElement('div');
-    el.className='wgoal'+(isDone?' done':'');
-    el.onclick=function(){
-      if(ST.weeklyDone[key]){delete ST.weeklyDone[key];}
-      else{ST.weeklyDone[key]=true;}
-      save();
-      renderWeeklyGoals(weekTotal);
-      updateWeekTotals();
-    };
-    el.innerHTML='<div class="wgoal-chk">'+(isDone?'✓':'')+'</div><div class="wgoal-label">'+g.label+'</div><span class="wgoal-stars">+'+g.stars+' ⭐</span>';
-    list.appendChild(el);
-  });
-  updateWeekTotals();}
-
-function updateWeekTotals(){
-  var weekKey=getWeekKey();
-  var extra=0;
-  WEEKLY_GOALS.forEach(function(g){if(ST.weeklyDone[weekKey+'_'+g.id])extra+=g.stars;});
-  var base=parseInt(document.getElementById('w-stars').textContent)||0;
-  var grand=base+extra;
-  var pct=Math.min(Math.round(grand/146*100),100);
-  document.getElementById('w-pct').textContent='%'+pct;
-  document.getElementById('w-prog-fill').style.width=pct+'%';
-  document.getElementById('w-prog-l').textContent=grand+' / 146 (ekstra: +'+extra+')';}
-
-function getWeekKey(){
-  var now=new Date();
-  var dow=now.getDay();
-  var start=new Date(now);
-  start.setDate(now.getDate()-(dow===0?6:dow-1));
-  return start.toISOString().slice(0,10);
+  document.getElementById('w-prog-l').textContent=weekTotal+' / 112';
 }
 
+// ── RENDER AY ────────────────────────────────────────────────────
 function renderMonth(){
   var today=new Date();var todayStr=today.toISOString().slice(0,10);
   var year=today.getFullYear();var month=today.getMonth();
@@ -471,7 +473,7 @@ function renderMonth(){
   var firstDay=new Date(year,month,1);var lastDay=new Date(year,month+1,0);
   var weeks=[];var week=new Array(7).fill(null);
   var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
-  for(var i=0;i<startDow;i++)week[i]={empty:true};
+  for(var i=0;i<startDow;i++) week[i]={empty:true};
   var d=new Date(firstDay);
   while(d.getMonth()===month){
     var dow2=d.getDay()===0?6:d.getDay()-1;
@@ -484,8 +486,7 @@ function renderMonth(){
   var monthTotal=0;
   ST.days.forEach(function(dd){var dt=new Date(dd.date);if(dt.getMonth()===month&&dt.getFullYear()===year)monthTotal+=dd.stars;});
   document.getElementById('ay-stars').textContent=monthTotal;
-  document.getElementById('ay-pct').textContent='%'+Math.min(Math.round(monthTotal/584*100),100);
-  document.getElementById('ay-stars').textContent=monthTotal;
+  document.getElementById('ay-pct').textContent='%'+Math.min(Math.round(monthTotal/448*100),100);
   weeks.forEach(function(wk,wi){
     var wkStars=0;wk.forEach(function(c){if(c&&!c.empty)wkStars+=c.stars||0;});
     var block=document.createElement('div');block.className='week-block';
@@ -503,6 +504,7 @@ function renderMonth(){
   });
 }
 
+// ── RENDER ROZETLER ──────────────────────────────────────────────
 function renderBadges(){
   var total=totalAllStars();
   var grid=document.getElementById('rozet-grid');grid.innerHTML='';
@@ -521,7 +523,8 @@ function setDate(){
   document.getElementById('date-label').textContent=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
 }
 
-load();setDate();renderToday();
+setDate();
+loadFromCloud();
 </script>
 </body>
 </html>
