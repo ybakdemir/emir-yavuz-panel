@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Emir Yavuz">
 <title>Emir Yavuz — Görev Paneli</title>
 <style>
@@ -13,6 +12,7 @@
   --teal:#1D9E75;--teal-light:#E1F5EE;--teal-dark:#085041;--teal-mid:#0F6E56;
   --amber:#BA7517;--amber-light:#FAEEDA;--amber-dark:#633806;
   --blue:#378ADD;--blue-light:#E6F1FB;--blue-dark:#0C447C;
+  --purple:#534AB7;--purple-light:#EEEDFE;--purple-dark:#26215C;
   --gray:#888780;--gray-light:#F1EFE8;--gray-dark:#444441;
   --dark:#2C2C2A;--mid:#5F5E5A;--border:#D3D1C7;
   --bg:#F9F8F6;--card:#FFFFFF;
@@ -20,10 +20,10 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:15px}
 .app{max-width:700px;margin:0 auto;padding:0 0 80px}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 14px;cursor:pointer;gap:3px;color:var(--gray)}
 .nav-item.active{color:var(--teal)}
-.nav-icon{font-size:22px}
+.nav-icon{font-size:20px}
 .nav-label{font-size:10px;font-weight:500}
 .page-header{background:var(--teal);padding:16px 16px 20px;color:white}
 .header-top{display:flex;justify-content:space-between;align-items:flex-start}
@@ -67,9 +67,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cel-title{font-size:18px;font-weight:700;color:var(--teal-dark)}
 .cel-sub{font-size:13px;color:var(--teal-mid);margin-top:4px}
 .save-area{padding:16px;display:flex;gap:10px}
-.btn-save{flex:2;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);padding:14px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.15s}
-.btn-save:active{opacity:0.8}
+.btn-save{flex:2;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);padding:14px;font-size:15px;font-weight:600;cursor:pointer}
 .btn-reset{flex:1;background:var(--card);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;font-weight:500;cursor:pointer}
+
+/* EKSTRA HEDEFLER */
+.extra-section{margin:0 16px 8px}
+.extra-card{background:var(--card);border-radius:var(--radius-sm);padding:13px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border:1.5px solid transparent;margin-bottom:6px}
+.extra-card.done{background:var(--purple-light);border-color:#AFA9EC}
+.extra-chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700;color:transparent;cursor:pointer;transition:all 0.2s}
+.extra-card.done .extra-chk{background:var(--purple);border-color:var(--purple);color:white}
+.extra-body{flex:1}
+.extra-text{font-size:14px;color:var(--dark);line-height:1.4}
+.extra-card.done .extra-text{color:var(--purple-dark)}
+.extra-sub{font-size:11px;color:var(--mid);margin-top:2px}
+.extra-badge{background:var(--purple-light);color:var(--purple-dark);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;white-space:nowrap}
+/* Kıta sayacı */
+.kita-counter{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.kita-btn{width:30px;height:30px;border-radius:50%;border:2px solid var(--border);background:var(--card);font-size:12px;font-weight:600;color:var(--mid);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.kita-btn.done{background:var(--purple);border-color:var(--purple);color:white}
+/* Çarpım basamakları */
+.carpim-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.carpim-btn{padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:600;color:var(--mid);cursor:pointer;transition:all 0.15s}
+.carpim-btn.done{background:var(--purple);border-color:var(--purple);color:white}
+
+/* HAFTA SAYFASI */
 .page-title{font-size:18px;font-weight:700;color:var(--dark);padding:16px 16px 8px}
 .week-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px 12px}
 .w-metric{background:var(--card);border-radius:var(--radius-sm);padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
@@ -90,40 +111,64 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .t-val{font-weight:600;color:var(--dark)}
 .badge-g{background:var(--teal-light);color:var(--teal-dark);font-size:11px;padding:2px 8px;border-radius:20px}
 .badge-a{background:var(--amber-light);color:var(--amber-dark);font-size:11px;padding:2px 8px;border-radius:20px}
+.badge-p{background:var(--purple-light);color:var(--purple-dark);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+
+/* AY SAYFASI */
 .month-label{font-size:13px;font-weight:600;color:var(--mid);padding:0 16px 10px}
 .week-block{margin:0 16px 16px;background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .week-block-header{background:var(--gray-light);padding:10px 14px;font-size:12px;font-weight:600;color:var(--mid);display:flex;justify-content:space-between}
 .week-days-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-.day-cell{padding:8px 4px;text-align:center;border-right:1px solid var(--gray-light);border-top:1px solid var(--gray-light)}
+.day-cell{padding:8px 4px;text-align:center;border-right:1px solid var(--gray-light);border-top:1px solid var(--gray-light);cursor:pointer;transition:background 0.15s}
+.day-cell:hover:not(.empty){background:var(--gray-light)}
 .day-cell:last-child{border-right:none}
 .day-cell.today{background:var(--teal-light)}
-.day-cell.empty{background:var(--bg)}
+.day-cell.empty{background:var(--bg);cursor:default}
 .day-cell-name{font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase}
 .day-cell-num{font-size:13px;font-weight:600;color:var(--dark);margin-top:2px}
 .day-cell-star{font-size:11px;color:var(--amber);margin-top:2px;font-weight:600}
+
+/* GÜN DETAY MODAL */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--card);border-radius:var(--radius) var(--radius) 0 0;padding:20px;width:100%;max-width:700px;max-height:80vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:700;color:var(--dark)}
+.modal-close{font-size:22px;cursor:pointer;color:var(--mid);padding:4px 8px}
+.modal-stat{display:flex;gap:10px;margin-bottom:16px}
+.modal-stat-box{flex:1;background:var(--gray-light);border-radius:var(--radius-sm);padding:10px;text-align:center}
+.modal-stat-val{font-size:20px;font-weight:700;color:var(--dark)}
+.modal-stat-lbl{font-size:11px;color:var(--mid);margin-top:1px}
+.modal-task{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:13px}
+.modal-task:last-child{border-bottom:none}
+.modal-task-chk{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0}
+.modal-task-chk.done{background:var(--teal);border-color:var(--teal)}
+.modal-task-text{flex:1;color:var(--mid)}
+.modal-task-text.done{color:var(--dark)}
+
+/* ROZETLER */
 .rozet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 16px}
-.rozet-card{background:var(--card);border-radius:var(--radius);padding:16px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:2px solid transparent;transition:all 0.3s}
+.rozet-card{background:var(--card);border-radius:var(--radius);padding:16px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:2px solid transparent}
 .rozet-card.earned{border-color:var(--teal);background:var(--teal-light)}
-.rozet-icon{font-size:36px;margin-bottom:6px;filter:grayscale(1);opacity:0.35;transition:all 0.3s}
+.rozet-icon{font-size:36px;margin-bottom:6px;filter:grayscale(1);opacity:0.35}
 .rozet-card.earned .rozet-icon{filter:none;opacity:1}
 .rozet-name{font-size:12px;font-weight:600;color:var(--mid)}
 .rozet-card.earned .rozet-name{color:var(--teal-dark)}
 .rozet-cond{font-size:10px;color:var(--gray);margin-top:3px;line-height:1.3}
 .page{display:none}
 .page.active{display:block}
-.loading{text-align:center;padding:40px;color:var(--mid);font-size:14px}
 </style>
 </head>
 <body>
 <div class="app">
 
+<!-- BUGÜN -->
 <div id="page-bugun" class="page active">
   <div class="page-header">
     <div class="header-top">
       <div><div class="header-name">🦕 Emir Yavuz</div><div class="header-sub" id="date-label"></div></div>
       <div class="header-star-box"><div class="header-star-count" id="today-stars">0</div><div class="header-star-label">⭐ bugün</div></div>
     </div>
-    <div class="sync-bar"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-label">Bulut bağlantısı hazır</span></div>
+    <div class="sync-bar"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-label">Bağlanıyor...</span></div>
   </div>
   <div class="metrics">
     <div class="metric-card"><div class="metric-val" id="m-done">0</div><div class="metric-lbl">tamamlanan</div></div>
@@ -144,12 +189,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="cel-sub">Bugünün tüm görevlerini tamamladın!</div>
   </div>
   <div id="tasks-area"></div>
+
+  <!-- HAFTALIK EKSTRA HEDEFLER -->
+  <div class="section-header"><div class="section-dot" style="background:var(--purple)"></div><div class="section-label" style="color:var(--purple-dark)">Haftalık Ekstra Hedefler</div></div>
+  <div class="extra-section" id="weekly-extras"></div>
+
+  <!-- AYLIK EKSTRA HEDEFLER -->
+  <div class="section-header"><div class="section-dot" style="background:var(--amber)"></div><div class="section-label" style="color:var(--amber-dark)">Aylık Ekstra Hedefler</div></div>
+  <div class="extra-section" id="monthly-extras"></div>
+
   <div class="save-area">
-    <button class="btn-save" onclick="saveDay()">☁️ Kaydet ve Senkronize Et</button>
+    <button class="btn-save" onclick="saveDay()">☁️ Kaydet</button>
     <button class="btn-reset" onclick="resetToday()">Sıfırla</button>
   </div>
 </div>
 
+<!-- HAFTA -->
 <div id="page-hafta" class="page">
   <div class="page-title">📊 Haftalık İlerleme</div>
   <div class="week-metrics">
@@ -165,20 +220,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="week-chart"></div>
   </div>
   <div class="target-card">
-    <div class="target-title">Haftalık Hedefler</div>
-    <div class="target-row"><span class="t-label">Haftalık minimum</span><span class="t-val">112 yıldız</span></div>
-    <div class="target-row"><span class="t-label">Kitap bonusu (450 sayfa)</span><span class="t-val">+5 yıldız</span></div>
-    <div class="target-row"><span class="t-label">Sunum (haftada 1)</span><span class="t-val">+3 yıldız</span></div>
-    <div class="target-row"><span class="t-label">Aylık minimum</span><span class="t-val">448 yıldız</span></div>
-    <div class="target-row"><span class="t-label">İstiklal Marşı (10 kıta)</span><span class="t-val">+50 yıldız</span></div>
+    <div class="target-title">Haftalık Ekstra Hedefler Durumu</div>
+    <div id="w-extra-status"></div>
   </div>
   <div class="target-card">
-    <div class="target-title">Bu Haftanın Rozet Konusu</div>
-    <div class="target-row"><span class="t-label">Arkadaşım Eşek şarkısı</span><span class="badge-a">Bu hafta</span></div>
-    <div class="target-row"><span class="t-label">İstiklal Marşı — 1. kıta</span><span class="badge-g">Gelecek hafta</span></div>
+    <div class="target-title">Aylık Ekstra Hedefler Durumu</div>
+    <div id="m-extra-status"></div>
   </div>
 </div>
 
+<!-- AY -->
 <div id="page-ay" class="page">
   <div class="page-title">📅 Aylık Takip</div>
   <div class="week-metrics">
@@ -189,11 +240,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="monthly-grid"></div>
 </div>
 
+<!-- ROZETLER -->
 <div id="page-rozetler" class="page">
   <div class="page-title">🏅 Rozetlerim</div>
   <div class="rozet-grid" id="rozet-grid"></div>
 </div>
 
+</div>
+
+<!-- GÜN DETAY MODAL -->
+<div class="modal-overlay" id="day-modal" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Gün Detayı</div>
+      <div class="modal-close" onclick="document.getElementById('day-modal').classList.remove('show')">✕</div>
+    </div>
+    <div class="modal-stat">
+      <div class="modal-stat-box"><div class="modal-stat-val" id="modal-stars">0</div><div class="modal-stat-lbl">⭐ yıldız</div></div>
+      <div class="modal-stat-box"><div class="modal-stat-val" id="modal-done">0</div><div class="modal-stat-lbl">tamamlanan görev</div></div>
+    </div>
+    <div id="modal-tasks"></div>
+  </div>
 </div>
 
 <div class="bottom-nav">
@@ -204,96 +271,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-// ── SUPABASE CONFIG ──────────────────────────────────────────────
-var SUPA_URL = 'https://rkeuvdjbjzxkbcezftyf.supabase.co';
-var SUPA_KEY = 'sb_publishable_TW3AMDJFXgzWKwfjuWcbRg_rSZK_yH6';
-var TABLE = 'Gunler_EY';
+var SUPA_URL='https://rkeuvdjbjzxkbcezftyf.supabase.co';
+var SUPA_KEY='sb_publishable_TW3AMDJFXgzWKwfjuWcbRg_rSZK_yH6';
+var TABLE='Gunler_EY';
 
-function supaFetch(method, path, body) {
-  return fetch(SUPA_URL + '/rest/v1/' + path, {
-    method: method,
-    headers: {
-      'apikey': SUPA_KEY,
-      'Authorization': 'Bearer ' + SUPA_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation'
-    },
-    body: body ? JSON.stringify(body) : undefined
-  }).then(function(r){ return r.json(); });
+function supaFetch(method,path,body){
+  return fetch(SUPA_URL+'/rest/v1/'+path,{
+    method:method,
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+    body:body?JSON.stringify(body):undefined
+  }).then(function(r){return r.json();});
 }
 
-// ── GÖREV LİSTESİ ────────────────────────────────────────────────
+// ── GÖREVLER ──────────────────────────────────────────────────────
 var TASKS={
   haftaici:[
-    {s:"🌅 Sabah Rutini",items:[
-      {id:"a1",t:"Uyan, yüzünü yıka",y:1},
-      {id:"a2",t:"Giy ve hazırlan",y:1},
-      {id:"a3",t:"Kahvaltı yap",y:1},
-      {id:"a4",t:"Çantanı kontrol et",y:1}
-    ]},
-    {s:"🕌 Dini Görevler",items:[
-      {id:"b1",t:"Kuran oku — 1. ayet",y:1},
-      {id:"b2",t:"Kuran oku — 2. ayet",y:1},
-      {id:"b3",t:"Babamla 1 vakit namaz kıl",y:2}
-    ]},
-    {s:"📖 Öğrenme",items:[
-      {id:"c1",t:"Ödevini yap",y:2},
-      {id:"c2",t:"66 sayfa kitap oku",y:1},
-      {id:"c3",t:"2 İngilizce kelime öğren",y:2},
-      {id:"c4",t:"Haftalık rozet konusunu çalış",y:2},
-      {id:"c5",t:"MentalUp — 5 bölüm oyna",y:1}
-    ]},
-    {s:"💪 Fiziksel",items:[
-      {id:"d1",t:"Şınav + mekik yap",y:2},
-      {id:"d2",t:"15 dk açık hava / hareket",y:2}
-    ]},
-    {s:"🏠 Sorumluluk",items:[
-      {id:"e1",t:"Odasını topla",y:1},
-      {id:"e2",t:"Yatağını topla",y:1},
-      {id:"e3",t:"Akşam yemeği — tabağını götür",y:1}
-    ]},
-    {s:"🌙 Akşam Rutini",items:[
-      {id:"f1",t:"Diş fırçala",y:1},
-      {id:"f2",t:"Ertesi gün çantanı hazırla",y:1},
-      {id:"f3",t:"Masal veya Kuran dinle",y:1},
-      {id:"f4",t:"Duanı yap",y:1}
-    ]}
+    {s:"🌅 Sabah Rutini",items:[{id:"a1",t:"Uyan, yüzünü yıka",y:1},{id:"a2",t:"Giy ve hazırlan",y:1},{id:"a3",t:"Kahvaltı yap",y:1},{id:"a4",t:"Çantanı kontrol et",y:1}]},
+    {s:"🕌 Dini Görevler",items:[{id:"b1",t:"Kuran oku — 1. ayet",y:1},{id:"b2",t:"Kuran oku — 2. ayet",y:1},{id:"b3",t:"Babamla 1 vakit namaz kıl",y:2}]},
+    {s:"📖 Öğrenme",items:[{id:"c1",t:"Ödevini yap",y:2},{id:"c2",t:"66 sayfa kitap oku",y:1},{id:"c3",t:"2 İngilizce kelime öğren",y:2},{id:"c4",t:"Haftalık rozet konusunu çalış",y:2},{id:"c5",t:"MentalUp — 5 bölüm oyna",y:1}]},
+    {s:"💪 Fiziksel",items:[{id:"d1",t:"Şınav + mekik yap",y:2},{id:"d2",t:"15 dk açık hava / hareket",y:2}]},
+    {s:"🏠 Sorumluluk",items:[{id:"e1",t:"Odasını topla",y:1},{id:"e2",t:"Yatağını topla",y:1},{id:"e3",t:"Akşam yemeği — tabağını götür",y:1}]},
+    {s:"🌙 Akşam Rutini",items:[{id:"f1",t:"Diş fırçala",y:1},{id:"f2",t:"Ertesi gün çantanı hazırla",y:1},{id:"f3",t:"Masal veya Kuran dinle",y:1},{id:"f4",t:"Duanı yap",y:1}]}
   ],
   haftasonu:[
-    {s:"🌅 Sabah Rutini",items:[
-      {id:"s1",t:"Uyan, yüzünü yıka",y:1},
-      {id:"s2",t:"Giy ve hazırlan",y:1},
-      {id:"s3",t:"Kahvaltı yap",y:1}
-    ]},
-    {s:"🕌 Dini Görevler",items:[
-      {id:"s4",t:"Kuran oku — 1. ayet",y:1},
-      {id:"s5",t:"Kuran oku — 2. ayet",y:1},
-      {id:"s6",t:"Babamla 1 vakit namaz kıl",y:2}
-    ]},
-    {s:"🦕 Keşif ve Öğrenme",items:[
-      {id:"s7",t:"66 sayfa kitap oku",y:1},
-      {id:"s8",t:"Haftanın dinozoru — 3 bilgi söyle",y:2},
-      {id:"s9",t:"Haftanın belgeseli — 3 şey anlat",y:2},
-      {id:"s10",t:"Lego serbest yapı — fotoğrafını çek",y:2},
-      {id:"s11",t:"Rozet konusunu tekrar et",y:2},
-      {id:"s12",t:"MentalUp — 10 bölüm oyna",y:2}
-    ]},
-    {s:"⚽ Fiziksel ve Sosyal",items:[
-      {id:"s13",t:"Arkadaşlarla oyun / park / dışarı",y:2},
-      {id:"s14",t:"Şınav + mekik yap",y:2}
-    ]},
-    {s:"🏠 Sorumluluk",items:[
-      {id:"s15",t:"Odasını topla",y:1},
-      {id:"s16",t:"Yatağını topla",y:1},
-      {id:"s17",t:"Akşam yemeği — tabağını götür",y:1}
-    ]},
-    {s:"🌙 Akşam Rutini",items:[
-      {id:"s18",t:"Diş fırçala",y:1},
-      {id:"s19",t:"Masal veya Kuran dinle",y:1},
-      {id:"s20",t:"Duanı yap",y:1}
-    ]}
+    {s:"🌅 Sabah Rutini",items:[{id:"s1",t:"Uyan, yüzünü yıka",y:1},{id:"s2",t:"Giy ve hazırlan",y:1},{id:"s3",t:"Kahvaltı yap",y:1}]},
+    {s:"🕌 Dini Görevler",items:[{id:"s4",t:"Kuran oku — 1. ayet",y:1},{id:"s5",t:"Kuran oku — 2. ayet",y:1},{id:"s6",t:"Babamla 1 vakit namaz kıl",y:2}]},
+    {s:"🦕 Keşif ve Öğrenme",items:[{id:"s7",t:"66 sayfa kitap oku",y:1},{id:"s8",t:"Haftanın dinozoru — 3 bilgi söyle",y:2},{id:"s9",t:"Haftanın belgeseli — 3 şey anlat",y:2},{id:"s10",t:"Lego serbest yapı — fotoğrafını çek",y:2},{id:"s11",t:"Rozet konusunu tekrar et",y:2},{id:"s12",t:"MentalUp — 10 bölüm oyna",y:2}]},
+    {s:"⚽ Fiziksel ve Sosyal",items:[{id:"s13",t:"Arkadaşlarla oyun / park / dışarı",y:2},{id:"s14",t:"Şınav + mekik yap",y:2}]},
+    {s:"🏠 Sorumluluk",items:[{id:"s15",t:"Odasını topla",y:1},{id:"s16",t:"Yatağını topla",y:1},{id:"s17",t:"Akşam yemeği — tabağını götür",y:1}]},
+    {s:"🌙 Akşam Rutini",items:[{id:"s18",t:"Diş fırçala",y:1},{id:"s19",t:"Masal veya Kuran dinle",y:1},{id:"s20",t:"Duanı yap",y:1}]}
   ]
 };
+
+// ── HAFTALIK EKSTRA HEDEFLER ──────────────────────────────────────
+var WEEKLY_EXTRAS=[
+  {id:"we1",t:"450 sayfa kitap oku",sub:"Haftalık toplam",y:5,type:"check"},
+  {id:"we2",t:"Haftanın sunumunu yap",sub:"Çarşamba akşamı",y:3,type:"check"},
+  {id:"we3",t:"Arkadaşım Eşek şarkısını ezberle",sub:"Barış Manço",y:3,type:"check"},
+  {id:"we4",t:"İngilizcede haftanın günlerini ezberle",sub:"Monday, Tuesday...",y:3,type:"check"},
+  {id:"we5",t:"Haftanın dinozorunu araştır",sub:"3 yeni bilgi öğren",y:2,type:"check"}
+];
+
+// ── AYLIK EKSTRA HEDEFLER ─────────────────────────────────────────
+var MONTHLY_EXTRAS=[
+  {id:"me1",t:"İstiklal Marşı",sub:"Bu ay 3 kıta — 30 Nisana kadar",y:5,type:"kita",max:3},
+  {id:"me2",t:"Çarpım tablosu",sub:"Bu ay: 2ler, 3ler, 4ler, 5ler",y:5,type:"carpim",basamaklar:["2ler","3ler","4ler","5ler"]},
+  {id:"me3",t:"İngilizcede ayları ezberle",sub:"January, February...",y:5,type:"check"},
+  {id:"me4",t:"Saatleri öğren",sub:"Analog ve dijital",y:5,type:"check"}
+];
 
 var BADGES=[
   {id:"r1",icon:"⭐",name:"İlk gün",cond:"1 gün tamamla",check:function(d,s){return d.length>=1;}},
@@ -310,106 +335,138 @@ var BADGES=[
   {id:"r12",icon:"🎯",name:"Hedef avcısı",cond:"1000 yıldız biriktir",check:function(d,s){return s>=1000;}}
 ];
 
-// ── STATE ────────────────────────────────────────────────────────
-var ST={mode:'haftaici',done:{},days:[],stats:{book:0,dino:0,namaz:0,pres:0}};
+// ── STATE ─────────────────────────────────────────────────────────
+var ST={
+  mode:'haftaici',
+  done:{},
+  days:[],
+  stats:{book:0,dino:0,namaz:0,pres:0},
+  weeklyExtra:{},  // {we1:true, we2:true, ...}
+  monthlyExtra:{}  // {me1:2 (kıta sayısı), me2:{2ler:true}, me3:true, ...}
+};
 
-function setSyncStatus(status, msg){
+function setSyncStatus(status,msg){
   var dot=document.getElementById('sync-dot');
   var lbl=document.getElementById('sync-label');
-  if(!dot) return;
+  if(!dot)return;
   dot.className='sync-dot '+status;
   lbl.textContent=msg;
 }
 
-// ── SUPABASE VERİ ÇEKME ──────────────────────────────────────────
+// ── SUPABASE ──────────────────────────────────────────────────────
 function loadFromCloud(){
-  setSyncStatus('syncing','Veriler yukleniyor...');
+  setSyncStatus('syncing','Veriler yükleniyor...');
   var today=new Date().toISOString().slice(0,10);
-  supaFetch('GET', TABLE + '?select=*&order=id.desc')
+  var weekKey=getWeekKey();
+  var monthKey=getMonthKey();
+
+  supaFetch('GET',TABLE+'?select=*&order=id.desc')
     .then(function(rows){
-      if(!Array.isArray(rows)){setSyncStatus('err','Baglanti hatasi');return;}
-      var seen={};
-      var filtered=[];
-      rows.forEach(function(r){
-        if(!seen[r.tarih]){seen[r.tarih]=true;filtered.push(r);}
-      });
-      ST.days=filtered.map(function(r){
-        return {date:r.tarih, stars:r.yildiz, mode:r.mod};
-      });
+      if(!Array.isArray(rows)){setSyncStatus('err','Bağlantı hatası');return;}
+      var seen={};var filtered=[];
+      rows.forEach(function(r){if(!seen[r.tarih]){seen[r.tarih]=true;filtered.push(r);}});
+      ST.days=filtered.map(function(r){return{date:r.tarih,stars:r.yildiz,mode:r.mod,tikler:r.tikler||{}};});
       var lastStats=null;
       rows.forEach(function(r){if(r.stats)lastStats=r.stats;});
-      if(lastStats) ST.stats=lastStats;
+      if(lastStats)ST.stats=lastStats;
       // Bugünün tiklerini yükle
       var todayRow=filtered.find(function(r){return r.tarih===today;});
       if(todayRow&&todayRow.tikler){
         ST.done=todayRow.tikler;
         ST.mode=todayRow.mod||'haftaici';
-        // mode butonunu güncelle
         document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
-        var activeBtn=ST.mode==='haftasonu'?document.querySelectorAll('.mode-btn')[1]:document.querySelectorAll('.mode-btn')[0];
-        if(activeBtn) activeBtn.classList.add('active');
+        var idx=ST.mode==='haftasonu'?1:0;
+        var btns=document.querySelectorAll('.mode-btn');
+        if(btns[idx])btns[idx].classList.add('active');
       }
+      // Haftalık ve aylık ekstra hedefleri yükle
+      if(lastStats&&lastStats.weeklyExtra&&lastStats.weeklyExtra[weekKey])
+        ST.weeklyExtra=lastStats.weeklyExtra[weekKey];
+      if(lastStats&&lastStats.monthlyExtra&&lastStats.monthlyExtra[monthKey])
+        ST.monthlyExtra=lastStats.monthlyExtra[monthKey];
       setSyncStatus('ok','Senkronize edildi');
       renderToday();
+      renderExtras();
     })
-    .catch(function(){setSyncStatus('err','Baglanti yok');});
+    .catch(function(){setSyncStatus('err','Bağlantı yok — çevrimdışı');});
 }
 
-// ── KAYDET ───────────────────────────────────────────────────────
-function saveDay(){
-  var stars=calcStars();
-  if(stars===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
-  autoSave();
-  setTimeout(function(){alert('Kaydedildi! '+stars+' yıldız ⭐');},500);
+function getWeekKey(){
+  var d=new Date();var dow=d.getDay();
+  var mon=new Date(d);mon.setDate(d.getDate()-(dow===0?6:dow-1));
+  return mon.toISOString().slice(0,10);
+}
+
+function getMonthKey(){
+  var d=new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1);
 }
 
 function autoSave(){
-  var stars=calcStars();
+  var stars=calcStars()+calcExtraStars();
   var today=new Date().toISOString().slice(0,10);
-  if(ST.done['b3']||ST.done['s6']) ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
-  if(ST.done['c2']||ST.done['s7']) ST.stats.book=Math.min((ST.stats.book||0)+1,999);
-  if(ST.done['s8']) ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
+  var weekKey=getWeekKey();var monthKey=getMonthKey();
+  if(ST.done['b3']||ST.done['s6'])ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
+  if(ST.done['c2']||ST.done['s7'])ST.stats.book=Math.min((ST.stats.book||0)+1,999);
+  if(ST.done['s8'])ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
+  if(ST.weeklyExtra['we2'])ST.stats.pres=Math.min((ST.stats.pres||0)+1,999);
+  if(!ST.stats.weeklyExtra)ST.stats.weeklyExtra={};
+  ST.stats.weeklyExtra[weekKey]=ST.weeklyExtra;
+  if(!ST.stats.monthlyExtra)ST.stats.monthlyExtra={};
+  ST.stats.monthlyExtra[monthKey]=ST.monthlyExtra;
   setSyncStatus('syncing','Kaydediliyor...');
-  fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today, {
+  fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today,{
     method:'DELETE',
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
   }).then(function(){
-    return supaFetch('POST', TABLE, {
-      tarih: today,
-      yildiz: stars,
-      mod: ST.mode,
-      stats: ST.stats,
-      tikler: ST.done
-    });
+    return supaFetch('POST',TABLE,{tarih:today,yildiz:stars,mod:ST.mode,stats:ST.stats,tikler:ST.done});
   }).then(function(){
     var idx=ST.days.findIndex(function(d){return d.date===today;});
-    if(idx>=0) ST.days[idx].stars=stars;
-    else if(stars>0) ST.days.push({date:today,stars:stars,mode:ST.mode});
+    if(idx>=0)ST.days[idx].stars=stars;
+    else if(stars>0)ST.days.push({date:today,stars:stars,mode:ST.mode,tikler:ST.done});
     setSyncStatus('ok','Senkronize edildi');
-  }).catch(function(){
-    setSyncStatus('err','Baglanti hatasi');
-  });
+  }).catch(function(){setSyncStatus('err','Bağlantı hatası');});
+}
+
+function saveDay(){
+  var stars=calcStars()+calcExtraStars();
+  if(stars===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
+  autoSave();
+  setTimeout(function(){alert('Kaydedildi! '+stars+' yıldız ⭐');},400);
 }
 
 function resetToday(){
-  if(confirm('Bugünkü görevler ve kayıt sıfırlansın mı?')){
+  if(confirm('Bugünkü görevler sıfırlansın mı?')){
     var today=new Date().toISOString().slice(0,10);
     ST.done={};
     ST.days=ST.days.filter(function(d){return d.date!==today;});
-    setSyncStatus('syncing','Siliniyor...');
-    supaFetch('DELETE', TABLE+'?tarih=eq.'+today)
-      .then(function(){setSyncStatus('ok','Sıfırlandı');})
-      .catch(function(){setSyncStatus('err','Hata');});
+    fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today,{
+      method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    }).then(function(){setSyncStatus('ok','Sıfırlandı');});
     renderToday();
   }
 }
 
-// ── HESAPLAMALAR ─────────────────────────────────────────────────
+// ── HESAPLAMALAR ──────────────────────────────────────────────────
 function getTasks(){return TASKS[ST.mode];}
 function calcStars(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){if(ST.done[t.id])s+=t.y;});});return s;}
 function calcMax(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){s+=t.y;});});return s;}
 function calcDone(){var d=0,total=0;getTasks().forEach(function(sec){total+=sec.items.length;sec.items.forEach(function(t){if(ST.done[t.id])d++;});});return{d:d,total:total};}
 function totalAllStars(){return ST.days.reduce(function(a,b){return a+b.stars;},0);}
+
+function calcExtraStars(){
+  var s=0;
+  WEEKLY_EXTRAS.forEach(function(e){if(ST.weeklyExtra[e.id])s+=e.y;});
+  MONTHLY_EXTRAS.forEach(function(e){
+    if(e.type==='check'&&ST.monthlyExtra[e.id])s+=e.y;
+    else if(e.type==='kita'){var v=ST.monthlyExtra[e.id]||0;s+=v*e.y;}
+    else if(e.type==='carpim'){
+      var obj=ST.monthlyExtra[e.id]||{};
+      e.basamaklar.forEach(function(b){if(obj[b])s+=e.y;});
+    }
+  });
+  return s;
+}
 
 function setMode(m,el){
   ST.mode=m;ST.done={};
@@ -423,24 +480,24 @@ function showPage(p,el){
   document.getElementById('page-'+p).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   el.classList.add('active');
-  if(p==='hafta') renderWeek();
-  if(p==='ay') renderMonth();
-  if(p==='rozetler') renderBadges();
+  if(p==='hafta')renderWeek();
+  if(p==='ay')renderMonth();
+  if(p==='rozetler')renderBadges();
 }
 
-// ── RENDER BUGÜN ─────────────────────────────────────────────────
+// ── RENDER BUGÜN ──────────────────────────────────────────────────
 function renderToday(){
-  var stars=calcStars();var max=calcMax();
-  var res=calcDone();var d=res.d;var total=res.total;
+  var stars=calcStars();var extra=calcExtraStars();var total=stars+extra;
+  var max=calcMax();var res=calcDone();var d=res.d;var tot=res.total;
   var pct=max>0?Math.round(stars/max*100):0;
-  document.getElementById('today-stars').textContent=stars;
+  document.getElementById('today-stars').textContent=total;
   document.getElementById('m-done').textContent=d;
-  document.getElementById('m-left').textContent=total-d;
+  document.getElementById('m-left').textContent=tot-d;
   document.getElementById('m-pct').textContent='%'+pct;
   document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-left').textContent=stars+' yıldız';
+  document.getElementById('prog-left').textContent=stars+' yıldız'+(extra>0?' (+'+extra+' ekstra)':'');
   document.getElementById('prog-right').textContent='hedef: '+max;
-  document.getElementById('celebration').className='celebration'+(d>0&&d===total?' show':'');
+  document.getElementById('celebration').className='celebration'+(d>0&&d===tot?' show':'');
   var area=document.getElementById('tasks-area');area.innerHTML='';
   getTasks().forEach(function(sec){
     var sh=document.createElement('div');sh.className='section-header';
@@ -451,14 +508,82 @@ function renderToday(){
       var el=document.createElement('div');
       el.className='task-card'+(isDone?' done':'');
       el.onclick=function(){ST.done[task.id]=!ST.done[task.id];renderToday();autoSave();};
-      var starsStr='⭐'.repeat(task.y)+' +'+task.y;
-      el.innerHTML='<div class="task-chk">'+(isDone?'✓':'')+'</div><div class="task-body"><div class="task-text">'+task.t+'</div></div><span class="star-badge">'+starsStr+'</span>';
+      el.innerHTML='<div class="task-chk">'+(isDone?'✓':'')+'</div><div class="task-body"><div class="task-text">'+task.t+'</div></div><span class="star-badge">⭐'.repeat(task.y)+' +'+task.y+'</span>';
       area.appendChild(el);
     });
   });
 }
 
-// ── RENDER HAFTA ─────────────────────────────────────────────────
+// ── RENDER EKSTRA HEDEFLER ────────────────────────────────────────
+function renderExtras(){
+  // Haftalık
+  var wc=document.getElementById('weekly-extras');wc.innerHTML='';
+  WEEKLY_EXTRAS.forEach(function(e){
+    var isDone=!!ST.weeklyExtra[e.id];
+    var card=document.createElement('div');card.className='extra-card'+(isDone?' done':'');
+    card.onclick=function(){ST.weeklyExtra[e.id]=!ST.weeklyExtra[e.id];renderExtras();renderToday();autoSave();};
+    card.innerHTML='<div class="extra-chk">'+(isDone?'✓':'')+'</div><div class="extra-body"><div class="extra-text">'+e.t+'</div><div class="extra-sub">'+e.sub+'</div></div><span class="extra-badge">+'+e.y+' ⭐</span>';
+    wc.appendChild(card);
+  });
+
+  // Aylık
+  var mc=document.getElementById('monthly-extras');mc.innerHTML='';
+  MONTHLY_EXTRAS.forEach(function(e){
+    var card=document.createElement('div');card.className='extra-card';
+    if(e.type==='check'){
+      var isDone=!!ST.monthlyExtra[e.id];
+      if(isDone)card.classList.add('done');
+      card.onclick=function(){ST.monthlyExtra[e.id]=!ST.monthlyExtra[e.id];renderExtras();renderToday();autoSave();};
+      card.innerHTML='<div class="extra-chk">'+(isDone?'✓':'')+'</div><div class="extra-body"><div class="extra-text">'+e.t+'</div><div class="extra-sub">'+e.sub+'</div></div><span class="extra-badge">+'+e.y+' ⭐</span>';
+    } else if(e.type==='kita'){
+      var val=ST.monthlyExtra[e.id]||0;
+      var kitaHtml='<div class="kita-counter">';
+      for(var i=1;i<=e.max;i++){
+        kitaHtml+='<div class="kita-btn'+(i<=val?' done':'')+'" data-kita="'+i+'" data-eid="'+e.id+'">'+i+'</div>';
+      }
+      kitaHtml+='<span style="font-size:11px;color:var(--mid)">'+val+'/'+e.max+' kıta · +'+(val*e.y)+' ⭐</span></div>';
+      card.innerHTML='<div style="width:100%"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="extra-text">'+e.t+'</div><div class="extra-sub">'+e.sub+'</div></div><span class="extra-badge">her kıta +'+e.y+' ⭐</span></div>'+kitaHtml+'</div>';
+      card.style.display='block';card.style.cursor='default';
+    } else if(e.type==='carpim'){
+      var obj=ST.monthlyExtra[e.id]||{};
+      var carpimHtml='<div class="carpim-row">';
+      e.basamaklar.forEach(function(b){
+        carpimHtml+='<div class="carpim-btn'+(obj[b]?' done':'')+'" data-bas="'+b+'" data-eid="'+e.id+'">'+b+'</div>';
+      });
+      var done2=e.basamaklar.filter(function(b){return obj[b];}).length;
+      carpimHtml+='</div><div style="font-size:11px;color:var(--mid);margin-top:4px">'+done2+'/'+e.basamaklar.length+' basamak · +'+(done2*e.y)+' ⭐</div>';
+      card.innerHTML='<div style="width:100%"><div style="display:flex;justify-content:space-between;align-items:center"><div><div class="extra-text">'+e.t+'</div><div class="extra-sub">'+e.sub+'</div></div><span class="extra-badge">her basamak +'+e.y+' ⭐</span></div>'+carpimHtml+'</div>';
+      card.style.display='block';card.style.cursor='default';
+    }
+    mc.appendChild(card);
+  });
+
+  // Kıta butonları
+  document.querySelectorAll('.kita-btn').forEach(function(btn){
+    btn.onclick=function(ev){
+      ev.stopPropagation();
+      var eid=btn.getAttribute('data-eid');
+      var k=parseInt(btn.getAttribute('data-kita'));
+      var cur=ST.monthlyExtra[eid]||0;
+      ST.monthlyExtra[eid]=cur===k?k-1:k;
+      renderExtras();renderToday();autoSave();
+    };
+  });
+
+  // Çarpım butonları
+  document.querySelectorAll('.carpim-btn').forEach(function(btn){
+    btn.onclick=function(ev){
+      ev.stopPropagation();
+      var eid=btn.getAttribute('data-eid');
+      var bas=btn.getAttribute('data-bas');
+      if(!ST.monthlyExtra[eid])ST.monthlyExtra[eid]={};
+      ST.monthlyExtra[eid][bas]=!ST.monthlyExtra[eid][bas];
+      renderExtras();renderToday();autoSave();
+    };
+  });
+}
+
+// ── RENDER HAFTA ──────────────────────────────────────────────────
 function renderWeek(){
   var dayNames=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
   var today=new Date();var todayStr=today.toISOString().slice(0,10);
@@ -486,9 +611,37 @@ function renderWeek(){
   document.getElementById('w-pct').textContent='%'+wPct;
   document.getElementById('w-prog-fill').style.width=wPct+'%';
   document.getElementById('w-prog-l').textContent=weekTotal+' / 112';
+
+  // Haftalık ekstra durum
+  var ws=document.getElementById('w-extra-status');ws.innerHTML='';
+  WEEKLY_EXTRAS.forEach(function(e){
+    var isDone=!!ST.weeklyExtra[e.id];
+    var row=document.createElement('div');row.className='target-row';
+    row.innerHTML='<span class="t-label">'+e.t+'</span>'+(isDone?'<span class="badge-g">Tamamlandı +'+e.y+'⭐</span>':'<span class="badge-a">+'+e.y+' ⭐</span>');
+    ws.appendChild(row);
+  });
+
+  // Aylık ekstra durum
+  var ms=document.getElementById('m-extra-status');ms.innerHTML='';
+  MONTHLY_EXTRAS.forEach(function(e){
+    var row=document.createElement('div');row.className='target-row';
+    var statusHtml='';
+    if(e.type==='check'){
+      statusHtml=ST.monthlyExtra[e.id]?'<span class="badge-g">Tamamlandı +'+e.y+'⭐</span>':'<span class="badge-a">+'+e.y+' ⭐</span>';
+    } else if(e.type==='kita'){
+      var v=ST.monthlyExtra[e.id]||0;
+      statusHtml='<span class="badge-p">'+v+'/'+e.max+' kıta · +'+(v*e.y)+'⭐</span>';
+    } else if(e.type==='carpim'){
+      var obj=ST.monthlyExtra[e.id]||{};
+      var done=e.basamaklar.filter(function(b){return obj[b];}).length;
+      statusHtml='<span class="badge-p">'+done+'/'+e.basamaklar.length+' basamak · +'+(done*e.y)+'⭐</span>';
+    }
+    row.innerHTML='<span class="t-label">'+e.t+'</span>'+statusHtml;
+    ms.appendChild(row);
+  });
 }
 
-// ── RENDER AY ────────────────────────────────────────────────────
+// ── RENDER AY ─────────────────────────────────────────────────────
 function renderMonth(){
   var today=new Date();var todayStr=today.toISOString().slice(0,10);
   var year=today.getFullYear();var month=today.getMonth();
@@ -499,13 +652,13 @@ function renderMonth(){
   var firstDay=new Date(year,month,1);var lastDay=new Date(year,month+1,0);
   var weeks=[];var week=new Array(7).fill(null);
   var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
-  for(var i=0;i<startDow;i++) week[i]={empty:true};
+  for(var i=0;i<startDow;i++)week[i]={empty:true};
   var d=new Date(firstDay);
   while(d.getMonth()===month){
     var dow2=d.getDay()===0?6:d.getDay()-1;
     var ds=d.toISOString().slice(0,10);
     var found=ST.days.find(function(x){return x.date===ds;});
-    week[dow2]={day:d.getDate(),date:ds,stars:found?found.stars:0,isToday:ds===todayStr};
+    week[dow2]={day:d.getDate(),date:ds,stars:found?found.stars:0,tikler:found?found.tikler||{}:{},isToday:ds===todayStr};
     if(dow2===6||d.getDate()===lastDay.getDate()){weeks.push(week.slice());week=new Array(7).fill(null);}
     d.setDate(d.getDate()+1);
   }
@@ -523,14 +676,54 @@ function renderMonth(){
     wk.forEach(function(cell,ci){
       var ce=document.createElement('div');
       if(!cell||cell.empty){ce.className='day-cell empty';ce.innerHTML='<div class="day-cell-name">'+dayNames[ci]+'</div>';}
-      else{ce.className='day-cell'+(cell.isToday?' today':'');ce.innerHTML='<div class="day-cell-name">'+dayNames[ci]+'</div><div class="day-cell-num">'+cell.day+'</div><div class="day-cell-star">'+(cell.stars>0?'⭐'+cell.stars:'')+'</div>';}
+      else{
+        ce.className='day-cell'+(cell.isToday?' today':'');
+        ce.innerHTML='<div class="day-cell-name">'+dayNames[ci]+'</div><div class="day-cell-num">'+cell.day+'</div><div class="day-cell-star">'+(cell.stars>0?'⭐'+cell.stars:'')+'</div>';
+        if(cell.stars>0){
+          ce.onclick=function(c){return function(){openDayModal(c);};}(cell);
+        }
+      }
       dg.appendChild(ce);
     });
     block.appendChild(dg);grid.appendChild(block);
   });
 }
 
-// ── RENDER ROZETLER ──────────────────────────────────────────────
+// ── GÜN DETAY MODAL ───────────────────────────────────────────────
+function openDayModal(cell){
+  var days=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  var months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var dt=new Date(cell.date);
+  document.getElementById('modal-title').textContent=days[dt.getDay()]+', '+cell.day+' '+months[dt.getMonth()];
+  document.getElementById('modal-stars').textContent=cell.stars;
+  var tikler=cell.tikler||{};
+  var doneCount=Object.keys(tikler).filter(function(k){return tikler[k];}).length;
+  document.getElementById('modal-done').textContent=doneCount;
+  var mode=ST.days.find(function(x){return x.date===cell.date;});
+  var taskMode=mode&&mode.mode?mode.mode:'haftaici';
+  var taskList=TASKS[taskMode];
+  var mt=document.getElementById('modal-tasks');mt.innerHTML='';
+  taskList.forEach(function(sec){
+    var sh=document.createElement('div');
+    sh.style.cssText='font-size:10px;font-weight:600;color:var(--mid);text-transform:uppercase;padding:10px 0 4px;letter-spacing:0.05em';
+    sh.textContent=sec.s;
+    mt.appendChild(sh);
+    sec.items.forEach(function(task){
+      var isDone=!!tikler[task.id];
+      var row=document.createElement('div');row.className='modal-task';
+      row.innerHTML='<div class="modal-task-chk'+(isDone?' done':'')+'"></div><div class="modal-task-text'+(isDone?' done':'')+'">'+task.t+'</div><span style="font-size:11px;color:var(--amber)">+'+task.y+'</span>';
+      mt.appendChild(row);
+    });
+  });
+  document.getElementById('day-modal').classList.add('show');
+}
+
+function closeModal(e){
+  if(e.target===document.getElementById('day-modal'))
+    document.getElementById('day-modal').classList.remove('show');
+}
+
+// ── ROZETLER ──────────────────────────────────────────────────────
 function renderBadges(){
   var total=totalAllStars();
   var grid=document.getElementById('rozet-grid');grid.innerHTML='';
