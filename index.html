@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Emir Yavuz">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <title>Emir Yavuz — Görev Paneli</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -291,36 +294,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-var FB_URL='https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app';
+// Firebase SDK script tag'leri head'e eklendi
+var DB = null;
+var AUTH = null;
+
+function initFirebase(){
+  return new Promise(function(resolve){
+    if(DB){resolve();return;}
+    var config={
+      apiKey:"AIzaSyAcp9l9iAADeWxhCVwFEyMvYuAt0_-kN50",
+      authDomain:"ey-daily-monitor.firebaseapp.com",
+      databaseURL:"https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:"ey-daily-monitor",
+      appId:"1:339579721070:web:11afb5741b08718dac1d7f"
+    };
+    firebase.initializeApp(config);
+    DB=firebase.database();
+    AUTH=firebase.auth();
+    AUTH.signInAnonymously().then(function(){resolve();}).catch(function(){resolve();});
+  });
+}
 
 function fbGet(path){
-  // Önce Firebase dene, hata olursa localStorage'dan oku
-  return fetch(FB_URL+path+'.json',{mode:'cors'})
-    .then(function(r){
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .catch(function(){
-      // Firebase çalışmıyorsa localStorage'dan oku
-      var key='ey'+path.split('/').join('_');
-      var val=localStorage.getItem(key);
-      return val?JSON.parse(val):null;
-    });
+  return initFirebase().then(function(){
+    return DB.ref(path).once('value').then(function(snap){return snap.val();});
+  });
 }
 function fbSet(path,data){
-  // localStorage'a her zaman yaz
-  var key='ey'+path.split('/').join('_');
-  localStorage.setItem(key,JSON.stringify(data));
-  // Firebase'e de yazmayı dene
-  return fetch(FB_URL+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),mode:'cors'})
-    .then(function(r){return r.json();})
-    .catch(function(){return data;});
+  return initFirebase().then(function(){
+    return DB.ref(path).set(data);
+  });
 }
 function fbDelete(path){
-  var key='ey'+path.split('/').join('_');
-  localStorage.removeItem(key);
-  return fetch(FB_URL+path+'.json',{method:'DELETE',mode:'cors'})
-    .catch(function(){return null;});
+  return initFirebase().then(function(){
+    return DB.ref(path).remove();
+  });
 }
 
 // ── GÖREVLER ──────────────────────────────────────────────────────
@@ -430,7 +438,7 @@ function loadFromCloud(){
     renderToday();
     renderExtras();
   }).catch(function(e){
-    setSyncStatus('err','Çevrimdışı mod');
+    setSyncStatus('err','Baglanti hatasi: '+e.message);
     renderToday();
     renderExtras();
   });
