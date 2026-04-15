@@ -291,16 +291,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-var SUPA_URL='https://rkeuvdjbjzxkbcezftyf.supabase.co';
-var SUPA_KEY='sb_publishable_TW3AMDJFXgzWKwfjuWcbRg_rSZK_yH6';
-var TABLE='Gunler_EY';
+var FB_URL='https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app';
 
-function supaFetch(method,path,body){
-  return fetch(SUPA_URL+'/rest/v1/'+path,{
-    method:method,
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
-    body:body?JSON.stringify(body):undefined
-  }).then(function(r){return r.json();});
+function fbGet(path){
+  return fetch(FB_URL+path+'.json').then(function(r){return r.json();});
+}
+function fbSet(path,data){
+  return fetch(FB_URL+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(r){return r.json();});
+}
+function fbDelete(path){
+  return fetch(FB_URL+path+'.json',{method:'DELETE'}).then(function(r){return r.json();});
 }
 
 // ── GÖREVLER ──────────────────────────────────────────────────────
@@ -373,42 +373,47 @@ function setSyncStatus(status,msg){
   lbl.textContent=msg;
 }
 
-// ── SUPABASE ──────────────────────────────────────────────────────
+// ── FİREBASE ──────────────────────────────────────────────────────
 function loadFromCloud(){
   setSyncStatus('syncing','Veriler yükleniyor...');
   var today=new Date().toISOString().slice(0,10);
   var weekKey=getWeekKey();
   var monthKey=getMonthKey();
 
-  supaFetch('GET',TABLE+'?select=*&order=id.desc')
-    .then(function(rows){
-      if(!Array.isArray(rows)){setSyncStatus('err','Bağlantı hatası');return;}
-      var seen={};var filtered=[];
-      rows.forEach(function(r){if(!seen[r.tarih]){seen[r.tarih]=true;filtered.push(r);}});
-      ST.days=filtered.map(function(r){return{date:r.tarih,stars:r.yildiz,mode:r.mod,tikler:r.tikler||{}};});
-      var lastStats=null;
-      rows.forEach(function(r){if(r.stats)lastStats=r.stats;});
-      if(lastStats)ST.stats=lastStats;
-      // Bugünün tiklerini yükle
-      var todayRow=filtered.find(function(r){return r.tarih===today;});
-      if(todayRow&&todayRow.tikler){
-        ST.done=todayRow.tikler;
-        ST.mode=todayRow.mod||'haftaici';
-        document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
-        var idx=ST.mode==='haftasonu'?1:0;
-        var btns=document.querySelectorAll('.mode-btn');
-        if(btns[idx])btns[idx].classList.add('active');
-      }
-      // Haftalık ve aylık ekstra hedefleri yükle
-      if(lastStats&&lastStats.weeklyExtra&&lastStats.weeklyExtra[weekKey])
-        ST.weeklyExtra=lastStats.weeklyExtra[weekKey];
-      if(lastStats&&lastStats.monthlyExtra&&lastStats.monthlyExtra[monthKey])
-        ST.monthlyExtra=lastStats.monthlyExtra[monthKey];
-      setSyncStatus('ok','Senkronize edildi');
-      renderToday();
-      renderExtras();
-    })
-    .catch(function(){setSyncStatus('err','Bağlantı yok — çevrimdışı');});
+  Promise.all([
+    fbGet('/gunler'),
+    fbGet('/meta')
+  ]).then(function(results){
+    var gunler=results[0]||{};
+    var meta=results[1]||{};
+    // Günleri dizi haline getir
+    ST.days=Object.keys(gunler).map(function(k){
+      var g=gunler[k];
+      return{date:k,stars:g.stars||0,mode:g.mode||'haftaici',tikler:g.tikler||{}};
+    }).sort(function(a,b){return a.date.localeCompare(b.date);});
+    // Stats
+    if(meta.stats) ST.stats=meta.stats;
+    // Bugünün tiklerini yükle
+    var todayData=gunler[today];
+    if(todayData&&todayData.tikler){
+      ST.done=todayData.tikler;
+      ST.mode=todayData.mode||'haftaici';
+      document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+      var idx=ST.mode==='haftasonu'?1:0;
+      var btns=document.querySelectorAll('.mode-btn');
+      if(btns[idx])btns[idx].classList.add('active');
+    }
+    // Haftalık/aylık ekstralar
+    if(meta.weeklyExtra&&meta.weeklyExtra[weekKey]) ST.weeklyExtra=meta.weeklyExtra[weekKey];
+    if(meta.monthlyExtra&&meta.monthlyExtra[monthKey]) ST.monthlyExtra=meta.monthlyExtra[monthKey];
+    setSyncStatus('ok','Senkronize edildi');
+    renderToday();
+    renderExtras();
+  }).catch(function(e){
+    setSyncStatus('err','Bağlantı yok — çevrimdışı');
+    renderToday();
+    renderExtras();
+  });
 }
 
 function getWeekKey(){
@@ -423,31 +428,26 @@ function getMonthKey(){
 }
 
 function autoSave(){
-  var stars=calcStars(); // Sadece günlük görev yıldızları
+  var stars=calcStars();
   var today=new Date().toISOString().slice(0,10);
   var weekKey=getWeekKey();var monthKey=getMonthKey();
   if(ST.done['b3']||ST.done['s6'])ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
   if(ST.done['c2']||ST.done['s7'])ST.stats.book=Math.min((ST.stats.book||0)+1,999);
   if(ST.done['s8'])ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
   if(ST.weeklyExtra['we2'])ST.stats.pres=Math.min((ST.stats.pres||0)+1,999);
-  if(!ST.stats.weeklyExtra)ST.stats.weeklyExtra={};
-  ST.stats.weeklyExtra[weekKey]=ST.weeklyExtra;
-  if(!ST.stats.monthlyExtra)ST.stats.monthlyExtra={};
-  ST.stats.monthlyExtra[monthKey]=ST.monthlyExtra;
-  // Haftalık ve aylık ekstra yıldızları ayrıca sakla
-  ST.stats.weeklyStars=ST.stats.weeklyStars||{};
-  ST.stats.weeklyStars[weekKey]=calcWeeklyExtraStars();
-  ST.stats.monthlyStars=ST.stats.monthlyStars||{};
-  ST.stats.monthlyStars[getMonthKey()]=calcMonthlyExtraStars();
   setSyncStatus('syncing','Kaydediliyor...');
-  fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today,{
-    method:'DELETE',
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-  }).then(function(){
-    return supaFetch('POST',TABLE,{tarih:today,yildiz:stars,mod:ST.mode,stats:ST.stats,tikler:ST.done});
-  }).then(function(){
+  var gunData={stars:stars,mode:ST.mode,tikler:ST.done};
+  var metaData={
+    stats:ST.stats,
+    weeklyExtra:(function(){var o={};o[weekKey]=ST.weeklyExtra;return o;})(),
+    monthlyExtra:(function(){var o={};o[monthKey]=ST.monthlyExtra;return o;})()
+  };
+  Promise.all([
+    fbSet('/gunler/'+today, gunData),
+    fbSet('/meta', metaData)
+  ]).then(function(){
     var idx=ST.days.findIndex(function(d){return d.date===today;});
-    if(idx>=0)ST.days[idx].stars=stars;
+    if(idx>=0){ST.days[idx].stars=stars;ST.days[idx].tikler=ST.done;}
     else if(stars>0)ST.days.push({date:today,stars:stars,mode:ST.mode,tikler:ST.done});
     setSyncStatus('ok','Senkronize edildi');
   }).catch(function(){setSyncStatus('err','Bağlantı hatası');});
@@ -477,9 +477,7 @@ function resetToday(){
     var today=new Date().toISOString().slice(0,10);
     ST.done={};
     ST.days=ST.days.filter(function(d){return d.date!==today;});
-    fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today,{
-      method:'DELETE',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
-    }).then(function(){setSyncStatus('ok','Sıfırlandı');});
+    fbDelete('/gunler/'+today).then(function(){setSyncStatus('ok','Sıfırlandı');});
     renderToday();
   }
 }
