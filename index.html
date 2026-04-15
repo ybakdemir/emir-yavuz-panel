@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Emir Yavuz">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
 <title>Emir Yavuz — Görev Paneli</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -294,41 +292,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
-// Firebase SDK script tag'leri head'e eklendi
-var DB = null;
-var AUTH = null;
-
-function initFirebase(){
-  return new Promise(function(resolve){
-    if(DB){resolve();return;}
-    var config={
-      apiKey:"AIzaSyAcp9l9iAADeWxhCVwFEyMvYuAt0_-kN50",
-      authDomain:"ey-daily-monitor.firebaseapp.com",
-      databaseURL:"https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId:"ey-daily-monitor",
-      appId:"1:339579721070:web:11afb5741b08718dac1d7f"
-    };
-    firebase.initializeApp(config);
-    DB=firebase.database();
-    AUTH=firebase.auth();
-    AUTH.signInAnonymously().then(function(){resolve();}).catch(function(){resolve();});
-  });
-}
+var DB=null;var AUTH=null;var FB_READY=false;
 
 function fbGet(path){
-  return initFirebase().then(function(){
-    return DB.ref(path).once('value').then(function(snap){return snap.val();});
-  });
+  if(!FB_READY)return Promise.resolve(null);
+  return DB.ref(path).once('value').then(function(s){return s.val();});
 }
 function fbSet(path,data){
-  return initFirebase().then(function(){
-    return DB.ref(path).set(data);
-  });
+  if(!FB_READY)return Promise.resolve(null);
+  return DB.ref(path).set(data);
 }
 function fbDelete(path){
-  return initFirebase().then(function(){
-    return DB.ref(path).remove();
-  });
+  if(!FB_READY)return Promise.resolve(null);
+  return DB.ref(path).remove();
 }
 
 // ── GÖREVLER ──────────────────────────────────────────────────────
@@ -897,7 +873,45 @@ function getTodayCell(){
 }
 
 setDate();
-loadFromCloud();
+
+// Firebase SDK'ları yükle, sonra başlat
+var s1=document.createElement('script');
+s1.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+s1.onload=function(){
+  var s2=document.createElement('script');
+  s2.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+  s2.onload=function(){
+    var s3=document.createElement('script');
+    s3.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+    s3.onload=function(){
+      try{
+        firebase.initializeApp({
+          apiKey:"AIzaSyAcp9l9iAADeWxhCVwFEyMvYuAt0_-kN50",
+          authDomain:"ey-daily-monitor.firebaseapp.com",
+          databaseURL:"https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app",
+          projectId:"ey-daily-monitor",
+          appId:"1:339579721070:web:11afb5741b08718dac1d7f"
+        });
+        DB=firebase.database();
+        AUTH=firebase.auth();
+        AUTH.signInAnonymously().then(function(){
+          FB_READY=true;
+          loadFromCloud();
+        }).catch(function(){
+          FB_READY=false;
+          setSyncStatus('err','Auth hatasi');
+          loadFromCloud();
+        });
+      }catch(e){
+        setSyncStatus('err','Firebase hatasi: '+e.message);
+        loadFromCloud();
+      }
+    };
+    document.head.appendChild(s3);
+  };
+  document.head.appendChild(s2);
+};
+document.head.appendChild(s1);
 </script>
 </body>
 </html>
