@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Emir Yavuz">
+<title>Emir Yavuz — Görev Paneli</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --teal:#1D9E75;--teal-light:#E1F5EE;--teal-dark:#085041;--teal-mid:#0F6E56;
+  --amber:#BA7517;--amber-light:#FAEEDA;--amber-dark:#633806;
+  --blue:#378ADD;--blue-light:#E6F1FB;--blue-dark:#0C447C;
+  --gray:#888780;--gray-light:#F1EFE8;--gray-dark:#444441;
+  --dark:#2C2C2A;--mid:#5F5E5A;--border:#D3D1C7;
+  --bg:#F9F8F6;--card:#FFFFFF;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;font-size:15px}
+.app{max-width:700px;margin:0 auto;padding:0 0 80px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0 14px;cursor:pointer;gap:3px;color:var(--gray)}
+.nav-item.active{color:var(--teal)}
+.nav-icon{font-size:22px}
+.nav-label{font-size:10px;font-weight:500}
+.page-header{background:var(--teal);padding:16px 16px 20px;color:white}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start}
+.header-name{font-size:22px;font-weight:700}
+.header-sub{font-size:12px;opacity:0.85;margin-top:2px}
+.header-star-box{background:rgba(255,255,255,0.2);border-radius:var(--radius-sm);padding:8px 14px;text-align:center}
+.header-star-count{font-size:28px;font-weight:700;line-height:1}
+.header-star-label{font-size:10px;opacity:0.9;margin-top:1px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px;margin-top:-8px}
+.metric-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.metric-val{font-size:22px;font-weight:700;color:var(--dark)}
+.metric-lbl{font-size:11px;color:var(--mid);margin-top:2px}
+.prog-section{padding:0 16px 8px}
+.prog-header{display:flex;justify-content:space-between;font-size:12px;color:var(--mid);margin-bottom:6px}
+.prog-bar{height:10px;background:var(--gray-light);border-radius:5px;overflow:hidden}
+.prog-fill{height:100%;border-radius:5px;background:var(--teal);transition:width 0.4s ease}
+.mode-toggle{display:flex;margin:12px 16px;background:var(--gray-light);border-radius:var(--radius-sm);padding:3px;gap:3px}
+.mode-btn{flex:1;padding:8px;text-align:center;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--mid);transition:all 0.2s}
+.mode-btn.active{background:var(--card);color:var(--teal-dark);box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.section-header{display:flex;align-items:center;gap:8px;padding:14px 16px 6px}
+.section-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0}
+.section-label{font-size:11px;font-weight:600;color:var(--teal-dark);text-transform:uppercase;letter-spacing:0.06em}
+.task-card{background:var(--card);margin:0 16px 6px;border-radius:var(--radius-sm);padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all 0.15s;border:1.5px solid transparent;user-select:none}
+.task-card:active{transform:scale(0.98)}
+.task-card.done{background:#F0FBF6;border-color:#9FE1CB}
+.task-chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;font-size:14px;font-weight:700;color:transparent}
+.task-card.done .task-chk{background:var(--teal);border-color:var(--teal);color:white}
+.task-body{flex:1}
+.task-text{font-size:14px;color:var(--dark);line-height:1.4}
+.task-card.done .task-text{color:var(--teal-dark)}
+.star-badge{background:var(--amber-light);color:var(--amber-dark);font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.celebration{margin:12px 16px;background:var(--teal-light);border-radius:var(--radius);padding:20px;text-align:center;display:none;border:1.5px solid var(--teal)}
+.celebration.show{display:block}
+.cel-emoji{font-size:40px;margin-bottom:8px}
+.cel-title{font-size:18px;font-weight:700;color:var(--teal-dark)}
+.cel-sub{font-size:13px;color:var(--teal-mid);margin-top:4px}
+.save-area{padding:16px;display:flex;gap:10px}
+.btn-save{flex:2;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);padding:14px;font-size:15px;font-weight:600;cursor:pointer}
+.btn-reset{flex:1;background:var(--card);color:var(--mid);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;font-weight:500;cursor:pointer}
+.page-title{font-size:18px;font-weight:700;color:var(--dark);padding:16px 16px 8px}
+.week-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px 12px}
+.w-metric{background:var(--card);border-radius:var(--radius-sm);padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.w-metric-val{font-size:24px;font-weight:700;color:var(--dark)}
+.w-metric-lbl{font-size:11px;color:var(--mid);margin-top:2px}
+.chart-section{padding:0 16px}
+.chart-title{font-size:12px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}
+.day-bar{margin-bottom:10px}
+.day-bar-top{display:flex;justify-content:space-between;font-size:12px;color:var(--mid);margin-bottom:3px}
+.day-bar-bg{height:24px;background:var(--gray-light);border-radius:6px;overflow:hidden}
+.day-bar-fill{height:100%;border-radius:6px;background:var(--blue);display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:600;color:white;transition:width 0.5s ease}
+.day-bar-fill.today{background:var(--teal)}
+.target-card{margin:12px 16px;background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.target-title{font-size:14px;font-weight:600;color:var(--dark);margin-bottom:10px}
+.target-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--gray-light);font-size:13px}
+.target-row:last-child{border-bottom:none}
+.t-label{color:var(--mid)}
+.t-val{font-weight:600;color:var(--dark)}
+.badge-g{background:var(--teal-light);color:var(--teal-dark);font-size:11px;padding:2px 8px;border-radius:20px}
+.badge-a{background:var(--amber-light);color:var(--amber-dark);font-size:11px;padding:2px 8px;border-radius:20px}
+.month-label{font-size:13px;font-weight:600;color:var(--mid);padding:0 16px 10px}
+.week-block{margin:0 16px 16px;background:var(--card);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.week-block-header{background:var(--gray-light);padding:10px 14px;font-size:12px;font-weight:600;color:var(--mid);display:flex;justify-content:space-between}
+.week-days-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+.day-cell{padding:8px 4px;text-align:center;border-right:1px solid var(--gray-light);border-top:1px solid var(--gray-light)}
+.day-cell:last-child{border-right:none}
+.day-cell.today{background:var(--teal-light)}
+.day-cell.empty{background:var(--bg)}
+.day-cell-name{font-size:9px;color:var(--gray);font-weight:600;text-transform:uppercase}
+.day-cell-num{font-size:13px;font-weight:600;color:var(--dark);margin-top:2px}
+.day-cell-star{font-size:11px;color:var(--amber);margin-top:2px;font-weight:600}
+.rozet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 16px}
+.rozet-card{background:var(--card);border-radius:var(--radius);padding:16px 10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:2px solid transparent}
+.rozet-card.earned{border-color:var(--teal);background:var(--teal-light)}
+.rozet-icon{font-size:36px;margin-bottom:6px;filter:grayscale(1);opacity:0.35}
+.rozet-card.earned .rozet-icon{filter:none;opacity:1}
+.rozet-name{font-size:12px;font-weight:600;color:var(--mid)}
+.rozet-card.earned .rozet-name{color:var(--teal-dark)}
+.rozet-cond{font-size:10px;color:var(--gray);margin-top:3px;line-height:1.3}
+.page{display:none}
+.page.active{display:block}
+.wgoal{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-light);cursor:pointer;transition:opacity 0.15s}
+.wgoal:last-child{border-bottom:none}
+.wgoal:active{opacity:0.7}
+.wgoal-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:transparent;transition:all 0.2s}
+.wgoal.done .wgoal-chk{background:var(--teal);border-color:var(--teal);color:white}
+.wgoal-label{flex:1;font-size:13px;color:var(--dark)}
+.wgoal.done .wgoal-label{color:var(--teal-dark)}
+.wgoal-stars{font-size:12px;font-weight:600;color:var(--amber-dark);background:var(--amber-light);padding:2px 8px;border-radius:20px;white-space:nowrap}
+.wgoal.done .wgoal-stars{background:var(--teal-light);color:var(--teal-dark)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div id="page-bugun" class="page active">
+  <div class="page-header">
+    <div class="header-top">
+      <div><div class="header-name">🦕 Emir Yavuz</div><div class="header-sub" id="date-label"></div></div>
+      <div class="header-star-box"><div class="header-star-count" id="today-stars">0</div><div class="header-star-label">⭐ bugün</div></div>
+    </div>
+  </div>
+  <div class="metrics">
+    <div class="metric-card"><div class="metric-val" id="m-done">0</div><div class="metric-lbl">tamamlanan</div></div>
+    <div class="metric-card"><div class="metric-val" id="m-left">0</div><div class="metric-lbl">kalan görev</div></div>
+    <div class="metric-card"><div class="metric-val" id="m-pct">%0</div><div class="metric-lbl">ilerleme</div></div>
+  </div>
+  <div class="prog-section">
+    <div class="prog-header"><span id="prog-left">0 yıldız</span><span id="prog-right">hedef: 0</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="mode-toggle">
+    <div class="mode-btn active" onclick="setMode('haftaici',this)">📚 Hafta İçi</div>
+    <div class="mode-btn" onclick="setMode('haftasonu',this)">🌤 Hafta Sonu</div>
+  </div>
+  <div id="celebration" class="celebration">
+    <div class="cel-emoji">🌟</div>
+    <div class="cel-title">Harika iş Emir Yavuz!</div>
+    <div class="cel-sub">Bugünün tüm görevlerini tamamladın!</div>
+  </div>
+  <div id="tasks-area"></div>
+  <div class="save-area">
+    <button class="btn-save" onclick="saveDay()">✓ Günü Kaydet</button>
+    <button class="btn-reset" onclick="resetToday()">Sıfırla</button>
+  </div>
+</div>
+
+<div id="page-hafta" class="page">
+  <div class="page-title">📊 Haftalık İlerleme</div>
+  <div class="week-metrics">
+    <div class="w-metric"><div class="w-metric-val" id="w-stars">0</div><div class="w-metric-lbl">⭐ haftalık yıldız</div></div>
+    <div class="w-metric"><div class="w-metric-val" id="w-pct">%0</div><div class="w-metric-lbl">hedefe göre (146)</div></div>
+  </div>
+  <div class="prog-section" style="margin-bottom:16px">
+    <div class="prog-header"><span id="w-prog-l">0 / 112</span><span></span></div>
+    <div class="prog-bar" style="height:14px"><div class="prog-fill" id="w-prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="chart-section">
+    <div class="chart-title">Günlük Kümülatif Yıldız</div>
+    <div id="week-chart"></div>
+  </div>
+  <div class="target-card">
+    <div class="target-title">📊 Haftalık Bilgi</div>
+    <div class="target-row"><span class="t-label">Haftalık maksimum</span><span class="t-val">~209 yıldız</span></div>
+    <div class="target-row"><span class="t-label">Haftalık minimum hedef</span><span class="t-val">146 yıldız</span></div>
+    <div class="target-row"><span class="t-label">Aylık minimum hedef</span><span class="t-val">584 yıldız</span></div>
+    <div class="target-row"><span class="t-label">İstiklal Marşı (10 kıta)</span><span class="t-val">+50 yıldız</span></div>
+  </div>
+  <div class="target-card">
+    <div class="target-title">🎯 Haftalık Hedefler <span style="font-size:11px;font-weight:400;color:var(--mid)">— tıklayarak tamamla</span></div>
+    <div id="weekly-goals-list"></div>
+  </div>
+</div>
+
+<div id="page-ay" class="page">
+  <div class="page-title">📅 Aylık Takip</div>
+  <div class="week-metrics">
+    <div class="w-metric"><div class="w-metric-val" id="ay-stars">0</div><div class="w-metric-lbl">⭐ aylık yıldız</div></div>
+    <div class="w-metric"><div class="w-metric-val" id="ay-pct">%0</div><div class="w-metric-lbl">hedefe göre (584)</div></div>
+  </div>
+  <div class="month-label" id="month-label"></div>
+  <div id="monthly-grid"></div>
+</div>
+
+<div id="page-rozetler" class="page">
+  <div class="page-title">🏅 Rozetlerim</div>
+  <div class="rozet-grid" id="rozet-grid"></div>
+</div>
+
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="showPage('bugun',this)"><div class="nav-icon">📋</div><div class="nav-label">Bugün</div></div>
+  <div class="nav-item" onclick="showPage('hafta',this)"><div class="nav-icon">📊</div><div class="nav-label">Hafta</div></div>
+  <div class="nav-item" onclick="showPage('ay',this)"><div class="nav-icon">📅</div><div class="nav-label">Ay</div></div>
+  <div class="nav-item" onclick="showPage('rozetler',this)"><div class="nav-icon">🏅</div><div class="nav-label">Rozetler</div></div>
+</div>
+
+<script>
+const TASKS={
+  haftaici:[
+    {s:"🌅 Sabah Rutini",items:[
+      {id:"a1",t:"Uyan, yüzünü yıka",y:1},
+      {id:"a2",t:"Giy ve hazırlan",y:1},
+      {id:"a3",t:"Kahvaltı yap",y:1},
+      {id:"a4",t:"Çantanı kontrol et",y:1}
+    ]},
+    {s:"🕌 Dini Görevler",items:[
+      {id:"b1",t:"Kuran oku — 1. ayet",y:1},
+      {id:"b2",t:"Kuran oku — 2. ayet",y:1},
+      {id:"b3",t:"Babamla 1 vakit namaz kıl",y:2}
+    ]},
+    {s:"📖 Öğrenme",items:[
+      {id:"c1",t:"Ödevini yap",y:2},
+      {id:"c2",t:"66 sayfa kitap oku",y:1},
+      {id:"c3",t:"2 İngilizce kelime öğren",y:2},
+      {id:"c4",t:"Haftalık rozet konusunu çalış",y:2},
+      {id:"c5",t:"MentalUp — 5 bölüm oyna",y:1}
+    ]},
+    {s:"💪 Fiziksel",items:[
+      {id:"d1",t:"Şınav + mekik yap",y:2},
+      {id:"d2",t:"15 dk açık hava / hareket",y:2}
+    ]},
+    {s:"🏠 Sorumluluk",items:[
+      {id:"e1",t:"Odasını topla",y:1},
+      {id:"e2",t:"Yatağını topla",y:1},
+      {id:"e3",t:"Akşam yemeği — tabağını götür",y:1}
+    ]},
+    {s:"🌙 Akşam Rutini",items:[
+      {id:"f1",t:"Diş fırçala",y:1},
+      {id:"f2",t:"Ertesi gün çantanı hazırla",y:1},
+      {id:"f3",t:"Masal veya Kuran dinle",y:1},
+      {id:"f4",t:"Duanı yap",y:1}
+    ]}
+  ],
+  haftasonu:[
+    {s:"🌅 Sabah Rutini",items:[
+      {id:"s1",t:"Uyan, yüzünü yıka",y:1},
+      {id:"s2",t:"Giy ve hazırlan",y:1},
+      {id:"s3",t:"Kahvaltı yap",y:1}
+    ]},
+    {s:"🕌 Dini Görevler",items:[
+      {id:"s4",t:"Kuran oku — 1. ayet",y:1},
+      {id:"s5",t:"Kuran oku — 2. ayet",y:1},
+      {id:"s4b",t:"Kuran oku — 3. ayet",y:1},
+      {id:"s4c",t:"Kuran oku — 4. ayet",y:1},
+      {id:"s4d",t:"Kuran oku — 5. ayet",y:1},
+      {id:"s6",t:"Babamla 1 vakit namaz kıl",y:2}
+    ]},
+    {s:"🦕 Keşif ve Öğrenme",items:[
+      {id:"s7a",t:"Kitap oku — 1-30. sayfa",y:1},
+      {id:"s7b",t:"Kitap oku — 31-60. sayfa",y:1},
+      {id:"s7c",t:"Kitap oku — 61-90. sayfa",y:1},
+      {id:"s8",t:"Haftanın dinozoru — 3 bilgi söyle",y:2},
+      {id:"s9",t:"Haftanın belgeseli — 3 şey anlat",y:2},
+      {id:"s10",t:"Lego serbest yapı — fotoğrafını çek",y:2},
+      {id:"s11",t:"Rozet konusunu tekrar et",y:2},
+      {id:"s12",t:"MentalUp — 10 bölüm oyna",y:2}
+    ]},
+    {s:"⚽ Fiziksel ve Sosyal",items:[
+      {id:"s13",t:"Arkadaşlarla oyun / park / dışarı",y:2},
+      {id:"s14",t:"Şınav + mekik yap",y:2}
+    ]},
+    {s:"🏠 Sorumluluk",items:[
+      {id:"s15",t:"Odasını topla",y:1},
+      {id:"s16",t:"Yatağını topla",y:1},
+      {id:"s17",t:"Akşam yemeği — tabağını götür",y:1}
+    ]},
+    {s:"🌙 Akşam Rutini",items:[
+      {id:"s18",t:"Diş fırçala",y:1},
+      {id:"s19",t:"Masal veya Kuran dinle",y:1},
+      {id:"s20",t:"Duanı yap",y:1}
+    ]}
+  ]
+};
+
+const BADGES=[
+  {id:"r1",icon:"⭐",name:"İlk gün",cond:"1 gün tamamla",check:(d,s)=>d.length>=1},
+  {id:"r2",icon:"🦁",name:"3 gün savaşçı",cond:"3 gün tamamla",check:(d,s)=>d.length>=3},
+  {id:"r3",icon:"⚡",name:"Hafta kahramanı",cond:"7 gün tamamla",check:(d,s)=>d.length>=7},
+  {id:"r4",icon:"🔥",name:"Yıldız toplayıcı",cond:"100 yıldız biriktir",check:(d,s)=>s>=100},
+  {id:"r5",icon:"🏆",name:"300 yıldız",cond:"300 yıldız biriktir",check:(d,s)=>s>=300},
+  {id:"r6",icon:"👑",name:"Ay şampiyonu",cond:"448 aylık yıldız",check:(d,s)=>s>=448},
+  {id:"r7",icon:"📚",name:"Kitap kurdu",cond:"7 gün kitap oku",check:(d,s,st)=>(st.book||0)>=7},
+  {id:"r8",icon:"🦕",name:"Dinozor bilgesi",cond:"4 haftanın dinozoru",check:(d,s,st)=>(st.dino||0)>=4},
+  {id:"r9",icon:"🙏",name:"Namaz yolcusu",cond:"7 gün namaz",check:(d,s,st)=>(st.namaz||0)>=7},
+  {id:"r10",icon:"🎤",name:"Sunum ustası",cond:"İlk sunum",check:(d,s,st)=>(st.pres||0)>=1},
+  {id:"r11",icon:"🌍",name:"30 gün efsane",cond:"30 gün tamamla",check:(d,s)=>d.length>=30},
+  {id:"r12",icon:"🎯",name:"Hedef avcısı",cond:"1000 yıldız biriktir",check:(d,s)=>s>=1000}
+];
+
+var ST={mode:'haftaici',done:{},days:[],stats:{book:0,dino:0,namaz:0,pres:0},weeklyDone:{}};
+
+const WEEKLY_GOALS=[
+  {id:"wg1",label:"Saatleri öğren",stars:5,week:1},
+  {id:"wg2",label:"İngilizce günleri ezberle",stars:5,week:1},
+  {id:"wg3",label:"İngilizce ayları ezberle",stars:5,week:2},
+  {id:"wg4",label:"Sunum yap",stars:3,week:0},
+  {id:"wg5",label:"Kitap bonusu — 450 sayfa",stars:5,week:0},
+  {id:"wg6",label:"İstiklal Marşı — 1. kıta",stars:5,week:0},
+  {id:"wg7",label:"İstiklal Marşı — 2. kıta",stars:5,week:0},
+  {id:"wg8",label:"İstiklal Marşı — 3. kıta",stars:5,week:0},
+  {id:"wg9",label:"İstiklal Marşı — 4. kıta",stars:5,week:0},
+  {id:"wg10",label:"İstiklal Marşı — 5. kıta",stars:5,week:0},
+];
+
+function load(){try{var r=localStorage.getItem('ey_v3');if(r){var p=JSON.parse(r);ST.days=p.days||[];ST.stats=p.stats||{book:0,dino:0,namaz:0,pres:0};ST.weeklyDone=p.weeklyDone||{};}}catch(e){}}
+function save(){try{localStorage.setItem('ey_v3',JSON.stringify({days:ST.days,stats:ST.stats,weeklyDone:ST.weeklyDone}));}catch(e){}}
+function getTasks(){return TASKS[ST.mode];}
+function calcStars(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){if(ST.done[t.id])s+=t.y;});});return s;}
+function calcMax(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){s+=t.y;});});return s;}
+function calcDone(){var d=0,total=0;getTasks().forEach(function(sec){total+=sec.items.length;sec.items.forEach(function(t){if(ST.done[t.id])d++;});});return{d:d,total:total};}
+function totalAllStars(){return ST.days.reduce(function(a,b){return a+b.stars;},0);}
+
+function setMode(m,el){
+  ST.mode=m;ST.done={};
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  renderToday();
+}
+
+function showPage(p,el){
+  document.querySelectorAll('.page').forEach(function(pg){pg.classList.remove('active');});
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  el.classList.add('active');
+  if(p==='hafta')renderWeek();
+  if(p==='ay')renderMonth();
+  if(p==='rozetler')renderBadges();
+}
+
+function saveDay(){
+  var stars=calcStars();
+  if(stars===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
+  var today=new Date().toISOString().slice(0,10);
+  var idx=ST.days.findIndex(function(d){return d.date===today;});
+  if(idx>=0)ST.days[idx].stars=stars;
+  else ST.days.push({date:today,stars:stars,mode:ST.mode});
+  if(ST.done['b3']||ST.done['s6'])ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
+  if(ST.done['c2']||ST.done['s7'])ST.stats.book=Math.min((ST.stats.book||0)+1,999);
+  if(ST.done['s8'])ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
+  save();
+  alert('Gün kaydedildi! '+stars+' yıldız kazandın!');
+}
+
+function resetToday(){
+  if(confirm('Bugünkü görevler ve kaydedilen veriler sıfırlansın mı?')){
+    ST.done={};
+    var today=new Date().toISOString().slice(0,10);
+    ST.days=ST.days.filter(function(d){return d.date!==today;});
+    save();
+    renderToday();
+  }
+}
+
+function renderToday(){
+  var stars=calcStars();var max=calcMax();
+  var res=calcDone();var d=res.d;var total=res.total;
+  var pct=max>0?Math.round(stars/max*100):0;
+  document.getElementById('today-stars').textContent=stars;
+  document.getElementById('m-done').textContent=d;
+  document.getElementById('m-left').textContent=total-d;
+  document.getElementById('m-pct').textContent='%'+pct;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-left').textContent=stars+' yıldız';
+  document.getElementById('prog-right').textContent='hedef: '+max;
+  document.getElementById('celebration').className='celebration'+(d>0&&d===total?' show':'');
+  var area=document.getElementById('tasks-area');area.innerHTML='';
+  getTasks().forEach(function(sec){
+    var sh=document.createElement('div');sh.className='section-header';
+    sh.innerHTML='<div class="section-dot"></div><div class="section-label">'+sec.s+'</div>';
+    area.appendChild(sh);
+    sec.items.forEach(function(task){
+      var isDone=!!ST.done[task.id];
+      var el=document.createElement('div');
+      el.className='task-card'+(isDone?' done':'');
+      el.setAttribute('data-id',task.id);
+      el.setAttribute('data-stars',task.y);
+      el.onclick=function(){ST.done[task.id]=!ST.done[task.id];renderToday();};
+      var starsStr='⭐'.repeat(task.y)+' +'+task.y;
+      el.innerHTML='<div class="task-chk">'+(isDone?'✓':'')+'</div><div class="task-body"><div class="task-text">'+task.t+'</div></div><span class="star-badge">'+starsStr+'</span>';
+      area.appendChild(el);
+    });
+  });
+}
+
+function renderWeek(){
+  var dayNames=['Pzt','Sal','Car','Per','Cum','Cmt','Paz'];
+  var today=new Date();var todayStr=today.toISOString().slice(0,10);
+  var dow=today.getDay();
+  var weekStart=new Date(today);weekStart.setDate(today.getDate()-(dow===0?6:dow-1));
+  var cum=0;var weekTotal=0;
+  var chart=document.getElementById('week-chart');chart.innerHTML='';
+  for(var i=0;i<7;i++){
+    var d=new Date(weekStart);d.setDate(weekStart.getDate()+i);
+    var ds=d.toISOString().slice(0,10);
+    var isPast=d<=today;
+    var found=ST.days.find(function(x){return x.date===ds;});
+    var dayStars=found?found.stars:0;
+    if(isPast){cum+=dayStars;weekTotal+=dayStars;}
+    var isToday=ds===todayStr;
+    var displayCum=isPast?cum:0;
+    var barW=displayCum>0?Math.min(Math.round(displayCum/160*100),100):0;
+    var div=document.createElement('div');div.className='day-bar';
+    var label=isPast?(displayCum+' yildiz'):'—';
+    div.innerHTML='<div class="day-bar-top"><span>'+dayNames[i]+(isToday?' (bugun)':'')+'</span><span>'+label+'</span></div><div class="day-bar-bg"><div class="day-bar-fill'+(isToday?' today':'')+'" style="width:'+barW+'%">'+(displayCum>15?displayCum:'')+'</div></div>';
+    chart.appendChild(div);
+  }
+  var wPct=Math.min(Math.round(weekTotal/112*100),100);
+  document.getElementById('w-stars').textContent=weekTotal;
+  document.getElementById('w-pct').textContent='%'+wPct;
+  document.getElementById('w-prog-fill').style.width=wPct+'%';
+  document.getElementById('w-prog-l').textContent=weekTotal+' / 146';
+  renderWeeklyGoals(weekTotal);}
+
+function renderWeeklyGoals(weekTotal){
+  var list=document.getElementById('weekly-goals-list');
+  if(!list)return;
+  list.innerHTML='';
+  var weekKey=getWeekKey();
+  var extraStars=0;
+  WEEKLY_GOALS.forEach(function(g){
+    var key=weekKey+'_'+g.id;
+    var isDone=!!ST.weeklyDone[key];
+    if(isDone)extraStars+=g.stars;
+    var el=document.createElement('div');
+    el.className='wgoal'+(isDone?' done':'');
+    el.onclick=function(){
+      if(ST.weeklyDone[key]){delete ST.weeklyDone[key];}
+      else{ST.weeklyDone[key]=true;}
+      save();
+      renderWeeklyGoals(weekTotal);
+      updateWeekTotals();
+    };
+    el.innerHTML='<div class="wgoal-chk">'+(isDone?'✓':'')+'</div><div class="wgoal-label">'+g.label+'</div><span class="wgoal-stars">+'+g.stars+' ⭐</span>';
+    list.appendChild(el);
+  });
+  updateWeekTotals();}
+
+function updateWeekTotals(){
+  var weekKey=getWeekKey();
+  var extra=0;
+  WEEKLY_GOALS.forEach(function(g){if(ST.weeklyDone[weekKey+'_'+g.id])extra+=g.stars;});
+  var base=parseInt(document.getElementById('w-stars').textContent)||0;
+  var grand=base+extra;
+  var pct=Math.min(Math.round(grand/146*100),100);
+  document.getElementById('w-pct').textContent='%'+pct;
+  document.getElementById('w-prog-fill').style.width=pct+'%';
+  document.getElementById('w-prog-l').textContent=grand+' / 146 (ekstra: +'+extra+')';}
+
+function getWeekKey(){
+  var now=new Date();
+  var dow=now.getDay();
+  var start=new Date(now);
+  start.setDate(now.getDate()-(dow===0?6:dow-1));
+  return start.toISOString().slice(0,10);
+}
+
+function renderMonth(){
+  var today=new Date();var todayStr=today.toISOString().slice(0,10);
+  var year=today.getFullYear();var month=today.getMonth();
+  var monthNames=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var dayNames=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+  document.getElementById('month-label').textContent=monthNames[month]+' '+year;
+  var grid=document.getElementById('monthly-grid');grid.innerHTML='';
+  var firstDay=new Date(year,month,1);var lastDay=new Date(year,month+1,0);
+  var weeks=[];var week=new Array(7).fill(null);
+  var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
+  for(var i=0;i<startDow;i++)week[i]={empty:true};
+  var d=new Date(firstDay);
+  while(d.getMonth()===month){
+    var dow2=d.getDay()===0?6:d.getDay()-1;
+    var ds=d.toISOString().slice(0,10);
+    var found=ST.days.find(function(x){return x.date===ds;});
+    week[dow2]={day:d.getDate(),date:ds,stars:found?found.stars:0,isToday:ds===todayStr};
+    if(dow2===6||d.getDate()===lastDay.getDate()){weeks.push(week.slice());week=new Array(7).fill(null);}
+    d.setDate(d.getDate()+1);
+  }
+  var monthTotal=0;
+  ST.days.forEach(function(dd){var dt=new Date(dd.date);if(dt.getMonth()===month&&dt.getFullYear()===year)monthTotal+=dd.stars;});
+  document.getElementById('ay-stars').textContent=monthTotal;
+  document.getElementById('ay-pct').textContent='%'+Math.min(Math.round(monthTotal/584*100),100);
+  document.getElementById('ay-stars').textContent=monthTotal;
+  weeks.forEach(function(wk,wi){
+    var wkStars=0;wk.forEach(function(c){if(c&&!c.empty)wkStars+=c.stars||0;});
+    var block=document.createElement('div');block.className='week-block';
+    var hdr=document.createElement('div');hdr.className='week-block-header';
+    hdr.innerHTML='<span>'+(wi+1)+'. Hafta</span>'+(wkStars>0?'<span>⭐ '+wkStars+'</span>':'');
+    block.appendChild(hdr);
+    var dg=document.createElement('div');dg.className='week-days-grid';
+    wk.forEach(function(cell,ci){
+      var ce=document.createElement('div');
+      if(!cell||cell.empty){ce.className='day-cell empty';ce.innerHTML='<div class="day-cell-name">'+dayNames[ci]+'</div>';}
+      else{ce.className='day-cell'+(cell.isToday?' today':'');ce.innerHTML='<div class="day-cell-name">'+dayNames[ci]+'</div><div class="day-cell-num">'+cell.day+'</div><div class="day-cell-star">'+(cell.stars>0?'⭐'+cell.stars:'')+'</div>';}
+      dg.appendChild(ce);
+    });
+    block.appendChild(dg);grid.appendChild(block);
+  });
+}
+
+function renderBadges(){
+  var total=totalAllStars();
+  var grid=document.getElementById('rozet-grid');grid.innerHTML='';
+  BADGES.forEach(function(b){
+    var earned=b.check(ST.days,total,ST.stats);
+    var el=document.createElement('div');el.className='rozet-card'+(earned?' earned':'');
+    el.innerHTML='<div class="rozet-icon">'+b.icon+'</div><div class="rozet-name">'+b.name+'</div><div class="rozet-cond">'+b.cond+'</div>';
+    grid.appendChild(el);
+  });
+}
+
+function setDate(){
+  var days=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  var months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  var now=new Date();
+  document.getElementById('date-label').textContent=days[now.getDay()]+', '+now.getDate()+' '+months[now.getMonth()]+' '+now.getFullYear();
+}
+
+load();setDate();renderToday();
+</script>
+</body>
+</html>
