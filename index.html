@@ -166,7 +166,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page-header">
     <div class="header-top">
       <div><div class="header-name">🦕 Emir Yavuz</div><div class="header-sub" id="date-label" onclick="toggleWeekPicker()" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px">Yükleniyor...</div></div>
-      <div class="header-star-box"><div class="header-star-count" id="today-stars">0</div><div class="header-star-label">⭐ bugün</div></div>
+      <div style="display:flex;gap:8px">
+        <div class="header-star-box"><div class="header-star-count" id="today-stars">0</div><div class="header-star-label">günlük</div></div>
+        <div class="header-star-box" style="background:rgba(255,255,255,0.15)"><div class="header-star-count" id="weekly-stars-h">0</div><div class="header-star-label">haftalık</div></div>
+        <div class="header-star-box" style="background:rgba(255,255,255,0.1)"><div class="header-star-count" id="monthly-stars-h">0</div><div class="header-star-label">aylık</div></div>
+      </div>
     </div>
     <div class="sync-bar"><div class="sync-dot ok" id="sync-dot"></div><span id="sync-label">Bağlanıyor...</span></div>
   </div>
@@ -419,7 +423,7 @@ function getMonthKey(){
 }
 
 function autoSave(){
-  var stars=calcStars()+calcExtraStars();
+  var stars=calcStars(); // Sadece günlük görev yıldızları
   var today=new Date().toISOString().slice(0,10);
   var weekKey=getWeekKey();var monthKey=getMonthKey();
   if(ST.done['b3']||ST.done['s6'])ST.stats.namaz=Math.min((ST.stats.namaz||0)+1,999);
@@ -430,6 +434,11 @@ function autoSave(){
   ST.stats.weeklyExtra[weekKey]=ST.weeklyExtra;
   if(!ST.stats.monthlyExtra)ST.stats.monthlyExtra={};
   ST.stats.monthlyExtra[monthKey]=ST.monthlyExtra;
+  // Haftalık ve aylık ekstra yıldızları ayrıca sakla
+  ST.stats.weeklyStars=ST.stats.weeklyStars||{};
+  ST.stats.weeklyStars[weekKey]=calcWeeklyExtraStars();
+  ST.stats.monthlyStars=ST.stats.monthlyStars||{};
+  ST.stats.monthlyStars[getMonthKey()]=calcMonthlyExtraStars();
   setSyncStatus('syncing','Kaydediliyor...');
   fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today,{
     method:'DELETE',
@@ -445,10 +454,22 @@ function autoSave(){
 }
 
 function saveDay(){
-  var stars=calcStars()+calcExtraStars();
-  if(stars===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
+  var daily=calcStars();var weekly=calcWeeklyExtraStars();var monthly=calcMonthlyExtraStars();
+  if(daily===0&&weekly===0&&monthly===0){alert('Henüz hiçbir görev tamamlanmadı!');return;}
   autoSave();
-  setTimeout(function(){alert('Kaydedildi! '+stars+' yıldız ⭐');},400);
+  setTimeout(function(){
+    var msg='Kaydedildi! ⭐
+
+Günlük: '+daily+' yıldız';
+    if(weekly>0)msg+='
+Haftalık ekstra: +'+weekly+' yıldız';
+    if(monthly>0)msg+='
+Aylık ekstra: +'+monthly+' yıldız';
+    msg+='
+
+Toplam bugün: '+(daily+weekly+monthly)+' yıldız';
+    alert(msg);
+  },400);
 }
 
 function resetToday(){
@@ -470,9 +491,14 @@ function calcMax(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(fu
 function calcDone(){var d=0,total=0;getTasks().forEach(function(sec){total+=sec.items.length;sec.items.forEach(function(t){if(ST.done[t.id])d++;});});return{d:d,total:total};}
 function totalAllStars(){return ST.days.reduce(function(a,b){return a+b.stars;},0);}
 
-function calcExtraStars(){
+function calcWeeklyExtraStars(){
   var s=0;
   WEEKLY_EXTRAS.forEach(function(e){if(ST.weeklyExtra[e.id])s+=e.y;});
+  return s;
+}
+
+function calcMonthlyExtraStars(){
+  var s=0;
   MONTHLY_EXTRAS.forEach(function(e){
     if(e.type==='check'&&ST.monthlyExtra[e.id])s+=e.y;
     else if(e.type==='kita'){var v=ST.monthlyExtra[e.id]||0;s+=v*e.y;}
@@ -482,6 +508,10 @@ function calcExtraStars(){
     }
   });
   return s;
+}
+
+function calcExtraStars(){
+  return calcWeeklyExtraStars()+calcMonthlyExtraStars();
 }
 
 function setMode(m,el){
@@ -506,12 +536,16 @@ function renderToday(){
   var stars=calcStars();var extra=calcExtraStars();var total=stars+extra;
   var max=calcMax();var res=calcDone();var d=res.d;var tot=res.total;
   var pct=max>0?Math.round(stars/max*100):0;
-  document.getElementById('today-stars').textContent=total;
+  var wExtra=calcWeeklyExtraStars();
+  var mExtra=calcMonthlyExtraStars();
+  document.getElementById('today-stars').textContent=stars;
+  var wh=document.getElementById('weekly-stars-h');if(wh)wh.textContent=wExtra;
+  var mh=document.getElementById('monthly-stars-h');if(mh)mh.textContent=mExtra;
   document.getElementById('m-done').textContent=d;
   document.getElementById('m-left').textContent=tot-d;
   document.getElementById('m-pct').textContent='%'+pct;
   document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-left').textContent=stars+' yıldız'+(extra>0?' (+'+extra+' ekstra)':'');
+  document.getElementById('prog-left').textContent=stars+' günlük'+(wExtra>0?' · '+wExtra+' haftalık':'')+(mExtra>0?' · '+mExtra+' aylık':'');
   document.getElementById('prog-right').textContent='hedef: '+max;
   document.getElementById('celebration').className='celebration'+(d>0&&d===tot?' show':'');
   var area=document.getElementById('tasks-area');area.innerHTML='';
@@ -623,10 +657,12 @@ function renderWeek(){
     chart.appendChild(div);
   }
   var wPct=Math.min(Math.round(weekTotal/112*100),100);
-  document.getElementById('w-stars').textContent=weekTotal;
-  document.getElementById('w-pct').textContent='%'+wPct;
-  document.getElementById('w-prog-fill').style.width=wPct+'%';
-  document.getElementById('w-prog-l').textContent=weekTotal+' / 112';
+  var wExtraTotal=calcWeeklyExtraStars();
+  var grandTotal=weekTotal+wExtraTotal;
+  document.getElementById('w-stars').textContent=grandTotal;
+  document.getElementById('w-pct').textContent='%'+Math.min(Math.round(grandTotal/112*100),100);
+  document.getElementById('w-prog-fill').style.width=Math.min(Math.round(grandTotal/112*100),100)+'%';
+  document.getElementById('w-prog-l').textContent=weekTotal+' günlük'+(wExtraTotal>0?' + '+wExtraTotal+' ekstra':'')+' = '+grandTotal+' / 112';
 
   // Haftalık ekstra durum
   var ws=document.getElementById('w-extra-status');ws.innerHTML='';
