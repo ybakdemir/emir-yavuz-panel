@@ -243,6 +243,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .wp-day.is-today .wp-day-star{color:rgba(255,255,255,0.85)}
 .page{display:none}
 .page.active{display:block}
+
+/* ÖDÜL SİSTEMİ */
+.odul-section{margin:0 16px 20px}
+.odul-section-title{font-size:13px;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.odul-progress-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:10px;border:2px solid transparent;transition:all 0.3s}
+.odul-progress-card.achieved{border-color:var(--amber);background:var(--amber-light)}
+.odul-progress-card.current{border-color:var(--teal)}
+.odul-card-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.odul-medal{font-size:32px;flex-shrink:0}
+.odul-info{flex:1}
+.odul-title{font-size:15px;font-weight:700;color:var(--dark)}
+.odul-range{font-size:12px;color:var(--mid);margin-top:2px}
+.odul-prize{font-size:13px;font-weight:600;color:var(--teal-dark);margin-top:4px}
+.odul-prize-achieved{color:var(--amber-dark)}
+.odul-bar-wrap{margin-top:2px}
+.odul-bar-bg{height:10px;background:var(--gray-light);border-radius:5px;overflow:hidden}
+.odul-bar-fill{height:100%;border-radius:5px;transition:width 0.5s}
+.odul-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--mid);margin-top:4px}
+.odul-status-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.badge-achieved{background:#FAEEDA;color:#633806}
+.badge-current{background:var(--teal-light);color:var(--teal-dark)}
+.badge-locked{background:var(--gray-light);color:var(--gray)}
+.odul-summary{background:var(--card);border-radius:var(--radius);padding:16px;margin:0 16px 16px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.odul-summary-title{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--dark)}
+.odul-summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-light);font-size:13px}
+.odul-summary-row:last-child{border-bottom:none}
+.odul-kutla-btn{width:100%;margin-top:12px;padding:13px;background:var(--amber);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer}
+.odul-kutla-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center}
+.odul-kutla-overlay.show{display:flex}
+.odul-kutla-box{background:var(--card);border-radius:var(--radius);padding:28px 24px;width:320px;max-width:90vw;text-align:center}
+.odul-kutla-emoji{font-size:60px;margin-bottom:12px;animation:star-pop 0.5s ease-out}
+.odul-kutla-title{font-size:22px;font-weight:700;color:var(--dark);margin-bottom:8px}
+.odul-kutla-sub{font-size:15px;color:var(--mid);margin-bottom:16px;line-height:1.5}
+.odul-kutla-prize{background:var(--amber-light);border-radius:var(--radius-sm);padding:14px;font-size:16px;font-weight:700;color:var(--amber-dark);margin-bottom:20px}
+.odul-kutla-close{width:100%;padding:12px;background:var(--teal);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
@@ -349,6 +384,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page-title">🏅 Rozetlerim</div>
   <div class="rozet-grid" id="rozet-grid"></div>
 </div>
+
+<!-- ÖDÜLLER -->
+<div id="page-oduller" class="page">
+  <div class="page-title">🎁 Ödül Sistemi</div>
+  <div id="odul-content"></div>
+</div>
 </div>
 
 <!-- YILDIZ DETAY -->
@@ -398,6 +439,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<!-- ÖDÜL KUTLAMA -->
+<div class="odul-kutla-overlay" id="odul-kutla-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="odul-kutla-box">
+    <div class="odul-kutla-emoji" id="odul-kutla-emoji">🥇</div>
+    <div class="odul-kutla-title" id="odul-kutla-title"></div>
+    <div class="odul-kutla-sub" id="odul-kutla-sub"></div>
+    <div class="odul-kutla-prize" id="odul-kutla-prize"></div>
+    <button class="odul-kutla-close" onclick="document.getElementById('odul-kutla-overlay').classList.remove('show')">Harika! 🎉</button>
+  </div>
+</div>
+
 <!-- HAFTA PİCKER -->
 <div class="wp-overlay" id="wp" onclick="if(event.target===this)closeWP()">
   <div class="wp-box">
@@ -416,6 +468,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="nav-item" onclick="showPage('hafta',this)"><div class="nav-icon">📊</div><div class="nav-label">Hafta</div></div>
   <div class="nav-item" onclick="showPage('ay',this)"><div class="nav-icon">📅</div><div class="nav-label">Ay</div></div>
   <div class="nav-item" onclick="showPage('rozetler',this)"><div class="nav-icon">🏅</div><div class="nav-label">Rozetler</div></div>
+  <div class="nav-item" onclick="showPage('oduller',this)"><div class="nav-icon">🎁</div><div class="nav-label">Ödüller</div></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -639,7 +692,7 @@ function showPage(p,el){
   document.getElementById('page-'+p).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   el.classList.add('active');
-  if(p==='hafta')renderWeek();if(p==='ay')renderMonth();if(p==='rozetler')renderBadges();
+  if(p==='hafta')renderWeek();if(p==='ay')renderMonth();if(p==='rozetler')renderBadges();if(p==='oduller')renderOduller();
 }
 
 // ── KAYDET ───────────────────────────────────────────────────────
@@ -963,6 +1016,138 @@ function saveModalEdit(){
   ST.days.sort(function(a,b){return a.date.localeCompare(b.date);});
   persist();closeModal();renderMonth();renderStreak();renderLevel();
   alert('Kaydedildi! '+MODAL_DATE+' için '+stars+' yıldız.');
+}
+
+// ── ÖDÜL SİSTEMİ ─────────────────────────────────────────────────
+var HAFTALIK_MAX=160;
+var AYLIK_MAX=650;
+
+var HAFTALIK_ODULLER=[
+  {id:"h1",medal:"🥉",title:"Bronz Hafta",range:"130–140 yıldız",min:130,max:140,prize:"Para kutusuna 200 TL",color:"#CD7F32",barColor:"#CD7F32"},
+  {id:"h2",medal:"🥈",title:"Gümüş Hafta",range:"140–150 yıldız",min:140,max:150,prize:"Para kutusuna 400 TL",color:"#C0C0C0",barColor:"#888"},
+  {id:"h3",medal:"🥇",title:"Altın Hafta",range:"150–160 yıldız",min:150,max:160,prize:"Para kutusuna 750 TL",color:"#FFD700",barColor:"#BA7517"}
+];
+
+var AYLIK_ODULLER=[
+  {id:"a1",medal:"🥉",title:"Bronz Ay",range:"500–550 yıldız",min:500,max:550,prize:"5 kitap (sen seçersin!)",color:"#CD7F32",barColor:"#CD7F32"},
+  {id:"a2",medal:"🥈",title:"Gümüş Ay",range:"550–600 yıldız",min:550,max:600,prize:"Seçeceğin bir oyuncak 🦕",color:"#C0C0C0",barColor:"#888"},
+  {id:"a3",medal:"🥇",title:"Altın Ay",range:"600–650 yıldız",min:600,max:650,prize:"Seçeceğin özel etkinlik 🎉",color:"#FFD700",barColor:"#BA7517"}
+];
+
+function getHaftalikStars(){return calcWeekTotal();}
+function getAylikStars(){return calcMonthTotal();}
+
+function getOdulStatus(stars,odul){
+  if(stars>=odul.min)return 'achieved';
+  if(stars>=odul.min-30)return 'current';
+  return 'locked';
+}
+
+function renderOduller(){
+  var hStars=getHaftalikStars();
+  var aStars=getAylikStars();
+  var c=document.getElementById('odul-content');c.innerHTML='';
+
+  // Haftalık özet
+  var hSum=document.createElement('div');hSum.className='odul-summary';
+  var hAchieved=HAFTALIK_ODULLER.filter(function(o){return hStars>=o.min;});
+  var hBest=hAchieved.length>0?hAchieved[hAchieved.length-1]:null;
+  hSum.innerHTML='<div class="odul-summary-title">📊 Bu Hafta Özeti</div>'
+    +'<div class="odul-summary-row"><span style="color:var(--mid)">Toplanan yıldız</span><span style="font-weight:700;font-size:16px">⭐ '+hStars+' / '+HAFTALIK_MAX+'</span></div>'
+    +'<div class="odul-summary-row"><span style="color:var(--mid)">Kazanılan ödül</span><span style="font-weight:600;color:var(--amber-dark)">'+(hBest?hBest.medal+' '+hBest.title:'Henüz yok')+'</span></div>'
+    +'<div class="odul-summary-row"><span style="color:var(--mid)">Bir üst ödüle kalan</span><span style="font-weight:600;color:var(--teal-dark)">'+(function(){
+      var next=HAFTALIK_ODULLER.find(function(o){return hStars<o.min;});
+      return next?(o.min-hStars)+' yıldız':'Maksimum ödül kazanıldı! 🏆';
+      function o(){return next;}
+    }())+'</span></div>';
+  if(hBest){
+    var btn=document.createElement('button');btn.className='odul-kutla-btn';
+    btn.textContent='🎉 '+hBest.prize+' — Kutla!';
+    btn.onclick=function(){kutla(hBest,'haftalik',hStars);};
+    hSum.appendChild(btn);
+  }
+  c.appendChild(hSum);
+
+  // Haftalık ödül kartları
+  var hSec=document.createElement('div');hSec.className='odul-section';
+  hSec.innerHTML='<div class="odul-section-title">📅 Haftalık Ödüller</div>';
+  HAFTALIK_ODULLER.forEach(function(o){
+    var status=getOdulStatus(hStars,o);
+    var pct=Math.min(Math.round(hStars/o.max*100),100);
+    var card=document.createElement('div');card.className='odul-progress-card '+status;
+    var statusText=status==='achieved'?'✓ Kazanıldı!':status==='current'?'Devam ediyor':'Kilitli 🔒';
+    var statusClass=status==='achieved'?'badge-achieved':status==='current'?'badge-current':'badge-locked';
+    card.innerHTML='<div class="odul-card-top">'
+      +'<div class="odul-medal">'+o.medal+'</div>'
+      +'<div class="odul-info">'
+        +'<div class="odul-title">'+o.title+'</div>'
+        +'<div class="odul-range">'+o.range+'</div>'
+        +'<div class="odul-prize'+(status==='achieved'?' odul-prize-achieved':'')+'">🎁 '+o.prize+'</div>'
+      +'</div>'
+      +'<span class="odul-status-badge '+statusClass+'">'+statusText+'</span>'
+      +'</div>'
+      +'<div class="odul-bar-wrap">'
+        +'<div class="odul-bar-bg"><div class="odul-bar-fill" style="width:'+pct+'%;background:'+o.barColor+'"></div></div>'
+        +'<div class="odul-bar-label"><span>'+hStars+' yıldız</span><span>Hedef: '+o.min+'</span></div>'
+      +'</div>';
+    hSec.appendChild(card);
+  });
+  c.appendChild(hSec);
+
+  // Aylık özet
+  var aSum=document.createElement('div');aSum.className='odul-summary';
+  var aAchieved=AYLIK_ODULLER.filter(function(o){return aStars>=o.min;});
+  var aBest=aAchieved.length>0?aAchieved[aAchieved.length-1]:null;
+  aSum.innerHTML='<div class="odul-summary-title">🗓 Bu Ay Özeti</div>'
+    +'<div class="odul-summary-row"><span style="color:var(--mid)">Toplanan yıldız</span><span style="font-weight:700;font-size:16px">⭐ '+aStars+' / '+AYLIK_MAX+'</span></div>'
+    +'<div class="odul-summary-row"><span style="color:var(--mid)">Kazanılan ödül</span><span style="font-weight:600;color:var(--amber-dark)">'+(aBest?aBest.medal+' '+aBest.title:'Henüz yok')+'</span></div>'
+    +'<div class="odul-summary-row"><span style="color:var(--mid)">Bir üst ödüle kalan</span><span style="font-weight:600;color:var(--teal-dark)">'+(function(){
+      var next=AYLIK_ODULLER.find(function(o){return aStars<o.min;});
+      return next?(next.min-aStars)+' yıldız':'Maksimum ödül kazanıldı! 🏆';
+    }())+'</span></div>';
+  if(aBest){
+    var btnA=document.createElement('button');btnA.className='odul-kutla-btn';
+    btnA.textContent='🎉 '+aBest.prize+' — Kutla!';
+    btnA.onclick=function(){kutla(aBest,'aylik',aStars);};
+    aSum.appendChild(btnA);
+  }
+  c.appendChild(aSum);
+
+  // Aylık ödül kartları
+  var aSec=document.createElement('div');aSec.className='odul-section';
+  aSec.innerHTML='<div class="odul-section-title">📅 Aylık Ödüller</div>';
+  AYLIK_ODULLER.forEach(function(o){
+    var status=getOdulStatus(aStars,o);
+    var pct=Math.min(Math.round(aStars/o.max*100),100);
+    var card=document.createElement('div');card.className='odul-progress-card '+status;
+    var statusText=status==='achieved'?'✓ Kazanıldı!':status==='current'?'Devam ediyor':'Kilitli 🔒';
+    var statusClass=status==='achieved'?'badge-achieved':status==='current'?'badge-current':'badge-locked';
+    card.innerHTML='<div class="odul-card-top">'
+      +'<div class="odul-medal">'+o.medal+'</div>'
+      +'<div class="odul-info">'
+        +'<div class="odul-title">'+o.title+'</div>'
+        +'<div class="odul-range">'+o.range+'</div>'
+        +'<div class="odul-prize'+(status==='achieved'?' odul-prize-achieved':'')+'">🎁 '+o.prize+'</div>'
+      +'</div>'
+      +'<span class="odul-status-badge '+statusClass+'">'+statusText+'</span>'
+      +'</div>'
+      +'<div class="odul-bar-wrap">'
+        +'<div class="odul-bar-bg"><div class="odul-bar-fill" style="width:'+pct+'%;background:'+o.barColor+'"></div></div>'
+        +'<div class="odul-bar-label"><span>'+aStars+' yıldız</span><span>Hedef: '+o.min+'</span></div>'
+      +'</div>';
+    aSec.appendChild(card);
+  });
+  c.appendChild(aSec);
+}
+
+function kutla(odul,tip,stars){
+  shootConfetti();
+  var overlay=document.getElementById('odul-kutla-overlay');
+  document.getElementById('odul-kutla-emoji').textContent=odul.medal;
+  document.getElementById('odul-kutla-title').textContent=odul.title+' Kazandın!';
+  document.getElementById('odul-kutla-sub').textContent=tip==='haftalik'?'Bu hafta '+stars+' yıldız topladın!':'Bu ay '+stars+' yıldız topladın!';
+  document.getElementById('odul-kutla-prize').textContent='🎁 Ödülün: '+odul.prize;
+  overlay.classList.add('show');
 }
 
 // ── ROZETLER ─────────────────────────────────────────────────────
