@@ -167,7 +167,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="star-box" style="background:rgba(255,255,255,0.1)"><div class="star-count" id="s-monthly">0</div><div class="star-label">aylık</div></div>
       </div>
     </div>
-    <div class="sync-bar"><div class="sync-dot ok"></div><span>Yerel depolama aktif</span></div>
+    <div class="sync-bar"><div class="sync-dot" id="sync-dot" style="background:#FFD700"></div><span id="sync-label">Bağlanıyor...</span></div>
   </div>
 
   <div class="metrics">
@@ -277,6 +277,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="nav-item" onclick="showPage('rozetler',this)"><div class="nav-icon">🏅</div><div class="nav-label">Rozetler</div></div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script>
 var TASKS={
   haftaici:[
@@ -340,12 +343,65 @@ function load(){
   }catch(e){}
 }
 
+function loadFromFirebase(){
+  try{
+    var app=firebase.initializeApp({
+      apiKey:"AIzaSyAcp9l9iAADeWxhCVwFEyMvYuAt0_-kN50",
+      authDomain:"ey-daily-monitor.firebaseapp.com",
+      databaseURL:"https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:"ey-daily-monitor",
+      appId:"1:339579721070:web:11afb5741b08718dac1d7f"
+    });
+    window.FB_DB=firebase.database();
+    firebase.auth().signInAnonymously().then(function(){
+      window.FB_DB.ref('data').once('value').then(function(snap){
+        var d=snap.val();
+        if(d){
+          if(d.days&&d.days.length>0) ST.days=d.days;
+          if(d.stats) ST.stats=d.stats;
+          if(d.wExtra) ST.wExtra=d.wExtra;
+          if(d.mExtra) ST.mExtra=d.mExtra;
+          var today=new Date().toISOString().slice(0,10);
+          if(d.today_date===today&&d.today_done){
+            ST.done=d.today_done;
+            ST.mode=d.today_mode||'haftaici';
+            document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+            var idx=ST.mode==='haftasonu'?1:0;
+            var btns=document.querySelectorAll('.mode-btn');
+            if(btns[idx])btns[idx].classList.add('active');
+          }
+          // localStorage'ı da güncelle
+          localStorage.setItem('ey_v5',JSON.stringify({days:ST.days,stats:ST.stats,wExtra:ST.wExtra,mExtra:ST.mExtra}));
+        }
+        document.querySelector('.sync-bar span').textContent='Senkronize edildi ✓';
+        document.querySelector('.sync-dot').style.background='#90EE90';
+        renderToday();
+        renderExtras();
+      });
+    }).catch(function(e){
+      document.querySelector('.sync-bar span').textContent='Çevrimdışı mod';
+    });
+  }catch(e){
+    document.querySelector('.sync-bar span').textContent='Yerel depolama aktif';
+  }
+}
+
 function persist(){
   try{
     localStorage.setItem('ey_v5',JSON.stringify({days:ST.days,stats:ST.stats,wExtra:ST.wExtra,mExtra:ST.mExtra}));
     var today=new Date().toISOString().slice(0,10);
     localStorage.setItem('ey_today_'+today,JSON.stringify({done:ST.done,mode:ST.mode}));
   }catch(e){}
+  // Firebase'e de yaz
+  if(window.FB_DB){
+    try{
+      var today2=new Date().toISOString().slice(0,10);
+      window.FB_DB.ref('data').set({
+        days:ST.days,stats:ST.stats,wExtra:ST.wExtra,mExtra:ST.mExtra,
+        today_done:ST.done,today_mode:ST.mode,today_date:today2
+      });
+    }catch(e){}
+  }
 }
 
 function getWK(){var d=new Date();var dow=d.getDay();var m=new Date(d);m.setDate(d.getDate()-(dow===0?6:dow-1));return m.toISOString().slice(0,10);}
@@ -678,7 +734,7 @@ function setDate(){
   if(btns[idx])btns[idx].classList.add('active');
 }
 
-load();setDate();renderToday();
+load();setDate();renderToday();loadFromFirebase();
 </script>
 </body>
 </html>
