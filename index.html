@@ -294,13 +294,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 var FB_URL='https://ey-daily-monitor-default-rtdb.europe-west1.firebasedatabase.app';
 
 function fbGet(path){
-  return fetch(FB_URL+path+'.json').then(function(r){return r.json();});
+  // Önce Firebase dene, hata olursa localStorage'dan oku
+  return fetch(FB_URL+path+'.json',{mode:'cors'})
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .catch(function(){
+      // Firebase çalışmıyorsa localStorage'dan oku
+      var key='ey'+path.split('/').join('_');
+      var val=localStorage.getItem(key);
+      return val?JSON.parse(val):null;
+    });
 }
 function fbSet(path,data){
-  return fetch(FB_URL+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(r){return r.json();});
+  // localStorage'a her zaman yaz
+  var key='ey'+path.split('/').join('_');
+  localStorage.setItem(key,JSON.stringify(data));
+  // Firebase'e de yazmayı dene
+  return fetch(FB_URL+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),mode:'cors'})
+    .then(function(r){return r.json();})
+    .catch(function(){return data;});
 }
 function fbDelete(path){
-  return fetch(FB_URL+path+'.json',{method:'DELETE'}).then(function(r){return r.json();});
+  var key='ey'+path.split('/').join('_');
+  localStorage.removeItem(key);
+  return fetch(FB_URL+path+'.json',{method:'DELETE',mode:'cors'})
+    .catch(function(){return null;});
 }
 
 // ── GÖREVLER ──────────────────────────────────────────────────────
@@ -410,8 +430,7 @@ function loadFromCloud(){
     renderToday();
     renderExtras();
   }).catch(function(e){
-    setSyncStatus('err','Hata: '+e.message);
-    alert('Firebase hatası: '+e.message);
+    setSyncStatus('err','Çevrimdışı mod');
     renderToday();
     renderExtras();
   });
