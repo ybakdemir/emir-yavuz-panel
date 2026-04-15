@@ -323,11 +323,17 @@ function setSyncStatus(status, msg){
 
 // ── SUPABASE VERİ ÇEKME ──────────────────────────────────────────
 function loadFromCloud(){
-  setSyncStatus('syncing','Veriler yükleniyor...');
-  supaFetch('GET', TABLE + '?select=*&order=tarih.asc')
+  setSyncStatus('syncing','Veriler yukleniyor...');
+  supaFetch('GET', TABLE + '?select=*&order=id.desc')
     .then(function(rows){
-      if(!Array.isArray(rows)){setSyncStatus('err','Bağlantı hatası');return;}
-      ST.days=rows.map(function(r){
+      if(!Array.isArray(rows)){setSyncStatus('err','Baglanti hatasi');return;}
+      // Aynı tarihten birden fazla kayıt varsa sadece en son ID'yi al
+      var seen={};
+      var filtered=[];
+      rows.forEach(function(r){
+        if(!seen[r.tarih]){seen[r.tarih]=true;filtered.push(r);}
+      });
+      ST.days=filtered.map(function(r){
         return {date:r.tarih, stars:r.yildiz, mode:r.mod};
       });
       var lastStats=null;
@@ -336,7 +342,7 @@ function loadFromCloud(){
       setSyncStatus('ok','Senkronize edildi');
       renderToday();
     })
-    .catch(function(){setSyncStatus('err','Bağlantı yok — çevrimdışı');});
+    .catch(function(){setSyncStatus('err','Baglanti yok');});
 }
 
 // ── KAYDET ───────────────────────────────────────────────────────
@@ -348,20 +354,26 @@ function saveDay(){
   if(ST.done['c2']||ST.done['s7']) ST.stats.book=Math.min((ST.stats.book||0)+1,999);
   if(ST.done['s8']) ST.stats.dino=Math.min((ST.stats.dino||0)+1,999);
   setSyncStatus('syncing','Kaydediliyor...');
-  supaFetch('POST', TABLE, {
-    tarih: today,
-    yildiz: stars,
-    mod: ST.mode,
-    stats: ST.stats
-  }).then(function(res){
+  // Önce o güne ait mevcut kaydı sil, sonra yeniden ekle
+  fetch(SUPA_URL+'/rest/v1/'+TABLE+'?tarih=eq.'+today, {
+    method:'DELETE',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  }).then(function(){
+    return supaFetch('POST', TABLE, {
+      tarih: today,
+      yildiz: stars,
+      mod: ST.mode,
+      stats: ST.stats
+    });
+  }).then(function(){
     var idx=ST.days.findIndex(function(d){return d.date===today;});
     if(idx>=0) ST.days[idx].stars=stars;
     else ST.days.push({date:today,stars:stars,mode:ST.mode});
-    setSyncStatus('ok','Kaydedildi! '+stars+' yıldız ☁️');
-    alert('Kaydedildi ve senkronize edildi! '+stars+' yıldız ⭐');
+    setSyncStatus('ok','Kaydedildi! '+stars+' yildiz');
+    alert('Kaydedildi ve senkronize edildi! '+stars+' yildiz');
   }).catch(function(){
-    setSyncStatus('err','Kaydetme hatası');
-    alert('Bağlantı hatası, tekrar dene.');
+    setSyncStatus('err','Kaydetme hatasi');
+    alert('Baglanti hatasi, tekrar dene.');
   });
 }
 
