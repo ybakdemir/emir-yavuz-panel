@@ -410,7 +410,8 @@ function loadFromCloud(){
     renderToday();
     renderExtras();
   }).catch(function(e){
-    setSyncStatus('err','Bağlantı yok — çevrimdışı');
+    setSyncStatus('err','Hata: '+e.message);
+    alert('Firebase hatası: '+e.message);
     renderToday();
     renderExtras();
   });
