@@ -479,17 +479,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 var TASKS={
   haftaici:[
     {s:"🌅 Sabah Rutini",items:[{id:"a1",t:"Uyan, yüzünü yıka",y:1},{id:"a2",t:"Giy ve hazırlan",y:1},{id:"a3",t:"Kahvaltı yap",y:1},{id:"a4",t:"Çantanı kontrol et",y:1}]},
-    {s:"🕌 Dini Görevler",items:[{id:"b1",t:"Kuran oku — 1. ayet",y:1},{id:"b2",t:"Kuran oku — 2. ayet",y:1},{id:"b3",t:"Babamla 1 vakit namaz kıl",y:2}]},
+    {s:"🕌 Dini Görevler",items:[{id:"b1",t:"Kuran oku — 1. ayet",y:1},{id:"b2",t:"Kuran oku — 2. ayet",y:1},{id:"b3",t:"Babamla 1 vakit namaz kıl",y:2},{id:"b4",t:"Kuran dersi (Perşembe)",y:3,gunler:[4]}]},
     {s:"📖 Öğrenme",items:[{id:"c1",t:"Ödevini yap",y:2},{id:"c2",t:"66 sayfa kitap oku",y:1},{id:"c3",t:"2 İngilizce kelime öğren",y:2},{id:"c4",t:"Haftalık rozet konusunu çalış",y:2},{id:"c5",t:"MentalUp — 5 bölüm oyna",y:1}]},
-    {s:"💪 Fiziksel",items:[{id:"d1",t:"Şınav + mekik yap",y:2},{id:"d2",t:"15 dk açık hava / hareket",y:2}]},
+    {s:"💪 Fiziksel",items:[{id:"d1",t:"5 şınav yap 💪",y:1},{id:"d2",t:"5 mekik yap 🔥",y:1},{id:"d3",t:"10 squat yap 🦵",y:1},{id:"d4",t:"15 dk açık hava / hareket",y:2}]},
     {s:"🏠 Sorumluluk",items:[{id:"e1",t:"Odasını topla",y:1},{id:"e2",t:"Yatağını topla",y:1},{id:"e3",t:"Akşam yemeği — tabağını götür",y:1}]},
     {s:"🌙 Akşam Rutini",items:[{id:"f1",t:"Diş fırçala",y:1},{id:"f2",t:"Ertesi gün çantanı hazırla",y:1},{id:"f3",t:"Masal veya Kuran dinle",y:1},{id:"f4",t:"Duanı yap",y:1}]}
   ],
   haftasonu:[
     {s:"🌅 Sabah Rutini",items:[{id:"s1",t:"Uyan, yüzünü yıka",y:1},{id:"s2",t:"Giy ve hazırlan",y:1},{id:"s3",t:"Kahvaltı yap",y:1}]},
-    {s:"🕌 Dini Görevler",items:[{id:"s4",t:"Kuran oku — 1. ayet",y:1},{id:"s5",t:"Kuran oku — 2. ayet",y:1},{id:"s6",t:"Babamla 1 vakit namaz kıl",y:2}]},
+    {s:"🕌 Dini Görevler",items:[{id:"s4",t:"Kuran oku — 1. ayet",y:1},{id:"s5",t:"Kuran oku — 2. ayet",y:1},{id:"s6",t:"Babamla 1 vakit namaz kıl",y:2},{id:"s7k",t:"Kuran dersi (Cumartesi)",y:3,gunler:[6]}]},
     {s:"🦕 Keşif ve Öğrenme",items:[{id:"s7",t:"66 sayfa kitap oku",y:1},{id:"s8",t:"Haftanın dinozoru — 3 bilgi söyle",y:2},{id:"s9",t:"Haftanın belgeseli — 3 şey anlat",y:2},{id:"s10",t:"Lego serbest yapı — fotoğrafını çek",y:2},{id:"s11",t:"Rozet konusunu tekrar et",y:2},{id:"s12",t:"MentalUp — 10 bölüm oyna",y:2}]},
-    {s:"⚽ Fiziksel ve Sosyal",items:[{id:"s13",t:"Arkadaşlarla oyun / park / dışarı",y:2},{id:"s14",t:"Şınav + mekik yap",y:2}]},
+    {s:"⚽ Fiziksel ve Sosyal",items:[{id:"s13",t:"Arkadaşlarla oyun / park / dışarı",y:2},{id:"s14",t:"5 şınav yap 💪",y:1},{id:"s15k",t:"5 mekik yap 🔥",y:1},{id:"s16k",t:"10 squat yap 🦵",y:1}]},
     {s:"🏠 Sorumluluk",items:[{id:"s15",t:"Odasını topla",y:1},{id:"s16",t:"Yatağını topla",y:1},{id:"s17",t:"Akşam yemeği — tabağını götür",y:1}]},
     {s:"🌙 Akşam Rutini",items:[{id:"s18",t:"Diş fırçala",y:1},{id:"s19",t:"Masal veya Kuran dinle",y:1},{id:"s20",t:"Duanı yap",y:1}]}
   ]
@@ -510,14 +510,14 @@ var ME=[
 
 // SEVİYE SİSTEMİ
 var LEVELS=[
-  {min:0,max:50,icon:"🥚",name:"Dinozor Yumurtası",sub:"Seviye 1"},
-  {min:50,max:150,icon:"🦕",name:"Dinozor Yavrusu",sub:"Seviye 2"},
-  {min:150,max:300,icon:"🦖",name:"Küçük Kahraman",sub:"Seviye 3"},
-  {min:300,max:500,icon:"⚡",name:"Enerji Bombası",sub:"Seviye 4"},
-  {min:500,max:750,icon:"🌟",name:"Yıldız Avcısı",sub:"Seviye 5"},
-  {min:750,max:1000,icon:"🔥",name:"Alev Ustası",sub:"Seviye 6"},
-  {min:1000,max:1500,icon:"👑",name:"Bilge Emir",sub:"Seviye 7"},
-  {min:1500,max:99999,icon:"🏆",name:"Efsane Yavuz",sub:"Seviye 8"}
+  {min:0,max:50,icon:"🥚",name:"Dinozor Yumurtası",sub:"Seviye 1 — Çatlıyor...",info:"Yumurtanın içinde büyük bir macera seni bekliyor!"},
+  {min:50,max:150,icon:"🦕",name:"Bebek Diplodocus",sub:"Seviye 2",info:"Diplodocus dünyanın en uzun dinozorlarından! Boynu tek başına 8 metre uzunluğundaydı."},
+  {min:150,max:300,icon:"🦖",name:"Velociraptor",sub:"Seviye 3",info:"Velociraptor aslında hindi kadar küçüktü ama inanılmaz hızlı ve zekiydi!"},
+  {min:300,max:500,icon:"🐉",name:"Triceratops",sub:"Seviye 4",info:"Triceratops'un 3 boynuzu 1 metreye kadar uzayabiliyordu. Gerçek bir savaşçı!"},
+  {min:500,max:750,icon:"🦣",name:"Stegosaurus",sub:"Seviye 5",info:"Stegosaurus'un sırtındaki plakalar güneşten ısınmak için kullanılıyordu!"},
+  {min:750,max:1000,icon:"🌋",name:"Brachiosaurus",sub:"Seviye 6",info:"Brachiosaurus 26 metre boyundaydı — 5 katlı binayla boy ölçüşürdü!"},
+  {min:1000,max:1500,icon:"⚔️",name:"Allosaurus",sub:"Seviye 7",info:"Allosaurus Jura döneminin en güçlü avcısıydı, 150 milyon yıl önce hüküm sürdü!"},
+  {min:1500,max:99999,icon:"👑",name:"T-Rex Emir Yavuz",sub:"Seviye 8 — KRAL!",info:"T-Rex tüm zamanların en ünlü dinozorudur. Isırma gücü 8000 kg'dı. Sen de artık bir Kralsın!"}
 ];
 
 var BADGES=[
@@ -544,8 +544,8 @@ function getWK(){var d=new Date();var dow=d.getDay();var m=new Date(d);m.setDate
 function getMK(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1);}
 function getTasks(){return TASKS[ST.mode];}
 function calcDaily(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){if(ST.done[t.id])s+=t.y;});});return s;}
-function calcMax(){var s=0;getTasks().forEach(function(sec){sec.items.forEach(function(t){s+=t.y;});});return s;}
-function calcDoneRes(){var d=0,t=0;getTasks().forEach(function(sec){t+=sec.items.length;sec.items.forEach(function(i){if(ST.done[i.id])d++;});});return{d:d,t:t};}
+function calcMax(){var s=0;var dow=new Date().getDay();getTasks().forEach(function(sec){sec.items.forEach(function(t){if(!t.gunler||t.gunler.indexOf(dow)!==-1)s+=t.y;});});return s;}
+function calcDoneRes(){var d=0,t=0;var dow=new Date().getDay();getTasks().forEach(function(sec){sec.items.forEach(function(i){if(!i.gunler||i.gunler.indexOf(dow)!==-1){t++;if(ST.done[i.id])d++;}});});return{d:d,t:t};}
 function calcWE(){var s=0;var we=ST.wExtra[getWK()]||{};WE.forEach(function(e){if(we[e.id])s+=e.y;});return s;}
 function calcME(){
   var s=0;var me=ST.mExtra[getMK()]||{};
@@ -736,6 +736,12 @@ function renderStreak(){
 function renderLevel(){
   var total=totalAllStars();
   var li=getLevel(total);var lv=LEVELS[li];
+  var prevLi=ST.stats._lastLevel||0;
+  // Seviye atladıysa kutla
+  if(li>prevLi&&prevLi>=0){
+    ST.stats._lastLevel=li;
+    setTimeout(function(){showLevelUp(lv);},400);
+  } else if(!ST.stats._lastLevel)ST.stats._lastLevel=li;
   document.getElementById('level-icon').textContent=lv.icon;
   document.getElementById('level-name').textContent=lv.name;
   document.getElementById('level-sub').textContent=lv.sub;
@@ -744,7 +750,17 @@ function renderLevel(){
   if(li<LEVELS.length-1){
     var next=LEVELS[li+1];
     document.getElementById('level-next').textContent=(lv.max-total)+' yıldız → '+next.name;
-  } else {document.getElementById('level-next').textContent='Maksimum seviye!';}
+  } else {document.getElementById('level-next').textContent='Maksimum seviye! 👑';}
+}
+
+function showLevelUp(lv){
+  shootConfetti();
+  var overlay=document.getElementById('odul-kutla-overlay');
+  document.getElementById('odul-kutla-emoji').textContent=lv.icon;
+  document.getElementById('odul-kutla-title').textContent='Yeni Seviye: '+lv.name+'!';
+  document.getElementById('odul-kutla-sub').textContent=lv.info||'Tebrikler!';
+  document.getElementById('odul-kutla-prize').textContent='Seviye: '+lv.sub;
+  overlay.classList.add('show');
 }
 
 function renderToday(){
@@ -766,6 +782,7 @@ function renderToday(){
     sh.innerHTML='<div class="sec-dot" style="background:var(--teal)"></div><div class="sec-lbl" style="color:var(--teal-dark)">'+sec.s+'</div>';
     area.appendChild(sh);
     sec.items.forEach(function(task){
+      if(task.gunler&&task.gunler.indexOf(new Date().getDay())===-1)return;
       var isDone=!!ST.done[task.id];
       var el=document.createElement('div');el.className='task'+(isDone?' done':'');
       el.onclick=function(){
@@ -1019,19 +1036,19 @@ function saveModalEdit(){
 }
 
 // ── ÖDÜL SİSTEMİ ─────────────────────────────────────────────────
-var HAFTALIK_MAX=160;
-var AYLIK_MAX=650;
+var HAFTALIK_MAX=173;
+var AYLIK_MAX=693;
 
 var HAFTALIK_ODULLER=[
-  {id:"h1",medal:"🥉",title:"Bronz Hafta",range:"130–140 yıldız",min:130,max:140,prize:"Para kutusuna 200 TL",color:"#CD7F32",barColor:"#CD7F32"},
-  {id:"h2",medal:"🥈",title:"Gümüş Hafta",range:"140–150 yıldız",min:140,max:150,prize:"Para kutusuna 400 TL",color:"#C0C0C0",barColor:"#888"},
-  {id:"h3",medal:"🥇",title:"Altın Hafta",range:"150–160 yıldız",min:150,max:160,prize:"Para kutusuna 750 TL",color:"#FFD700",barColor:"#BA7517"}
+  {id:"h1",medal:"🥉",title:"Bronz Hafta",range:"137–153 yıldız",min:137,max:153,prize:"Para kutusuna 200 TL",color:"#CD7F32",barColor:"#CD7F32"},
+  {id:"h2",medal:"🥈",title:"Gümüş Hafta",range:"153–163 yıldız",min:153,max:163,prize:"Para kutusuna 400 TL",color:"#C0C0C0",barColor:"#888"},
+  {id:"h3",medal:"🥇",title:"Altın Hafta",range:"163–173 yıldız",min:163,max:173,prize:"Para kutusuna 750 TL",color:"#FFD700",barColor:"#BA7517"}
 ];
 
 var AYLIK_ODULLER=[
-  {id:"a1",medal:"🥉",title:"Bronz Ay",range:"500–550 yıldız",min:500,max:550,prize:"5 kitap (sen seçersin!)",color:"#CD7F32",barColor:"#CD7F32"},
-  {id:"a2",medal:"🥈",title:"Gümüş Ay",range:"550–600 yıldız",min:550,max:600,prize:"Seçeceğin bir oyuncak 🦕",color:"#C0C0C0",barColor:"#888"},
-  {id:"a3",medal:"🥇",title:"Altın Ay",range:"600–650 yıldız",min:600,max:650,prize:"Seçeceğin özel etkinlik 🎉",color:"#FFD700",barColor:"#BA7517"}
+  {id:"a1",medal:"🥉",title:"Bronz Ay",range:"537–583 yıldız",min:537,max:583,prize:"5 kitap (sen seçersin!)",color:"#CD7F32",barColor:"#CD7F32"},
+  {id:"a2",medal:"🥈",title:"Gümüş Ay",range:"583–633 yıldız",min:583,max:633,prize:"Seçeceğin bir oyuncak 🦕",color:"#C0C0C0",barColor:"#888"},
+  {id:"a3",medal:"🥇",title:"Altın Ay",range:"633–693 yıldız",min:633,max:693,prize:"Seçeceğin özel etkinlik 🎉",color:"#FFD700",barColor:"#BA7517"}
 ];
 
 function getHaftalikStars(){return calcWeekTotal();}
