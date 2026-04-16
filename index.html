@@ -353,10 +353,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page-title">📊 Haftalık İlerleme</div>
   <div class="week-metrics">
     <div class="w-metric"><div class="w-metric-val" id="w-stars">0</div><div class="w-metric-lbl">⭐ toplam</div></div>
-    <div class="w-metric"><div class="w-metric-val" id="w-pct">%0</div><div class="w-metric-lbl">hedefe göre (112)</div></div>
+    <div class="w-metric"><div class="w-metric-val" id="w-pct">%0</div><div class="w-metric-lbl">hedefe göre (173)</div></div>
   </div>
   <div class="prog-section" style="margin-bottom:16px">
-    <div class="prog-header"><span id="w-prog-l">0 / 112</span><span></span></div>
+    <div class="prog-header"><span id="w-prog-l">0 / 173</span><span></span></div>
     <div class="prog-bar" style="height:14px"><div class="prog-fill" id="w-prog-fill" style="width:0%"></div></div>
   </div>
   <div class="chart-section"><div class="chart-title">Günlük Kümülatif Yıldız</div><div id="week-chart"></div></div>
@@ -373,7 +373,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="page-title">📅 Aylık Takip</div>
   <div class="week-metrics">
     <div class="w-metric"><div class="w-metric-val" id="ay-stars">0</div><div class="w-metric-lbl">⭐ aylık yıldız</div></div>
-    <div class="w-metric"><div class="w-metric-val" id="ay-pct">%0</div><div class="w-metric-lbl">hedefe göre (448)</div></div>
+    <div class="w-metric"><div class="w-metric-val" id="ay-pct">%0</div><div class="w-metric-lbl">hedefe göre (693)</div></div>
   </div>
   <div class="month-label" id="month-label"></div>
   <div id="monthly-grid"></div>
@@ -402,12 +402,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="mini-bar-pct" id="sd-daily-pct">%0</div>
     </div>
     <div class="star-row">
-      <div class="star-row-top"><span class="star-row-label">📊 Bu hafta</span><span class="star-row-nums"><b id="sd-weekly">0</b> / 112</span></div>
+      <div class="star-row-top"><span class="star-row-label">📊 Bu hafta</span><span class="star-row-nums"><b id="sd-weekly">0</b> / <span id="sd-wmax">173</span></span></div>
       <div class="mini-bar"><div class="mini-bar-fill" id="sd-weekly-bar" style="background:var(--blue);width:0%"></div></div>
       <div class="mini-bar-pct" id="sd-weekly-pct">%0</div>
     </div>
     <div class="star-row">
-      <div class="star-row-top"><span class="star-row-label">🗓 Bu ay</span><span class="star-row-nums"><b id="sd-monthly">0</b> / 448</span></div>
+      <div class="star-row-top"><span class="star-row-label">🗓 Bu ay</span><span class="star-row-nums"><b id="sd-monthly">0</b> / <span id="sd-mmax">693</span></span></div>
       <div class="mini-bar"><div class="mini-bar-fill" id="sd-monthly-bar" style="background:var(--purple);width:0%"></div></div>
       <div class="mini-bar-pct" id="sd-monthly-pct">%0</div>
     </div>
@@ -844,13 +844,15 @@ function toggleStarDetail(){
   if(o.classList.contains('show')){o.classList.remove('show');return;}
   var daily=calcDaily();var max=calcMax();var weekly=calcWeekTotal();var monthly=calcMonthTotal();var total=totalAllStars();
   var dp=max>0?Math.min(Math.round(daily/max*100),100):0;
-  var wp=Math.min(Math.round(weekly/112*100),100);
-  var mp=Math.min(Math.round(monthly/448*100),100);
+  var wp=Math.min(Math.round(weekly/HAFTALIK_MAX*100),100);
+  var mp=Math.min(Math.round(monthly/AYLIK_MAX*100),100);
   document.getElementById('sd-daily').textContent=daily;document.getElementById('sd-dmax').textContent=max;
   document.getElementById('sd-daily-bar').style.width=dp+'%';document.getElementById('sd-daily-pct').textContent='%'+dp;
   document.getElementById('sd-weekly').textContent=weekly;
+  if(document.getElementById('sd-wmax'))document.getElementById('sd-wmax').textContent=HAFTALIK_MAX;
   document.getElementById('sd-weekly-bar').style.width=wp+'%';document.getElementById('sd-weekly-pct').textContent='%'+wp;
   document.getElementById('sd-monthly').textContent=monthly;
+  if(document.getElementById('sd-mmax'))document.getElementById('sd-mmax').textContent=AYLIK_MAX;
   document.getElementById('sd-monthly-bar').style.width=mp+'%';document.getElementById('sd-monthly-pct').textContent='%'+mp;
   document.getElementById('sd-total').textContent=total;
   o.classList.add('show');
@@ -872,10 +874,10 @@ function renderWeek(){
     chart.appendChild(div);
   }
   var we=calcWE();var me=calcME();var grand=wt+we+me;
-  var pct=Math.min(Math.round(grand/112*100),100);
+  var pct=Math.min(Math.round(grand/HAFTALIK_MAX*100),100);
   document.getElementById('w-stars').textContent=grand;document.getElementById('w-pct').textContent='%'+pct;
   document.getElementById('w-prog-fill').style.width=pct+'%';
-  document.getElementById('w-prog-l').textContent=wt+' günlük'+(we>0?' +'+we+' hft':'')+' = '+grand+' / 112';
+  document.getElementById('w-prog-l').textContent=wt+' günlük'+(we>0?' +'+we+' hft':'')+' = '+grand+' / '+HAFTALIK_MAX;
   // Büyüme grafiği
   renderGrowthChart();
   // Ekstra durum
@@ -941,7 +943,7 @@ function renderMonth(){
   }
   var mt=0;ST.days.forEach(function(dd){var dt=new Date(dd.date);if(dt.getMonth()===month&&dt.getFullYear()===year)mt+=dd.stars;});
   document.getElementById('ay-stars').textContent=mt;
-  document.getElementById('ay-pct').textContent='%'+Math.min(Math.round(mt/448*100),100);
+  document.getElementById('ay-pct').textContent='%'+Math.min(Math.round(mt/AYLIK_MAX*100),100);
   weeks.forEach(function(wk2,wi){
     var ws=0;wk2.forEach(function(c){if(c&&!c.empty)ws+=c.stars||0;});
     var block=document.createElement('div');block.className='week-block';
