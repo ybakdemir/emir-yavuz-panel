@@ -13,22 +13,28 @@ export function ring(done, total, size = 66) {
     h('div', { class: 'lbl' }, `${done}/${total}`));
 }
 
-/** "How did it go?" chips shown after completion. Fast: one tap, default = independent. */
+/**
+ * Optional "How did it go?" chips shown after completion. The tap itself only
+ * records "Yaptım" (unspecified); nothing is selected until Emir picks one.
+ * Nothing here is mandatory — moving on leaves the task completed-unspecified.
+ */
 export function howChips(status, onPick, { open = true, onToggle = null } = {}) {
   const opts = [
     [STATUS.INDEPENDENT, '', 'Kendim yaptım'],
     [STATUS.REMINDER, 'warm', 'Hatırlatılınca yaptım'],
     [STATUS.ASSISTED, 'sky', 'Birlikte yaptık'],
   ];
+  const cur = opts.find((o) => o[0] === status) || null;
   if (!open) {
-    const cur = opts.find((o) => o[0] === status) || opts[0];
     return h('div', { class: 'how compact' },
-      h('button', { class: `chip ${cur[1]} on`, 'aria-expanded': 'false', onclick: (e) => { e.stopPropagation(); onToggle && onToggle(); } }, icon('check', 16), STATUS_LABEL[status] || cur[2], icon('chevronDown', 16)));
+      h('button', { class: `chip ${cur ? cur[1] : 'muted'} on`, 'aria-expanded': 'false', onclick: (e) => { e.stopPropagation(); onToggle && onToggle(); } },
+        icon('check', 16), cur ? cur[2] : STATUS_LABEL[status] || 'Yaptım', icon('chevronDown', 16)));
   }
   return h('div', { class: 'how' },
+    cur ? null : h('div', { class: 'lbl' }, 'Nasıl yaptın?'),
     opts.map(([val, tone, label]) => h('button', {
       class: `chip ${tone} ${status === val ? 'on' : ''}`, 'aria-pressed': status === val ? 'true' : 'false',
-      onclick: (e) => { e.stopPropagation(); onPick(val); },
+      onclick: (e) => { e.stopPropagation(); onPick(status === val ? STATUS.COMPLETED_UNSPECIFIED : val); },
     }, status === val ? icon('check', 16) : null, label)));
 }
 

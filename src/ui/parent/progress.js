@@ -47,9 +47,8 @@ export function renderProgress(body, ctx, parts) {
       return h('div', { class: 'list-row', style: { flexWrap: 'wrap' } },
         h('div', { class: 'grow', style: { fontWeight: 800, minWidth: '140px' } }, title, it.kind === 'homework' && view.homework !== 'exists' ? h('span', { class: 'small muted' }, ' (sayılmaz)') : null),
         h('div', { class: 'status-seg' },
-          [[STATUS.INDEPENDENT, 'ind', 'Kendi'], [STATUS.REMINDER, 'rem', 'Hatırlatma'], [STATUS.ASSISTED, 'ass', 'Birlikte'], [STATUS.NOT_DONE, 'no', 'Yapılmadı']].map(([v, cls, label]) =>
-            h('button', { class: `${cls} ${st === v ? 'on' : ''}`, onclick: () => ctx.update((s) => { const d = ensureDay(s, key); setStatus(d, it.id, st === v ? null : v); if (it.kind === 'homework' && v !== STATUS.NOT_DONE && st !== v) d.homework = 'exists'; }) }, label)),
-          st === STATUS.DONE ? h('button', { class: 'on', title: 'Eski kayıt' }, 'Eski kayıt') : null));
+          [[STATUS.INDEPENDENT, 'ind', 'Kendi'], [STATUS.REMINDER, 'rem', 'Hatırlatma'], [STATUS.ASSISTED, 'ass', 'Birlikte'], [STATUS.COMPLETED_UNSPECIFIED, 'unk', 'Yaptı (?)'], [STATUS.NOT_DONE, 'no', 'Yapılmadı']].map(([v, cls, label]) =>
+            h('button', { class: `${cls} ${st === v ? 'on' : ''}`, title: v === STATUS.COMPLETED_UNSPECIFIED ? 'Tamamlandı, nasıl yapıldığı belirtilmedi' : null, onclick: () => ctx.update((s) => { const d = ensureDay(s, key); setStatus(d, it.id, st === v ? null : v); if (it.kind === 'homework' && v !== STATUS.NOT_DONE && st !== v) d.homework = 'exists'; }) }, label))));
     })),
     day?.legacy ? h('div', { class: 'small muted', style: { marginTop: '10px' } }, `v1 arşivi: ${day.legacy.stars ?? '—'} yıldız, ${Object.values(day.legacy.tikler || {}).filter(Boolean).length} işaret${day.legacy.unsaved ? ' (kaydedilmemiş gün)' : ''}`) : null);
   add(grid, editor);
@@ -61,7 +60,7 @@ export function renderProgress(body, ctx, parts) {
     rows.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
       h('thead', {}, h('tr', {}, h('th', {}, 'Görev'), h('th', {}, 'Tamamlama'), h('th', {}, 'Kendi'), h('th', {}, 'Hatırlatma'), h('th', {}, 'Birlikte'))),
       h('tbody', {}, rows.map(({ it, s }) => h('tr', {}, h('td', { style: { fontWeight: 800 } }, it.title), h('td', {}, fmtPct(s.completionRate)), h('td', {}, fmtPct(s.rate)), h('td', {}, s.reminder), h('td', {}, s.assisted)))))) : h('div', { class: 'muted small' }, 'Henüz veri yok.'),
-    h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Bağımsızlık = "Kendim yaptım" / uygulanabilir görev.')));
+    h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Bağımsızlık = "Kendim yaptım" / uygulanabilir görev. "Yaptı (?)" tamamlandı sayılır ama bağımsız sayılmaz.')));
 
   // ── independence trend 8 weeks (all items)
   const trend = itemTrend(state, null, today, 8);

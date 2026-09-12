@@ -6,7 +6,8 @@ itself unnecessary: the north-star metric is the *independent completion rate*.
 
 Zero-build static site: `index.html` + native ES modules + CSS. Deployed on
 Vercel (production = `main`). Data lives in `localStorage` (`ey_v6`) and is
-mirrored to Firebase Realtime Database (node `/v2`, anonymous auth).
+mirrored to Firebase Realtime Database (node `/v2`, anonymous auth — the
+database rules must be `auth != null`, see `docs/FIREBASE_RULES.md`).
 
 ## Run locally
 
@@ -39,7 +40,8 @@ src/ui/parent/          Dashboard · Routines · Skills · Presentations · Rewa
 src/ui/print.js         "Haftamı yazdır" paper mode
 styles/                 tokens, base components, child, parent, print
 legacy/index.html       v1 (star economy) kept verbatim as an archive
-docs/                   AUDIT.md (phase 0), V2_REPORT.md (delivery report)
+docs/                   AUDIT.md (phase 0), V2_REPORT.md (delivery report),
+                        FIREBASE_RULES.md (required RTDB rules), PREVIEW_READINESS.md
 ```
 
 ## Data model (v2, `schemaVersion: 6`)
@@ -59,9 +61,13 @@ state
 └─ meta          { updatedAt, writer }
 ```
 
-Completion status values: `independent` ("Kendim yaptım"), `reminder`
-("Hatırlatılınca yaptım"), `assisted` ("Birlikte yaptık"), `not_done`,
-plus `done` for imported v1 records whose independence is unknown.
+Completion status values: `done` = **COMPLETED_UNSPECIFIED** ("Yaptım" — what a
+plain tap records, and what imported v1 ticks carry), `independent` ("Kendim
+yaptım"), `reminder` ("Hatırlatılınca yaptım"), `assisted` ("Birlikte yaptık"),
+`not_done`. A completion is never independent unless Emir or a parent explicitly
+picks it; the Independent Completion Rate counts only `independent` in its
+numerator, so unspecified completions can never inflate it (they still count
+as done for good days, the expedition and the child's progress ring).
 
 ## Storage & migration
 

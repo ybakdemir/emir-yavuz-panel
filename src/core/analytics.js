@@ -7,9 +7,14 @@ import { dayCompletion } from './rewards.js';
 /**
  * North-star numbers for [from, to]. Only days that have a record count;
  * within a recorded day every applicable core item counts, unmarked = not done.
+ *
+ * `rate` (Independent Completion Rate) = independent / applicable. Completed-
+ * but-unspecified items sit in the denominator only, so a quick tap can never
+ * raise the rate; only an explicit "Kendim yaptım" can. `unspecified` is
+ * reported so parents can see how much is still unclassified.
  */
 export function independenceStats(state, from, to, filterItem = null) {
-  const out = { applicable: 0, independent: 0, reminder: 0, assisted: 0, notDone: 0, unknown: 0, completed: 0, days: 0 };
+  const out = { applicable: 0, independent: 0, reminder: 0, assisted: 0, notDone: 0, unspecified: 0, completed: 0, days: 0 };
   for (const key of range(from, to)) {
     const day = state.days[key];
     if (!day) continue;
@@ -21,13 +26,15 @@ export function independenceStats(state, from, to, filterItem = null) {
       if (s === STATUS.INDEPENDENT) out.independent++;
       else if (s === STATUS.REMINDER) out.reminder++;
       else if (s === STATUS.ASSISTED) out.assisted++;
-      else if (s === STATUS.DONE) out.unknown++;
+      else if (s === STATUS.COMPLETED_UNSPECIFIED) out.unspecified++;
       else out.notDone++;
       if (isCompleted(s)) out.completed++;
     }
   }
   out.rate = out.applicable ? out.independent / out.applicable : 0;          // independent completion rate
   out.completionRate = out.applicable ? out.completed / out.applicable : 0;
+  // Share of completions that have been classified at all — a data-quality hint, not the north star.
+  out.classifiedRate = out.completed ? (out.completed - out.unspecified) / out.completed : 0;
   return out;
 }
 

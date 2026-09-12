@@ -5,12 +5,15 @@
 export const SCHEMA_VERSION = 6;
 
 // Completion semantics (see core/completion.js)
+// A plain tap records COMPLETED_UNSPECIFIED ('done' on the wire): the task is
+// done, but *how* is not claimed. Independence is only ever recorded when Emir
+// or a parent explicitly picks it. Imported v1 ticks carry the same value.
 export const STATUS = {
   INDEPENDENT: 'independent',
   REMINDER: 'reminder',
   ASSISTED: 'assisted',
   NOT_DONE: 'not_done',
-  DONE: 'done', // completed, independence unknown (legacy import only)
+  COMPLETED_UNSPECIFIED: 'done',
 };
 
 export const STATUS_LABEL = {
@@ -18,7 +21,7 @@ export const STATUS_LABEL = {
   reminder: 'Hatırlatılınca yaptım',
   assisted: 'Birlikte yaptık',
   not_done: 'Bugün yapmadım',
-  done: 'Tamamlandı',
+  done: 'Yaptım',
 };
 
 export const ROUTINE_STAGES = ['learn', 'practice', 'mastered'];

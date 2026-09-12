@@ -1,9 +1,22 @@
 import { STATUS } from '../content/defaults.js';
 
-export const COMPLETED = new Set([STATUS.INDEPENDENT, STATUS.REMINDER, STATUS.ASSISTED, STATUS.DONE]);
+export const COMPLETED = new Set([STATUS.INDEPENDENT, STATUS.REMINDER, STATUS.ASSISTED, STATUS.COMPLETED_UNSPECIFIED]);
+/** Statuses that say *how* a task went (or that it didn't). Unspecified is not one of them. */
+export const CLASSIFIED = new Set([STATUS.INDEPENDENT, STATUS.REMINDER, STATUS.ASSISTED, STATUS.NOT_DONE]);
+/** What a plain completion tap records. Never independent by default. */
+export const DEFAULT_COMPLETION = STATUS.COMPLETED_UNSPECIFIED;
 
 export function isCompleted(status) {
   return COMPLETED.has(status);
+}
+
+export function isClassified(status) {
+  return CLASSIFIED.has(status);
+}
+
+/** Completed but not yet classified by Emir or a parent. */
+export function isUnspecified(status) {
+  return status === STATUS.COMPLETED_UNSPECIFIED;
 }
 
 export function getStatus(day, itemId) {
@@ -40,9 +53,21 @@ export function effectiveSkillId(state, day) {
   return null;
 }
 
-/** Set an item's status. status=null clears the mark entirely. */
+/**
+ * Set an item's status. status=null clears the mark entirely. Reclassifying an
+ * already-completed item (e.g. unspecified → independent) keeps the original
+ * completion time and records when the classification happened.
+ */
 export function setStatus(day, itemId, status, at = Date.now()) {
   if (status === null || status === undefined) { delete day.items[itemId]; return; }
   const prev = day.items[itemId] || {};
-  day.items[itemId] = { ...prev, status, at: prev.at && isCompleted(prev.status) && isCompleted(status) ? prev.at : at };
+  const keepAt = prev.at && isCompleted(prev.status) && isCompleted(status);
+  const next = { ...prev, status, at: keepAt ? prev.at : at };
+  if (keepAt && prev.status !== status) next.classifiedAt = at; else delete next.classifiedAt;
+  day.items[itemId] = next;
+}
+
+/** Quick completion (one tap): marks done without claiming independence. */
+export function complete(day, itemId, at = Date.now()) {
+  setStatus(day, itemId, DEFAULT_COMPLETION, at);
 }

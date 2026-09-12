@@ -19,7 +19,10 @@ export function renderDashboard(body, ctx) {
       h('div', {}, h('div', { class: 'big' }, fmtPct(s7.rate)), h('div', { class: 'small muted' }, 'son 7 gün')),
       h('div', {}, h('div', { class: 'big', style: { fontSize: '28px', color: 'var(--ink-2)' } }, fmtPct(s30.rate)), h('div', { class: 'small muted' }, 'son 30 gün'))),
     stackBar(s7),
-    h('div', { class: 'small muted', style: { marginTop: '8px' } }, s7.days ? `${s7.days} kayıtlı gün · ${s7.applicable} görev` : 'Bu hafta henüz kayıt yok.')));
+    h('div', { class: 'small muted', style: { marginTop: '8px' } }, s7.days ? `${s7.days} kayıtlı gün · ${s7.applicable} görev` : 'Bu hafta henüz kayıt yok.'),
+    s7.unspecified ? h('div', { class: 'small muted', style: { marginTop: '4px' } },
+      `${s7.unspecified} tamamlanan görevin nasıl yapıldığı belirtilmedi (bağımsız sayılmaz). `,
+      h('a', { href: '#/parent/progress', style: { fontWeight: 800 } }, 'İlerleme\'de işaretle →')) : null));
 
   // ── Completion overview (14 days)
   const keys = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
@@ -85,11 +88,11 @@ function stackBar(s) {
   if (!s.applicable) return h('div', { class: 'stack-bar' });
   const seg = (n, cls) => h('i', { class: cls, style: { width: `${(n / s.applicable) * 100}%` } });
   return h('div', {},
-    h('div', { class: 'stack-bar' }, seg(s.independent, 'c-ind'), seg(s.reminder, 'c-rem'), seg(s.assisted, 'c-ass'), seg(s.unknown, 'c-unk'), seg(s.notDone, 'c-no')),
+    h('div', { class: 'stack-bar' }, seg(s.independent, 'c-ind'), seg(s.reminder, 'c-rem'), seg(s.assisted, 'c-ass'), seg(s.unspecified, 'c-unk'), seg(s.notDone, 'c-no')),
     h('div', { class: 'legend' },
       h('span', {}, h('b', { class: 'c-ind' }), `Kendi ${s.independent}`), h('span', {}, h('b', { class: 'c-rem' }), `Hatırlatma ${s.reminder}`),
       h('span', {}, h('b', { class: 'c-ass' }), `Birlikte ${s.assisted}`), h('span', {}, h('b', { class: 'c-no' }), `Yapılmadı ${s.notDone}`),
-      s.unknown ? h('span', {}, h('b', { class: 'c-unk' }), `Eski kayıt ${s.unknown}`) : null));
+      s.unspecified ? h('span', {}, h('b', { class: 'c-unk' }), `Belirtilmedi ${s.unspecified}`) : null));
 }
 
 export function checkRow(ok, text) {

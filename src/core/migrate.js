@@ -104,13 +104,14 @@ export function convertV1Day(rec) {
     } else if (target === 'physical') {
       day.physical[sub] = true; physTicks.add(sub);
     } else {
-      day.items[target] = { status: STATUS.DONE };
+      // v1 only knew "ticked"; independence was never recorded → unspecified.
+      day.items[target] = { status: STATUS.COMPLETED_UNSPECIFIED };
       if (target === 'homework') day.homework = 'exists';
     }
   }
-  if (routineTicks.morning >= 3) day.items.morning = { status: STATUS.DONE };
-  if (routineTicks.evening >= 3) day.items.evening = { status: STATUS.DONE };
-  if (physTicks.has('pushup') && physTicks.has('squat')) day.items.physical = { status: STATUS.DONE };
+  if (routineTicks.morning >= 3) day.items.morning = { status: STATUS.COMPLETED_UNSPECIFIED };
+  if (routineTicks.evening >= 3) day.items.evening = { status: STATUS.COMPLETED_UNSPECIFIED };
+  if (physTicks.has('pushup') && physTicks.has('squat')) day.items.physical = { status: STATUS.COMPLETED_UNSPECIFIED };
   return day;
 }
 

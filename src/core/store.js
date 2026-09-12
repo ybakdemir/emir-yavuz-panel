@@ -86,8 +86,11 @@ export function createStore({ storage, now = () => new Date() } = {}) {
           }
         }
         // Legacy import from Firebase runs until it has been recorded once.
+        // A denied/failed `/data` read must not take v2 sync down with it:
+        // the import is simply retried on a later boot.
         if (!state.legacy?.sources?.firebase) {
-          const v1 = await adapter.readV1();
+          let v1 = null;
+          try { v1 = await adapter.readV1(); } catch { /* /data unreadable — keep going */ }
           if (v1) {
             store.update((s) => importLegacy(s, v1, 'firebase', todayKey(now())));
           } else if (!rv2) {

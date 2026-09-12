@@ -1,10 +1,9 @@
 import { h, add } from '../dom.js';
 import { icon, footprintStamp } from '../icons.js';
 import { dino } from '../dinos.js';
-import { STATUS } from '../../content/defaults.js';
 import { formatLong, weekKey, dayNameLong } from '../../core/dates.js';
 import { itemsForDay, coreItemsForDay, dayType } from '../../core/schedule.js';
-import { ensureDay, setStatus, getStatus, isCompleted, effectiveSkillId } from '../../core/completion.js';
+import { ensureDay, setStatus, getStatus, isCompleted, effectiveSkillId, DEFAULT_COMPLETION } from '../../core/completion.js';
 import { visibleSteps, stepsDone, toggleStep } from '../../core/routines.js';
 import { targetsFor, physicalProgress, toggleExercise } from '../../core/physical.js';
 import { activeSkill } from '../../core/skills.js';
@@ -91,12 +90,13 @@ function renderCard(item, day, ctx) {
   const card = h('div', { class: `task ${done ? 'done' : ''} ${justDone.has(item.id) ? 'just-done' : ''}`, id: 'task-' + item.id });
   if (justDone.has(item.id)) setTimeout(() => justDone.delete(item.id), 900);
 
-  const complete = (val = STATUS.INDEPENDENT) => {
+  // One tap = done. Independence is never assumed; the chips below are optional.
+  const complete = (val = DEFAULT_COMPLETION) => {
     justDone.add(item.id); howOpen.clear(); howOpen.add(item.id);
     ctx.update((s) => { const d = ensureDay(s, today); setStatus(d, item.id, val); if (item.kind === 'homework') d.homework = 'exists'; });
   };
   const undo = () => ctx.update((s) => { setStatus(ensureDay(s, today), item.id, null); });
-  const pick = (val) => { howOpen.delete(item.id); ctx.update((s) => { setStatus(ensureDay(s, today), item.id, val); }); };
+  const pick = (val) => { if (val !== DEFAULT_COMPLETION) howOpen.delete(item.id); ctx.update((s) => { setStatus(ensureDay(s, today), item.id, val); }); };
   const how = () => howChips(status, pick, { open: howOpen.has(item.id), onToggle: () => { if (howOpen.has(item.id)) howOpen.delete(item.id); else howOpen.add(item.id); ctx.store.update(() => {}); } });
 
   switch (item.kind) {
@@ -155,7 +155,7 @@ function renderRoutineCard(card, item, day, ctx, a) {
             const d = ensureDay(s, ctx.today);
             const nowOn = toggleStep(d, item.id, st.id);
             const p = stepsDone(routine, d);
-            if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, STATUS.INDEPENDENT); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
+            if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, DEFAULT_COMPLETION); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
             if (!nowOn && isCompleted(getStatus(d, item.id))) setStatus(d, item.id, null);
           });
         } }, h('div', { class: 'step-check' }, icon('check', 20)), h('div', { class: 'step-txt' }, st.label));
@@ -188,7 +188,7 @@ function renderPhysicalCard(card, item, day, ctx, a) {
             const d = ensureDay(s, ctx.today);
             const nowOn = toggleExercise(d, t.id);
             const p = physicalProgress(physical, d);
-            if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, STATUS.INDEPENDENT); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
+            if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, DEFAULT_COMPLETION); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
             if (!nowOn && isCompleted(getStatus(d, item.id))) setStatus(d, item.id, null);
           });
         } },

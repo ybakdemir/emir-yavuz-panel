@@ -3,19 +3,20 @@ import assert from 'node:assert/strict';
 import { buildInitialState, importLegacy, convertV1Day, readLocalV1, ensureShape } from '../src/core/migrate.js';
 import { createStore } from '../src/core/store.js';
 import { V1_BLOB, MemoryStorage } from './fixtures.js';
+import { STATUS } from '../src/content/defaults.js';
 
 test('convertV1Day maps routine steps, simple items and physical', () => {
   const day = convertV1Day(V1_BLOB.days[1]);
   assert.equal(day.dayType, 'weekday');
-  assert.equal(day.items.morning.status, 'done');
-  assert.equal(day.items.evening.status, 'done');
-  assert.equal(day.items.quran.status, 'done');
-  assert.equal(day.items.prayer.status, 'done');
-  assert.equal(day.items.reading.status, 'done');
-  assert.equal(day.items.explorer.status, 'done');
-  assert.equal(day.items.homework.status, 'done');
+  assert.equal(day.items.morning.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
+  assert.equal(day.items.evening.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
+  assert.equal(day.items.quran.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
+  assert.equal(day.items.prayer.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
+  assert.equal(day.items.reading.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
+  assert.equal(day.items.explorer.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
+  assert.equal(day.items.homework.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
   assert.equal(day.homework, 'exists');
-  assert.equal(day.items.physical.status, 'done');
+  assert.equal(day.items.physical.status, STATUS.COMPLETED_UNSPECIFIED); // 'done' on the wire
   assert.deepEqual(day.physical, { pushup: true, squat: true });
   assert.deepEqual(day.steps.morning, { face: true, dress: true, breakfast: true, bag: true });
   assert.equal(day.legacy.stars, 25);
@@ -106,4 +107,23 @@ test('ensureShape fills new config sections without overwriting', () => {
   assert.equal(s.config.settings.parentPin, '');
   assert.ok(s.config.physical.exercises.length === 5);
   assert.deepEqual(s.days['2026-01-01'].items, {});
+});
+
+test('attachRemote: a denied /data read does not break v2 sync (auth != null rules)', async () => {
+  const storage = new MemoryStorage();
+  const store = createStore({ storage, now: () => new Date(2026, 8, 12, 9) });
+  store.init();
+  let status = null; let changeCb = null; let writes = 0;
+  const adapter = {
+    readV2: async () => null,
+    readV1: async () => { throw new Error('PERMISSION_DENIED'); },
+    write: async () => { writes++; },
+    onChange: (cb) => { changeCb = cb; },
+  };
+  await store.attachRemote(adapter, (s) => { status = s; });
+  assert.equal(status, 'ok');
+  assert.ok(typeof changeCb === 'function'); // realtime listener still attached
+  assert.equal(store.state.legacy, null);      // import will be retried on a later boot
+  await new Promise((r) => setTimeout(r, 700));
+  assert.equal(writes, 1);                     // local state still pushed to /v2
 });

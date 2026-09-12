@@ -34,7 +34,7 @@ Commits on `v2`: audit → core+migration → UI → hardening/docs. `main` unto
 
 ## E. Implemented screens / features
 **Child mode** (mobile-first, bottom nav TODAY · MY WEEK · EXPEDITION · MY SKILLS)
-* Today: greeting, progress ring, comeback note, discovery banner; cards for Sabah rutinim (LEARN/PRACTICE step lists, MASTERED single tap), Okul ödevim with explicit "Bugün ödev yok", Little Explorer, 20 sayfa aile okuması, 3 ayet, Namaz, Daily Physical Five (one card, 5 exercises with the day's targets), Haftanın becerisi, Haftanın sunumu (weekends), Akşam rutinim. One tap completes; independence chip (Kendim / Hatırlatılınca / Birlikte) defaults to "Kendim yaptım", compacts after selection, editable later. Footprint stamp micro-feedback; no confetti, no points.
+* Today: greeting, progress ring, comeback note, discovery banner; cards for Sabah rutinim (LEARN/PRACTICE step lists, MASTERED single tap), Okul ödevim with explicit "Bugün ödev yok", Little Explorer, 20 sayfa aile okuması, 3 ayet, Namaz, Daily Physical Five (one card, 5 exercises with the day's targets), Haftanın becerisi, Haftanın sunumu (weekends), Akşam rutinim. One tap completes as **unspecified** ("Yaptım"); the optional "Nasıl yaptın?" chips (Kendim / Hatırlatılınca / Birlikte) classify it afterwards — nothing is selected by default, no dialog, and moving on leaves the task completed-unspecified. Parents can classify later in Progress ("Yaptı (?)" state). Footprint stamp micro-feedback; no confetti, no points.
 * My Week: Mon–Sun state strip (tap for day detail), supportive message, Haftanın Becerisi (week dots + "ready" hint), Haftanın Sunumu (topic chips, Hazırlandım/Sundum), Haftanın Seçimi (progress → child picks the privilege), "Haftamı yazdır".
 * Expedition: cinematic map — Ana Kamp, Jura Vadisi, Fosil Kanyonu, Kretase Kıyısı, Kuzey Zirveleri; 27 items (11 dinosaur cards with SVG illustrations, fossils, locations, "Biliyor muydun?" facts); discoveries are write-once and never removed.
 * My Skills: Öğreniyorum / Çalışıyorum / Artık Yapabiliyorum with mastery dates and history counts.
@@ -57,11 +57,11 @@ Commits on `v2`: audit → core+migration → UI → hardening/docs. `main` unto
 
 ## G. Legacy compatibility status
 * v1 data imported and archived; `legacy/index.html` still works against `/data` (banner marks it as archive).
-* Legacy days count toward the expedition and appear in the parent day editor as "Eski kayıt"; they are excluded from independence numerators (independence unknown).
+* Legacy days count toward the expedition and appear in the parent day editor as "Yaptı (?)" (completed, unspecified) — the same neutral state a plain tap produces; they are excluded from independence numerators.
 * Known, unfixable: v1 dates were UTC-keyed; a few April records may be shifted by one day.
 
 ## H. Remaining non-blocking opportunities
-1. **Firebase rules**: `/data` (and probably `/v2`) are world-readable; restrict to `auth != null` in the console. Not changeable from the repo.
+1. **Firebase rules**: `/data` (and probably `/v2`) are world-readable; restrict to `auth != null` in the console (exact rules and compatibility notes in `docs/FIREBASE_RULES.md`). Not changeable from the repo.
 2. Live Firebase sync was validated with a mock adapter only — first real launch should confirm `/v2` appears and two devices converge (see I).
 3. Conflict model is last-writer-wins on the whole document; fine for one family, but per-day merging would be safer if two devices edit offline simultaneously.
 4. Expedition content is finite (27 items ≈ 54 good days + bonuses); parents can extend `config.expedition.items` (data), a UI editor for it is not built.
@@ -71,3 +71,8 @@ Commits on `v2`: audit → core+migration → UI → hardening/docs. `main` unto
 ## I. Deployment status
 * **Not deployed.** All work is on local branch `v2`; nothing was pushed; `main`/production is exactly as found.
 * To deploy: review the branch, push `v2` for a Vercel preview URL, then merge to `main`. First production load on each device imports v1 automatically; no manual migration step.
+
+## J. Post-delivery correction (2026-09-12, before push)
+* **Independence semantics**: a plain completion tap no longer defaults to "Kendim yaptım". It records `COMPLETED_UNSPECIFIED` (`done` on the wire — the value migrated v1 ticks already used), and independence is only recorded when Emir or a parent explicitly picks Kendim / Hatırlatılınca / Birlikte. `independenceStats` reports `unspecified` and `classifiedRate`; the north-star rate is unchanged in definition (independent / applicable) and can no longer be raised by taps. Reclassifying keeps the original completion time (`at`) and adds `classifiedAt`. Dashboard shows "Belirtilmedi n" and a hint to classify in Progress; Progress gains a "Yaptı (?)" state.
+* **Firebase**: adapter asserts an anonymous user exists before any database access; a denied `/data` legacy read is non-fatal to `/v2` sync. Required console rules documented in `docs/FIREBASE_RULES.md`.
+* Tests: 25 (was 19). Preview gate: `docs/PREVIEW_READINESS.md`.
