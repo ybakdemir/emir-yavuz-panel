@@ -37,7 +37,7 @@ export function milestoneSheet({ title, message, dinoKind, kicker }) {
 /** Copy for a fresh discovery: name + why it opened. */
 export function discoveryCopy(state, id) {
   const item = state.config.expedition.items.find((it) => it.id === id);
-  const reason = DISCOVERY_REASON[state.expedition?.reasons?.[id]] || DISCOVERY_REASON.steps;
+  const reason = DISCOVERY_REASON[state.expedition?.reasons?.[id]] || '';
   return { item, title: item ? `${item.title} keşfedildi` : 'Yeni bir keşif', reason };
 }
 

@@ -6,8 +6,9 @@
 //   MEANINGFUL — a habit worth a warmer word: Little Explorer, the day's
 //                memory reviews, Physical Five, the weekly reflection.
 //   MILESTONE  — development itself: a skill graduated, the weekly
-//                presentation, a memory / English / monthly milestone
-//                (these can also open a Dinosaur Discovery, see expedition.js).
+//                presentation, a memory / English / monthly milestone.
+//                Only these open a Dinosaur Discovery (expedition.js); an
+//                ordinary completion never does, however many there are.
 
 export const LEVEL = { STANDARD: 'standard', MEANINGFUL: 'meaningful', MILESTONE: 'milestone' };
 
@@ -26,12 +27,14 @@ export const EVENTS = {
   discovery: { level: LEVEL.MILESTONE, title: 'Yeni keşif!', message: 'Keşif haritasında yeni bir şey buldun.' },
 };
 
-/** Why a discovery opened — shown with the dinosaur, never as a number. */
+/** Why a discovery opened — shown with the dinosaur, never as a number. Keys = expedition.DISCOVERY_KINDS. */
 export const DISCOVERY_REASON = {
+  mastered: 'Bir beceriyi artık kendi başına yapabiliyorsun.',
+  presentations: 'Haftanın sunumunu hazırlayıp anlattın.',
   memory: 'Hafızanı düzenli çalışarak güçlü tuttun.',
   english: 'İngilizce keşfini gün gün sürdürdün.',
   month: 'Bir ay boyunca yolunu düzenli yürüdün.',
-  steps: 'İyi günlerin seni buraya getirdi.',
+  steps: 'İyi günlerin seni buraya getirdi.', // legacy: finds opened by the pre-audit good-day formula keep their story
 };
 
 export function celebrationFor(event) {

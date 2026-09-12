@@ -112,25 +112,36 @@ test('rewards: good days, weekly choice, monthly celebration; no stars anywhere'
   assert.ok(!JSON.stringify(s).includes('stars'));
 });
 
-test('expedition discoveries are monotone and write-once', () => {
+test('expedition: ordinary task completion opens nothing; a presentation or graduation opens one find; monotone and write-once', () => {
   const s = mk();
-  for (let i = 0; i < 3; i++) {
-    const d = ensureDay(s, addDays('2026-09-07', i)); d.homework = 'none';
+  // Thirty perfect days — every core checkbox, all independent — are still zero discoveries.
+  for (let i = 0; i < 30; i++) {
+    const d = ensureDay(s, addDays('2026-08-10', i)); d.homework = 'none';
     ['morning', 'explorer', 'reading', 'quran', 'prayer', 'physical', 'evening'].forEach((id) => setStatus(d, id, 'independent'));
   }
-  const fresh = syncDiscoveries(s, '2026-09-09');
-  assert.deepEqual(fresh, ['bc_map']);
-  assert.deepEqual(syncDiscoveries(s, '2026-09-10'), []);
-  // a terrible day later changes nothing
-  ensureDay(s, '2026-09-10');
-  assert.equal(expeditionView(s).discoveredCount, 1);
+  const upto = '2026-09-08';
+  assert.ok(isGoodDay(s, '2026-09-08'));
+  assert.deepEqual(syncDiscoveries(s, upto), []);
+  assert.equal(expeditionView(s).discoveredCount, 0);
+  // a presentation given → exactly one find, attributed to it
+  s.weeks['2026-09-07'] = { presentation: { topic: 'Uzay', prepared: true, presented: true, presentedOn: '2026-09-08' } };
+  assert.deepEqual(syncDiscoveries(s, upto), ['bc_map']);
+  assert.equal(s.expedition.reasons.bc_map, 'presentations');
+  assert.deepEqual(syncDiscoveries(s, '2026-09-09'), []);
+  // a skill graduated → the next find
+  graduateSkill(s, s.skills.pool[0].id, '2026-09-09');
+  assert.deepEqual(syncDiscoveries(s, '2026-09-09'), ['bc_compass']);
+  assert.equal(s.expedition.reasons.bc_compass, 'mastered');
   assert.equal(expeditionView(s).regions[0].state, 'active');
-  assert.equal(expeditionView(s).next.id, 'bc_compass');
-  // even if the parent raises the bar, discovered stays discovered
+  // a terrible day later changes nothing; raising the bar changes nothing; un-marking the presentation takes nothing back
+  ensureDay(s, '2026-09-10');
   s.config.rewards.goodDayRatio = 1;
-  s.days['2026-09-07'].items.morning.status = 'not_done';
+  s.weeks['2026-09-07'].presentation.presented = false;
   assert.deepEqual(syncDiscoveries(s, '2026-09-11'), []);
-  assert.equal(expeditionView(s).discoveredCount, 1);
+  assert.equal(expeditionView(s).discoveredCount, 2);
+  // and re-marking it does not pay twice
+  s.weeks['2026-09-07'].presentation.presented = true;
+  assert.deepEqual(syncDiscoveries(s, '2026-09-11'), []);
 });
 
 test('independence analytics + comeback', () => {

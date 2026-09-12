@@ -2,7 +2,7 @@ import { h, add, openSheet } from '../dom.js';
 import { icon } from '../icons.js';
 import { dino } from '../dinos.js';
 import { glyph, zoneScene } from '../art.js';
-import { expeditionView, expeditionSteps } from '../../core/expedition.js';
+import { expeditionView, expeditionSteps, milestoneCounts } from '../../core/expedition.js';
 import { formatShort } from '../../core/dates.js';
 import { DISCOVERY_REASON } from '../../core/celebration.js';
 
@@ -13,9 +13,10 @@ const TYPE_SHORT = { card: 'Dinozor', fossil: 'Fosil', location: 'Nokta', fact: 
 export function renderExpedition(main, ctx) {
   const { state, today } = ctx;
   const view = expeditionView(state);
-  const steps = expeditionSteps(state, today);
-  const per = state.config.expedition.daysPerDiscovery || 1;
-  const toNext = view.next ? per - (steps.total % per || (steps.total ? per : 0)) : 0;
+  const steps = expeditionSteps(state, today); // goodDays is a consistency stat, not a discovery input
+  const ms = milestoneCounts(state, today);
+  const cfg = state.config.expedition.milestones || {};
+  const memNeed = Math.max(1, cfg.memoryDays || 7), engNeed = Math.max(1, cfg.englishDays || 10);
   const fresh = new Set(ctx.takeDiscoveries());
   const name = state.config.settings.childName || 'Emir';
   const pctDone = view.total ? (view.discoveredCount / view.total) * 100 : 0;
@@ -32,7 +33,7 @@ export function renderExpedition(main, ctx) {
       h('div', { class: 'exp-progress', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(view.total), 'aria-valuenow': String(view.discoveredCount) },
         h('i', { style: { width: `${pctDone}%` } })),
       view.next
-        ? h('div', { class: 'exp-next' }, glyph('footprint', 18), toNext === per ? `Bir sonraki keşif için ${per} iyi gün.` : `Bir sonraki keşfe ${toNext} iyi gün kaldı.`)
+        ? h('div', { class: 'exp-next' }, glyph('footprint', 18), `Sıradaki keşif bir gelişim anıyla açılır: sunum, yeni beceri ya da kilometre taşı · Hafıza ${ms.memoryDays % memNeed}/${memNeed} · İngilizce ${ms.englishDays % engNeed}/${engNeed}`)
         : h('div', { class: 'exp-next' }, glyph('flag', 18), 'Haritanın tamamını keşfettin.')));
 
   const trailEl = h('div', { class: 'map-trail' });
@@ -61,17 +62,16 @@ export function renderExpedition(main, ctx) {
       h('div', { class: 'zone-node', 'aria-hidden': 'true' }, region.state === 'complete' ? icon('check', 18) : h('span', {}, idx + 1)), zone));
   });
   add(panel, trailEl,
-    h('div', { class: 'map-foot' }, glyph('footprint', 20), 'Her iyi gün bir adım. Keşfedilen hiçbir şey geri alınmaz.'));
+    h('div', { class: 'map-foot' }, glyph('footprint', 20), 'Her keşif bir gelişim anı. Keşfedilen hiçbir şey geri alınmaz.'));
   add(main, panel);
   // Reveal the newest discovery once, not one sheet per item.
   const newest = [...fresh].map((id) => state.config.expedition.items.find((it) => it.id === id)).filter(Boolean).pop();
   if (newest) setTimeout(() => openFind(newest, state, true), 350);
 }
 
-/** Reveal sheet. A fresh discovery also says why it opened (milestone or good days). */
+/** Reveal sheet. A find with a recorded reason says why it opened (legacy good-day finds keep theirs). */
 function openFind(it, state, fresh = false) {
-  const reason = state?.expedition?.reasons?.[it.id];
-  const why = reason && reason !== 'steps' ? DISCOVERY_REASON[reason] : fresh ? DISCOVERY_REASON.steps : null;
+  const why = DISCOVERY_REASON[state?.expedition?.reasons?.[it.id]] || null;
   const close = openSheet([
     h('div', { class: 'lbl' }, fresh ? 'Yeni keşif!' : TYPE_LABEL[it.type] || 'Keşif'),
     h('div', { class: 'sheet-title' }, fresh ? `${it.title} keşfedildi` : it.title),

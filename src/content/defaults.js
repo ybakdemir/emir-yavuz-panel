@@ -155,7 +155,9 @@ export const DEFAULT_PRESENTATION = {
   ],
 };
 
-// Expedition: discoveries are unlocked by "good days" (see core/expedition.js).
+// Expedition: discoveries open for development milestones only — a skill
+// graduated, a presentation given, a memory / English / monthly milestone
+// (see core/expedition.js). Good days open nothing.
 // Order matters — items are revealed sequentially, region by region.
 export const DEFAULT_EXPEDITION = {
   regions: [
@@ -167,7 +169,7 @@ export const DEFAULT_EXPEDITION = {
   ],
   items: [
     // Base Camp
-    { id: 'bc_map', region: 'basecamp', type: 'location', title: 'Keşif Haritası', fact: 'Her tamamlanan gün haritada bir adım demek.' },
+    { id: 'bc_map', region: 'basecamp', type: 'location', title: 'Keşif Haritası', fact: 'Her keşif bir gelişim anı: bir sunum, yeni bir beceri, güçlü bir hafıza.' },
     { id: 'bc_compass', region: 'basecamp', type: 'fossil', title: 'Pusula', fact: 'Kaşifler yönlerini pusulayla bulur. Kuzey her zaman aynı yerdedir.' },
     { id: 'bc_footprint', region: 'basecamp', type: 'fact', title: 'İlk Ayak İzi', fact: 'Biliyor muydun? Dinozor ayak izleri 100 milyon yıl boyunca taşta kalabilir.' },
     { id: 'bc_tent', region: 'basecamp', type: 'location', title: 'Kamp Çadırı', fact: 'Paleontologlar kazı alanında haftalarca çadırda kalır.' },
@@ -200,10 +202,11 @@ export const DEFAULT_EXPEDITION = {
     { id: 'np_meteor', region: 'peaks', type: 'fact', title: 'Göktaşı', fact: 'Biliyor muydun? 66 milyon yıl önce dev bir göktaşı dinozor çağını bitirdi.' },
     { id: 'np_summit', region: 'peaks', type: 'location', title: 'Zirve', fact: 'Buraya kadar geldin. Gerçek bir kaşifsin.' },
   ],
-  daysPerDiscovery: 2,      // expedition steps (good days + mastered skills + presentations) per discovery
-  // Milestone discoveries (core/expedition.js → milestoneCounts). Each is a
-  // whole discovery on its own, on top of the step count. Counted only from
+  daysPerDiscovery: 2,      // LEGACY, no longer read by this build. Kept because Production ≤ 480750e shares /v2 and reads it (`|| 1`).
+  // Threshold milestones (core/expedition.js → milestoneCounts). Each is a
+  // whole discovery, like a graduation or a presentation. Counted only from
   // `expedition.milestonesSince` so an upgrade never releases a burst.
+  // Pilot values — evaluated during real usage; no UI for them yet.
   milestones: {
     memoryDays: 7,           // complete daily-review days per discovery ("Hafızanı güçlü tuttun")
     englishDays: 10,         // Little Explorer study days per discovery

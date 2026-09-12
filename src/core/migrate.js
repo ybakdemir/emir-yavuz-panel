@@ -4,6 +4,7 @@ import {
 } from '../content/defaults.js';
 import { weekKey, todayKey } from './dates.js';
 import { emptyDay } from './completion.js';
+import { developmentCounts } from './expedition.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
 
@@ -30,7 +31,7 @@ export function buildInitialState(today, writer = 'init') {
     days: {},
     weeks: {},
     months: {},
-    expedition: { discovered: {}, reasons: {}, milestoneSeen: { memory: 0, english: 0, month: 0 }, milestonesSince: today },
+    expedition: { discovered: {}, reasons: {}, milestoneSeen: { mastered: 0, presentations: 0, memory: 0, english: 0, month: 0 }, milestonesSince: today },
     achievements: [],
     // Learning memory layer — keyed by id (Firebase keeps keyed objects intact,
     // and drops them when empty; ensureShape puts the containers back).
@@ -42,7 +43,7 @@ export function buildInitialState(today, writer = 'init') {
     memoryProjects: {},
     weeklyReflections: {},
     legacy: null,
-    upgrades: { explorerDaily: today }, // one-time data upgrades already applied (see ensureShape)
+    upgrades: { explorerDaily: today, typedReviewPool: today, mapFact: today }, // one-time data upgrades already applied (see ensureShape)
     meta: { updatedAt: 0, writer },
   };
 }
@@ -89,6 +90,15 @@ export function ensureShape(state, today = todayKey()) {
   // Milestone discoveries only count from the day this build first saw the
   // state, so an upgrade never hands out a burst for old history.
   state.expedition.milestonesSince ||= today;
+  // Graduations and presentations are all-time counts; the ledger absorbs
+  // whatever exists on first sight (the old good-day formula already credited
+  // them as steps), so only the *next* one opens a find. See syncDiscoveries.
+  const seen = state.expedition.milestoneSeen;
+  if (seen.mastered === undefined || seen.presentations === undefined) {
+    const dev = developmentCounts(state);
+    seen.mastered ??= dev.mastered;
+    seen.presentations ??= dev.presentations;
+  }
   state.achievements ||= [];
   // Learning memory layer: a state saved before it existed gets empty
   // collections and the default review schedule; nothing else is touched.
@@ -113,6 +123,22 @@ export function ensureShape(state, today = todayKey()) {
     const ex = state.config.items.find((it) => it.id === 'explorer');
     if (ex && ex.days === 'weekday' && !ex.daysNow) { ex.daysFrom = today; ex.daysNow = 'all'; }
     state.upgrades.explorerDaily = today;
+  }
+  // One-time upgrade: the Daily Review Pool became type-aware (SURA in by
+  // default, POEM / SONG / OTHER out). The previous build wrote
+  // `dailyReviewEnabled: true` on every mastered item, indistinguishable from
+  // a parent's choice — so system `true` is dropped (the type default takes
+  // over) and every `false`, which only a parent could have set, survives.
+  if (!state.upgrades.typedReviewPool) {
+    for (const it of Object.values(state.memorizationItems || {})) if (it?.dailyReviewEnabled === true) delete it.dailyReviewEnabled;
+    state.upgrades.typedReviewPool = today;
+  }
+  // One-time copy fix: the first find's fact described the retired good-day
+  // rule. Only the untouched default text is replaced; an edited fact stays.
+  if (!state.upgrades.mapFact) {
+    const bc = state.config.expedition.items.find((it) => it.id === 'bc_map');
+    if (bc && bc.fact === 'Her tamamlanan gün haritada bir adım demek.') bc.fact = init.config.expedition.items.find((it) => it.id === 'bc_map').fact;
+    state.upgrades.mapFact = today;
   }
   state.meta ||= { updatedAt: 0, writer: 'unknown' };
   return state;

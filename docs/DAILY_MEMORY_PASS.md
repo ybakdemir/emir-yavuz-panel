@@ -13,7 +13,7 @@ Additive pass on `v2`. Little Explorer becomes a real daily Today habit; a **Dai
 ## Daily Review Pool (`src/core/dailyReview.js`)
 | Concept | Where |
 |---|---|
-| in pool | `memorizationItems[id].dailyReviewEnabled` — **opt-out**: MASTERED + not archived + `!== false`; `markMastered` sets `true` |
+| in pool | MASTERED + not archived + `dailyReviewOn(it)`: the parent's explicit `dailyReviewEnabled` if set, else the **type default** — SURA in (opt-out), POEM / SONG / OTHER out (opt-in). `markMastered` writes nothing; only the parent toggle writes the field. *(Superseded 2026-09-12 — see REWARD_SEMANTICS_AUDIT.md §D.)* |
 | daily target | `config.review.dailyTarget` (default 3, min 1, capped by pool size at selection) |
 | today's set | `memorizationDaily[YYYY-MM-DD] = { items:[ids], target, all, at }` — frozen on the first review of the day (`freezeDailySet`), live-computed before that |
 | completion | derived: a `memorizationReviews` record with `date === today` for the item (`reviewsOn`) — nothing duplicated |
@@ -43,7 +43,7 @@ Unchanged (`recordReview`: self +1 step, assisted −1, needs_work → start + `
 `LEVEL = standard | meaningful | milestone`; `EVENTS` map event → level + copy; `levelForItem`/`eventForItem` for Today items (explorer, physical = meaningful). No numbers, nothing stored or summed. Copy checked against "puan/yıldız/+n/xp/bonus".
 
 ## Discoveries (`src/core/expedition.js`)
-`earned = floor(steps / daysPerDiscovery) + milestoneCounts().total` where milestones = `floor(completeReviewDays / 7)` + `floor(explorerStudyDays / 10)` + months with Ayın Kutlaması unlocked, all counted from `expedition.milestonesSince` (set to the first boot of this build → no burst on upgrade). Each fresh item gets `expedition.reasons[id]` (`memory|english|month|steps`), milestone reasons on the newest items. Thresholds in `config.expedition.milestones`. One new card, **Mamenchisaurus** (`jv_mamen`, Jura Vadisi), slotted after Brachiosaurus in existing configs. Fixed: the Today banner no longer consumes the pending reveal before the Expedition page shows it.
+**Superseded 2026-09-12 by REWARD_SEMANTICS_AUDIT.md — the `floor(steps / daysPerDiscovery)` term was removed; discoveries now open for milestones only (ledger in `expedition.milestoneSeen`).** As shipped in ac583fe: `earned = floor(steps / daysPerDiscovery) + milestoneCounts().total` where milestones = `floor(completeReviewDays / 7)` + `floor(explorerStudyDays / 10)` + months with Ayın Kutlaması unlocked, all counted from `expedition.milestonesSince` (set to the first boot of this build → no burst on upgrade). Each fresh item gets `expedition.reasons[id]` (`memory|english|month|steps`), milestone reasons on the newest items. Thresholds in `config.expedition.milestones`. One new card, **Mamenchisaurus** (`jv_mamen`, Jura Vadisi), slotted after Brachiosaurus in existing configs. Fixed: the Today banner no longer consumes the pending reveal before the Expedition page shows it.
 
 ## Artwork
 No production assets exist → SVG silhouette added for Mamenchisaurus, `src/content/artwork.js` registry (empty) + `docs/ARTWORK.md` spec. `dino()` swaps to `<img>` per kind when registered.

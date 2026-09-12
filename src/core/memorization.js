@@ -49,8 +49,9 @@ export function markMastered(state, id, date) {
   if (it.startedAt && it.startedAt > date) it.startedAt = date;
   it.intervalIndex = 0;
   it.nextReviewAt = addDays(date, reviewIntervals(state)[0]);
-  // A newly mastered item joins the Daily Review Pool; parents can take it out (core/dailyReview.js).
-  if (it.dailyReviewEnabled === undefined) it.dailyReviewEnabled = true;
+  // Daily Review Pool membership is decided by type unless a parent chose
+  // (dailyReview.js: SURA in by default, POEM / SONG / OTHER out by default).
+  // `dailyReviewEnabled` is only ever written by the parent's toggle.
   return it;
 }
 

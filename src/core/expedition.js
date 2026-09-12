@@ -3,21 +3,34 @@ import { monthKey } from './dates.js';
 import { studyDays } from './analytics.js';
 import { completeReviewDays } from './dailyReview.js';
 
+// Dinosaur Discoveries celebrate development; they are never a task score.
+// A discovery opens only for a MILESTONE (see celebration.js): a skill
+// graduated, a weekly presentation given, a memory / English / monthly
+// milestone. Good days — i.e. the share of ordinary checkboxes ticked — are
+// shown on the map as a consistency stat but open nothing. (Until the
+// reward-semantics audit of 2026-09-12 every two good days opened a find;
+// that path is gone. Whatever it opened stays discovered.)
+
+/** Skills graduated and weekly presentations given — all-time, one discovery each. */
+export function developmentCounts(state) {
+  const mastered = (state.skills?.pool || []).filter((s) => s.status === 'mastered').length;
+  const presentations = Object.values(state.weeks || {}).filter((w) => w?.presentation?.presented).length;
+  return { mastered, presentations };
+}
+
 /**
- * Expedition steps = good days + mastered skills + presentations given.
- * Nothing is ever subtracted, and discoveries are written once with a date,
- * so a rough week can never take away what was already found.
+ * Map header stats. `goodDays` is informational only — it is NOT an input to
+ * any discovery (see the note above). Nothing here is ever subtracted.
  */
 export function expeditionSteps(state, upto) {
   const goodDays = Object.keys(state.days).filter((k) => k <= upto && isGoodDay(state, k)).length;
-  const mastered = state.skills.pool.filter((s) => s.status === 'mastered').length;
-  const presentations = Object.values(state.weeks || {}).filter((w) => w?.presentation?.presented).length;
+  const { mastered, presentations } = developmentCounts(state);
   return { goodDays, mastered, presentations, total: goodDays + mastered + presentations };
 }
 
 /**
- * Milestone discoveries — whole discoveries on top of the step count, for
- * development that a "good day" does not capture:
+ * Threshold milestones — whole discoveries for development that a single
+ * event does not capture:
  *  - memory  : every `milestones.memoryDays` days on which the whole Daily
  *              Review set was read
  *  - english : every `milestones.englishDays` Little Explorer study days
@@ -37,30 +50,48 @@ export function milestoneCounts(state, upto) {
   return { memory, english, month, memoryDays, englishDays, total: memory + english + month };
 }
 
+/** The kinds that can open a discovery, in reveal order. Keys double as celebration.DISCOVERY_REASON keys. */
+export const DISCOVERY_KINDS = ['mastered', 'presentations', 'memory', 'english', 'month'];
+
+/** Everything that can open a discovery: one per skill graduation, presentation and threshold milestone. */
+export function discoveryCredits(state, upto) {
+  const dev = developmentCounts(state);
+  const ms = milestoneCounts(state, upto);
+  return { ...dev, memory: ms.memory, english: ms.english, month: ms.month, total: dev.mastered + dev.presentations + ms.total };
+}
+
 /**
  * Persist any newly earned discoveries. Returns the ids revealed just now.
- * Each fresh discovery is attributed to a reason (memory / english / month /
- * steps) so the reveal can say *why* — see celebration.DISCOVERY_REASON.
+ *
+ * Works as a ledger: `expedition.milestoneSeen[kind]` is how many credits of
+ * each kind were already turned into finds; each new credit opens the next
+ * undiscovered item and is written to `expedition.reasons[id]` so the reveal
+ * can say *why*. A kind the ledger has never seen is absorbed at its current
+ * count (ensureShape does this on load) — so a state upgraded from the
+ * good-day formula neither bursts nor owes anything: the next development
+ * event opens the next find, whatever the old formula had already opened.
  */
 export function syncDiscoveries(state, today) {
   const ex = state.config.expedition;
   state.expedition ||= { discovered: {} };
   state.expedition.discovered ||= {};
   state.expedition.reasons ||= {};
-  const steps = expeditionSteps(state, today).total;
-  const ms = milestoneCounts(state, today);
-  const earned = Math.floor(steps / (ex.daysPerDiscovery || 1)) + ms.total;
-  // Which milestone counters moved since the last sync → reasons for the fresh items, in order.
-  const seen = state.expedition.milestoneSeen || { memory: 0, english: 0, month: 0 };
+  const seen = (state.expedition.milestoneSeen ||= {});
+  const credits = discoveryCredits(state, today);
   const reasons = [];
-  for (const k of ['memory', 'english', 'month']) for (let i = seen[k] || 0; i < ms[k]; i++) reasons.push(k);
-  state.expedition.milestoneSeen = { memory: Math.max(seen.memory || 0, ms.memory), english: Math.max(seen.english || 0, ms.english), month: Math.max(seen.month || 0, ms.month) };
+  for (const k of DISCOVERY_KINDS) {
+    if (seen[k] === undefined) seen[k] = credits[k]; // first sight of this kind: history is not re-issued
+    for (let i = seen[k]; i < credits[k]; i++) reasons.push(k);
+    seen[k] = Math.max(seen[k], credits[k]); // a corrected record can lower a count, never a discovery
+  }
   const fresh = [];
-  ex.items.slice(0, earned).forEach((item) => {
-    if (!state.expedition.discovered[item.id]) { state.expedition.discovered[item.id] = today; fresh.push(item.id); }
-  });
-  // Milestone reasons go to the newest items of the batch (the ones the reveal shows first).
-  [...fresh].reverse().forEach((id) => { state.expedition.reasons[id] = reasons.pop() || 'steps'; });
+  for (const item of ex.items) {
+    if (fresh.length >= reasons.length) break;
+    if (state.expedition.discovered[item.id]) continue;
+    state.expedition.discovered[item.id] = today;
+    state.expedition.reasons[item.id] = reasons[fresh.length];
+    fresh.push(item.id);
+  }
   return fresh;
 }
 

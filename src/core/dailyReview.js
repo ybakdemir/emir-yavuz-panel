@@ -1,4 +1,4 @@
-import { MEMO_STATUS, REVIEW_RESULT, HEALTH } from '../content/defaults.js';
+import { MEMO_STATUS, MEMO_TYPE, REVIEW_RESULT, HEALTH } from '../content/defaults.js';
 import { diffDays, range } from './dates.js';
 import { memoItems, recordReview } from './memorization.js';
 
@@ -13,17 +13,32 @@ import { memoItems, recordReview } from './memorization.js';
 
 const ROTATION_EPOCH = '2020-01-01';
 
-/** Mastered, not archived, kept in the pool (opt-out: a mastered item is in the pool unless a parent turns it off). */
+/**
+ * Pool default by type: mastered suras are the family's daily maintenance
+ * case and stay in (opt-out); poems, songs and everything else are kept out
+ * until a parent opts them in. Owner decision, 2026-09-12.
+ */
+export function dailyReviewDefault(it) {
+  return it?.type === MEMO_TYPE.SURA;
+}
+
+/** Effective pool switch: the parent's explicit choice when there is one, the type default otherwise. */
+export function dailyReviewOn(it) {
+  return typeof it?.dailyReviewEnabled === 'boolean' ? it.dailyReviewEnabled : dailyReviewDefault(it);
+}
+
+/** Mastered, not archived, kept in the pool (see dailyReviewOn). */
 export function poolItems(state) {
   return memoItems(state)
-    .filter((it) => it.status === MEMO_STATUS.MASTERED && it.dailyReviewEnabled !== false)
+    .filter((it) => it.status === MEMO_STATUS.MASTERED && dailyReviewOn(it))
     .sort((a, b) => (a.masteredAt || '').localeCompare(b.masteredAt || '') || a.title.localeCompare(b.title, 'tr'));
 }
 
 export function inPool(it) {
-  return !!it && it.status === MEMO_STATUS.MASTERED && !it.archived && it.dailyReviewEnabled !== false;
+  return !!it && it.status === MEMO_STATUS.MASTERED && !it.archived && dailyReviewOn(it);
 }
 
+/** Parent's explicit choice. The only writer of `dailyReviewEnabled`. */
 export function setDailyReview(state, id, on) {
   const it = state.memorizationItems?.[id];
   if (!it) return null;

@@ -6,15 +6,16 @@ import { ensureDay, setStatus, getStatus, isCompleted } from '../src/core/comple
 import { itemsForDay, coreItemsForDay, daysFor, setItemDays } from '../src/core/schedule.js';
 import { independenceStats, studyDays, explorerStats } from '../src/core/analytics.js';
 import { isGoodDay, dayCompletion } from '../src/core/rewards.js';
-import { addMemoItem, markMastered, recordReview, reviewsFor, dueItems, archiveMemoItem, removeReview } from '../src/core/memorization.js';
+import { addMemoItem, markMastered, markLearning, updateMemoItem, recordReview, reviewsFor, dueItems, archiveMemoItem, removeReview } from '../src/core/memorization.js';
 import {
-  poolItems, inPool, setDailyReview, dailyTarget, setDailyTarget, selectDailyReviews, dailyReviewSet, freezeDailySet,
+  poolItems, inPool, setDailyReview, dailyReviewOn, dailyReviewDefault, dailyTarget, setDailyTarget, selectDailyReviews, dailyReviewSet, freezeDailySet,
   expandDailySet, recordDailyReview, reviewsOn, dailyReviewHistory, completeReviewDays, memoryHealth,
 } from '../src/core/dailyReview.js';
-import { expeditionSteps, milestoneCounts, syncDiscoveries } from '../src/core/expedition.js';
+import { expeditionSteps, milestoneCounts, syncDiscoveries, discoveryCredits, DISCOVERY_KINDS } from '../src/core/expedition.js';
 import { LEVEL, celebrationFor, levelForItem, eventForItem, DISCOVERY_REASON } from '../src/core/celebration.js';
-import { STATUS, REVIEW_RESULT, HEALTH, DEFAULT_REVIEW, DEFAULT_ITEMS } from '../src/content/defaults.js';
+import { STATUS, REVIEW_RESULT, HEALTH, DEFAULT_REVIEW, DEFAULT_ITEMS, MEMO_TYPE } from '../src/content/defaults.js';
 import { addDays } from '../src/core/dates.js';
+import { graduateSkill } from '../src/core/skills.js';
 import { V1_BLOB, MemoryStorage } from './fixtures.js';
 
 const T = '2026-09-12'; // Saturday
@@ -343,7 +344,7 @@ test('milestones: complete review days and English days open whole discoveries w
   assert.ok(DISCOVERY_REASON.memory.includes('Hafızanı'));
   // idempotent; counters remembered
   assert.deepEqual(syncDiscoveries(s, T), []);
-  assert.deepEqual(s.expedition.milestoneSeen, { memory: 1, english: 1, month: 0 });
+  assert.deepEqual(s.expedition.milestoneSeen, { mastered: 0, presentations: 0, memory: 1, english: 1, month: 0 });
   // a deleted review can lower the count but never takes a discovery away
   Object.values(s.memorizationReviews).slice(0, 2).forEach((r) => removeReview(s, r.id));
   assert.deepEqual(syncDiscoveries(s, T), []);
@@ -374,6 +375,146 @@ test('celebration: three semantic levels, no numbers; explorer and physical are 
   assert.ok(!/puan|yıldız|\+\d|xp|bonus/i.test(copy));
 });
 
+// ── DAILY REVIEW POOL — TYPE-AWARE DEFAULT (owner decision 2026-09-12) ──
+test('pool default: a mastered SURA is in the Daily Review Pool, a mastered POEM / SONG / OTHER is not', () => {
+  const s = mk();
+  const made = {};
+  for (const type of Object.values(MEMO_TYPE)) { const it = addMemoItem(s, { title: type, type }, '2026-09-01'); markMastered(s, it.id, '2026-09-01'); made[type] = it; }
+  assert.equal(dailyReviewDefault(made.SURA), true);
+  assert.equal(inPool(made.SURA), true);
+  for (const type of ['POEM', 'SONG', 'OTHER']) {
+    assert.equal(dailyReviewDefault(made[type]), false, type);
+    assert.equal(inPool(made[type]), false, type);
+    assert.equal(made[type].dailyReviewEnabled, undefined, `${type}: mastery writes no explicit choice`);
+  }
+  assert.equal(made.SURA.dailyReviewEnabled, undefined);
+  assert.deepEqual(poolItems(s).map((it) => it.title), ['SURA']);
+  // mastery state and history are what they were; only membership differs by type
+  for (const it of Object.values(made)) assert.equal(it.status, 'MASTERED');
+  assert.deepEqual(dailyReviewSet(s, T).items.map((it) => it.title), ['SURA']);
+});
+
+test('pool default: parents can opt a poem in and a sura out; the choice is explicit and survives re-mastering and a type edit', () => {
+  const s = mk();
+  const poem = addMemoItem(s, { title: 'Şiir', type: MEMO_TYPE.POEM }, '2026-09-01'); markMastered(s, poem.id, '2026-09-01');
+  const sura = addMemoItem(s, { title: 'Fatiha' }, '2026-09-01'); markMastered(s, sura.id, '2026-09-01');
+  setDailyReview(s, poem.id, true); setDailyReview(s, sura.id, false);
+  assert.equal(poem.dailyReviewEnabled, true); assert.equal(sura.dailyReviewEnabled, false);
+  assert.deepEqual(poolItems(s).map((it) => it.title), ['Şiir']);
+  markLearning(s, poem.id); markMastered(s, poem.id, '2026-09-05');
+  markLearning(s, sura.id); markMastered(s, sura.id, '2026-09-05');
+  assert.deepEqual(poolItems(s).map((it) => it.title), ['Şiir']);
+  // without a choice the type default follows a type edit; with one, the choice wins
+  const other = addMemoItem(s, { title: 'Diğer', type: MEMO_TYPE.OTHER }, '2026-09-01'); markMastered(s, other.id, '2026-09-01');
+  assert.equal(dailyReviewOn(other), false);
+  updateMemoItem(s, other.id, { type: MEMO_TYPE.SURA }); assert.equal(dailyReviewOn(other), true);
+  updateMemoItem(s, sura.id, { type: MEMO_TYPE.OTHER }); assert.equal(dailyReviewOn(sura), false);
+  updateMemoItem(s, sura.id, { type: MEMO_TYPE.SURA }); assert.equal(dailyReviewOn(sura), false);
+});
+
+test('pool upgrade from ac583fe: system-written true is dropped (type default applies), parent false survives, runs once', () => {
+  const s = mk();
+  const mkOld = (title, type, flag) => { const it = addMemoItem(s, { title, type }, '2026-09-01'); markMastered(s, it.id, '2026-09-01'); if (flag !== undefined) it.dailyReviewEnabled = flag; return it.id; };
+  const suraOn = mkOld('Fatiha', MEMO_TYPE.SURA, true);       // ac583fe markMastered
+  const suraOff = mkOld('Nas', MEMO_TYPE.SURA, false);        // parent opted out
+  const poemOn = mkOld('Şiir', MEMO_TYPE.POEM, true);         // ac583fe markMastered → must leave the pool
+  const songOff = mkOld('Şarkı', MEMO_TYPE.SONG, false);      // parent opted out → stays out
+  const otherOn = mkOld('Diğer', MEMO_TYPE.OTHER, true);      // ac583fe markMastered → must leave the pool
+  const preLayer = mkOld('İhlas', MEMO_TYPE.SURA, undefined); // mastered before the pool existed
+  const learning = addMemoItem(s, { title: 'Felak' }, '2026-09-10').id;
+  delete s.upgrades.typedReviewPool;
+  recordReview(s, poemOn, REVIEW_RESULT.SELF, '2026-09-02');
+  const before = JSON.parse(JSON.stringify(s));
+  const up = ensureShape(JSON.parse(JSON.stringify(s)), T);
+  assert.equal(up.upgrades.typedReviewPool, T);
+  assert.deepEqual(poolItems(up).map((it) => it.title).sort(), ['Fatiha', 'İhlas'].sort());
+  assert.equal(up.memorizationItems[suraOn].dailyReviewEnabled, undefined);
+  assert.equal(up.memorizationItems[suraOff].dailyReviewEnabled, false);
+  assert.equal(up.memorizationItems[poemOn].dailyReviewEnabled, undefined);
+  assert.equal(up.memorizationItems[songOff].dailyReviewEnabled, false);
+  assert.equal(up.memorizationItems[otherOn].dailyReviewEnabled, undefined);
+  assert.equal(up.memorizationItems[learning].status, 'LEARNING');
+  // mastery state and review history untouched
+  for (const id of Object.keys(before.memorizationItems)) {
+    const { dailyReviewEnabled: _a, ...a } = before.memorizationItems[id]; const { dailyReviewEnabled: _b, ...b } = up.memorizationItems[id];
+    assert.deepEqual(a, b);
+  }
+  assert.deepEqual(up.memorizationReviews, before.memorizationReviews);
+  // the parent re-enables the poem after the upgrade; a second ensureShape keeps it
+  setDailyReview(up, poemOn, true);
+  const again = ensureShape(JSON.parse(JSON.stringify(up)), addDays(T, 1));
+  assert.equal(again.memorizationItems[poemOn].dailyReviewEnabled, true);
+  assert.ok(poolItems(again).some((it) => it.id === poemOn));
+});
+
+test('map copy upgrade: the untouched legacy bc_map fact is replaced once; an edited fact is kept', () => {
+  const legacy = 'Her tamamlanan gün haritada bir adım demek.';
+  const s = mk(); delete s.upgrades.mapFact; s.config.expedition.items.find((it) => it.id === 'bc_map').fact = legacy;
+  const up = ensureShape(JSON.parse(JSON.stringify(s)), T);
+  assert.ok(!up.config.expedition.items.find((it) => it.id === 'bc_map').fact.includes('tamamlanan gün'));
+  assert.equal(up.upgrades.mapFact, T);
+  const e = mk(); delete e.upgrades.mapFact; e.config.expedition.items.find((it) => it.id === 'bc_map').fact = 'Annemin yazdığı not';
+  assert.equal(ensureShape(JSON.parse(JSON.stringify(e)), T).config.expedition.items.find((it) => it.id === 'bc_map').fact, 'Annemin yazdığı not');
+});
+
+// ── DISCOVERY ELIGIBILITY — development only (reward-semantics audit 2026-09-12) ──
+test('discoveries: routine checkboxes never inflate eligibility, whatever the volume or the legacy daysPerDiscovery', () => {
+  const s = mk();
+  s.config.expedition.daysPerDiscovery = 1;
+  for (let i = 0; i < 60; i++) {
+    const d = ensureDay(s, addDays('2026-07-01', i)); d.homework = 'exists';
+    ['morning', 'reading', 'quran', 'prayer', 'physical', 'evening', 'homework'].forEach((id) => setStatus(d, id, STATUS.INDEPENDENT, 1));
+  }
+  assert.equal(expeditionSteps(s, '2026-08-29').goodDays, 60); // the stat exists…
+  assert.equal(discoveryCredits(s, '2026-08-29').total, 0);   // …and buys nothing
+  assert.deepEqual(syncDiscoveries(s, '2026-08-29'), []);
+  assert.deepEqual(Object.keys(s.expedition.discovered), []);
+  assert.deepEqual(DISCOVERY_KINDS, ['mastered', 'presentations', 'memory', 'english', 'month']);
+  assert.ok(!('steps' in discoveryCredits(s, '2026-08-29')) && !('goodDays' in discoveryCredits(s, '2026-08-29')));
+});
+
+test('discoveries: every credit kind opens exactly one find with its own reason', () => {
+  const s = mk();
+  s.expedition.milestonesSince = '2026-09-01';
+  withPool(s, ['A', 'B', 'C']);
+  for (let i = 0; i < 7; i++) { const d = addDays('2026-09-01', i); freezeDailySet(s, d); s.memorizationDaily[d].items.forEach((id) => recordDailyReview(s, id, REVIEW_RESULT.SELF, d)); }
+  for (let i = 0; i < 10; i++) setStatus(ensureDay(s, addDays('2026-09-01', i)), 'explorer', STATUS.COMPLETED_UNSPECIFIED, 1);
+  graduateSkill(s, s.skills.pool[0].id, '2026-09-10');
+  s.weeks['2026-09-07'] = { presentation: { topic: 'Uzay', prepared: true, presented: true, presentedOn: '2026-09-11' } };
+  const c = discoveryCredits(s, T);
+  assert.deepEqual({ mastered: c.mastered, presentations: c.presentations, memory: c.memory, english: c.english, month: c.month, total: c.total }, { mastered: 1, presentations: 1, memory: 1, english: 1, month: 0, total: 4 });
+  const fresh = syncDiscoveries(s, T);
+  assert.equal(fresh.length, 4);
+  assert.deepEqual(fresh.map((id) => s.expedition.reasons[id]), ['mastered', 'presentations', 'memory', 'english']);
+  assert.ok(fresh.every((id) => DISCOVERY_REASON[s.expedition.reasons[id]]));
+  assert.deepEqual(syncDiscoveries(s, T), []);
+});
+
+test('discoveries: a state upgraded from the good-day formula keeps its finds, gets no burst and owes no deficit', () => {
+  const s = mk();
+  // ac583fe shape: six finds from good days, one graduation and one presentation already counted as steps
+  delete s.expedition.milestoneSeen.mastered; delete s.expedition.milestoneSeen.presentations;
+  s.expedition.milestoneSeen = { memory: 0, english: 0, month: 0 };
+  graduateSkill(s, s.skills.pool[0].id, '2026-08-20');
+  s.weeks['2026-08-31'] = { presentation: { topic: 'Eski', prepared: true, presented: true, presentedOn: '2026-09-04' } };
+  const six = s.config.expedition.items.slice(0, 6).map((it) => it.id);
+  six.forEach((id, i) => { s.expedition.discovered[id] = addDays('2026-08-20', i); s.expedition.reasons[id] = 'steps'; });
+  const up = ensureShape(JSON.parse(JSON.stringify(s)), T);
+  assert.deepEqual(up.expedition.milestoneSeen, { memory: 0, english: 0, month: 0, mastered: 1, presentations: 1 });
+  assert.deepEqual(syncDiscoveries(up, T), []);                       // no burst
+  assert.deepEqual(Object.keys(up.expedition.discovered), six);         // nothing taken back
+  s.weeks['2026-09-07'] = { presentation: { topic: 'Yeni', prepared: true, presented: true, presentedOn: T } };
+  up.weeks['2026-09-07'] = s.weeks['2026-09-07'];
+  const fresh = syncDiscoveries(up, T);                                 // no deficit: the very next credit opens #7
+  assert.deepEqual(fresh, [s.config.expedition.items[6].id]);
+  assert.equal(up.expedition.reasons[fresh[0]], 'presentations');
+  assert.equal(up.expedition.reasons[six[0]], 'steps');                 // legacy finds keep their legacy story
+  // a state that never had a ledger (Production 480750e shape) absorbs lazily inside syncDiscoveries too
+  const prod = JSON.parse(JSON.stringify(s)); delete prod.expedition.milestoneSeen; delete prod.expedition.reasons;
+  assert.deepEqual(syncDiscoveries(prod, T), []);
+  assert.deepEqual(prod.expedition.milestoneSeen, { mastered: 1, presentations: 2, memory: 0, english: 0, month: 0 });
+});
+
 // ── MIGRATION / SHAPE ─────────────────────────────────────────────────
 test('migration: a pre-pass ey_v6 boots with the new containers and defaults, and nothing existing is rewritten', async () => {
   const s = mk();
@@ -395,7 +536,7 @@ test('migration: a pre-pass ey_v6 boots with the new containers and defaults, an
   assert.deepEqual(up.config.expedition.milestones, { memoryDays: 7, englishDays: 10 });
   assert.deepEqual(up.expedition.discovered, old.expedition.discovered);
   assert.equal(up.expedition.milestonesSince, T);
-  assert.deepEqual(up.expedition.milestoneSeen, { memory: 0, english: 0, month: 0 });
+  assert.deepEqual(up.expedition.milestoneSeen, { memory: 0, english: 0, month: 0, mastered: 0, presentations: 0 });
   // Mamenchisaurus slotted in after Brachiosaurus; existing order intact
   const list = ids(up.config.expedition.items);
   assert.equal(list[list.indexOf('jv_brachio') + 1], 'jv_mamen');

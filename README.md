@@ -98,8 +98,9 @@ picks it. Three rates, three denominators (`src/core/analytics.js`):
 * **Classification coverage** = classified / completed — how much of the
   completed work has been classified at all.
 
-Unspecified completions still count as done for good days, the expedition and
-the child's progress ring.
+Unspecified completions still count as done for good days and the child's
+progress ring. Good days never open an Expedition find — discoveries are
+milestone-only (see `docs/REWARD_SEMANTICS_AUDIT.md`).
 
 ## Storage & migration
 

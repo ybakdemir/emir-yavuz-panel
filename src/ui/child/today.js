@@ -75,7 +75,7 @@ export function renderToday(main, ctx) {
     const { title, reason } = discoveryCopy(state, fresh[fresh.length - 1]);
     // The Expedition page takes the pending discoveries and reveals the newest; the banner only navigates.
     add(main, h('a', { class: 'discovery-banner', href: '#/expedition' },
-      icon('map', 28), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni keşif!'), h('div', { class: 's' }, `${title}. ${reason}`)), icon('chevron', 22)));
+      icon('map', 28), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni keşif!'), h('div', { class: 's' }, [title, reason].filter(Boolean).join('. '))), icon('chevron', 22)));
   }
 
   // A skill graduated today is a milestone worth seeing all day, not just once.
