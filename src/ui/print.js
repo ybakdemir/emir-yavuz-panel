@@ -29,11 +29,12 @@ export function renderPrint(root, ctx, wkArg) {
       h('thead', {}, h('tr', {}, h('th', { style: { width: '26%' } }, 'Görev'), days.map((k) => h('th', {}, `${dayNameShort(k)} ${fromKey(k).getDate()}`)))),
       h('tbody', {}, rows.map((it) => h('tr', {},
         h('td', { class: 'item' }, it.kind === 'skill' ? (skill ? `Beceri: ${skill.title}` : 'Haftanın becerisi') : it.title,
-          it.kind === 'homework' ? h('span', { class: 'tiny', style: { textAlign: 'left' } }, 'Ödev yoksa boş bırak') : null),
+          it.kind === 'homework' ? h('span', { class: 'tiny', style: { textAlign: 'left' } }, 'Ödev yoksa boş bırak') : null,
+          it.kind === 'physical' ? h('span', { class: 'tiny', style: { textAlign: 'left' } }, state.config.physical.exercises.map((e) => e.name.split(' ')[0]).join(' · ')) : null),
         days.map((k) => {
           const applies = it.days === 'all' || (it.days === 'weekend') === isWeekend(k);
           if (!applies) return h('td', { style: { background: '#f7f7f7' } });
-          const extra = it.kind === 'physical' ? targetsFor(state.config.physical, k).map((t) => `${t.name.split(' ')[0]} ${t.target}`).join(' · ') : null;
+          const extra = it.kind === 'physical' ? targetsFor(state.config.physical, k).map((t) => t.target).join('·') : null;
           return h('td', {}, h('span', { class: 'box' }), extra ? h('span', { class: 'tiny' }, extra) : null);
         }))))),
     h('div', { class: 'print-side' },

@@ -33,8 +33,9 @@
 .check-list .ok { color: var(--jungle); } .check-list .no { color: var(--ink-3); }
 .table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); padding: 8px 6px; border-bottom: 1px solid var(--line); }
-.table td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-.table-wrap { overflow-x: auto; }
+.table td { padding: 8px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.table-wrap { overflow-x: auto; max-width: 100%; }
+.table .input { min-width: 120px; }
 .list-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .list-row:last-child { border-bottom: 0; }
 .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--ink-3); background: var(--sand); }
@@ -43,7 +44,7 @@
 .status-seg button { min-height: 34px; padding: 0 10px; border-radius: var(--r-pill); font-size: 12.5px; font-weight: 800; color: var(--ink-2); }
 .status-seg button.on { background: var(--paper); box-shadow: var(--shadow-1); }
 .status-seg button.on.ind { color: var(--jungle-2); } .status-seg button.on.rem { color: #9A5A18; } .status-seg button.on.ass { color: #2B5F7E; } .status-seg button.on.no { color: var(--clay); }
-.pattern-grid { display: grid; grid-template-columns: 110px repeat(7, 1fr); gap: 6px; align-items: center; min-width: 560px; }
+.pattern-grid { display: grid; grid-template-columns: 104px repeat(7, 1fr); gap: 6px; align-items: center; min-width: 500px; }
 .pattern-grid .h { font-size: 11px; font-weight: 800; color: var(--ink-3); text-align: center; text-transform: uppercase; }
 .pattern-grid input { width: 100%; min-height: 40px; text-align: center; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; font-weight: 800; }
 .ach { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 700; }

@@ -45,6 +45,7 @@ function route() {
   const hash = location.hash || '#/today';
   const parts = hash.replace(/^#\/?/, '').split('/');
   clear(root);
+  document.body.dataset.day = todayKey();
   document.querySelectorAll('.sheet-overlay').forEach((el) => el.remove());
   document.body.classList.toggle('is-parent', parts[0] === 'parent');
   if (parts[0] === 'parent') return renderParentShell(root, ctx, parts.slice(1));

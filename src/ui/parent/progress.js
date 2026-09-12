@@ -28,7 +28,7 @@ export function renderProgress(body, ctx, parts) {
     h('div', { class: 'week-strip grow' }, weekDays(wk).map((k) => {
       const c = dayCompletion(state, k);
       const cls = !state.days[k] || !c.total ? 'none' : c.ratio === 1 ? 'full' : c.ratio >= state.config.rewards.goodDayRatio ? 'good' : 'some';
-      return h('div', { class: `wday ${k === key ? 'today' : ''} ${k > today ? 'future' : ''}`, style: { minHeight: '70px' }, onclick: () => go(k) },
+      return h('div', { class: `wday ${k === key ? 'today' : ''} ${k > today ? 'future' : ''}`, style: { minHeight: '70px' }, onclick: () => { if (k <= today) go(k); } },
         h('div', { class: 'dn' }, dayNameShort(k)), h('div', { class: 'dd' }, fromKey(k).getDate()), h('div', { class: `dot ${cls}` }, cls === 'none' ? null : cls === 'some' ? h('span', { style: { fontSize: '11px', fontWeight: 900 } }, c.done) : icon('check', 14)));
     })),
     h('button', { class: 'icon-btn', onclick: () => go(addDays(key, 7)), 'aria-label': 'Sonraki hafta' }, icon('chevron', 18))));

@@ -1,5 +1,5 @@
 /* ── Paper mode: "Haftamı Yazdır" ───────────────────────────────────── */
-.print-page { max-width: 900px; margin: 0 auto; padding: 24px var(--gutter) 40px; background: #fff; color: #111; }
+.print-page { overflow-x: auto; max-width: 900px; margin: 0 auto; padding: 24px var(--gutter) 40px; background: #fff; color: #111; }
 .print-page h1 { font-size: 24px; }
 .print-page .sub { color: #444; font-weight: 700; margin-top: 4px; }
 .print-grid { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; table-layout: fixed; }
@@ -9,6 +9,8 @@
 .print-grid .box { display: block; width: 22px; height: 22px; border: 2px solid #222; border-radius: 6px; margin: 0 auto; }
 .print-grid .tiny { font-size: 10px; color: #555; display: block; text-align: center; margin-top: 3px; font-weight: 700; }
 .print-side { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+.print-side > * { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) { .print-side { grid-template-columns: 1fr; } .print-page { font-size: 14px; } }
 .print-box { border: 1.5px solid #222; border-radius: 10px; padding: 10px 12px; min-height: 90px; }
 .print-box b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
 .print-foot { margin-top: 14px; font-size: 12px; color: #444; font-weight: 700; }
