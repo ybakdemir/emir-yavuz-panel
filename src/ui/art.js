@@ -61,6 +61,22 @@ const GLYPH = {
     <circle cx="16" cy="16" r="12" fill="${G2}" opacity=".25"/>`,
   hand: `<path d="M8 15V8a2 2 0 0 1 4 0v6M12 12V6a2 2 0 0 1 4 0v8M16 12V7a2 2 0 0 1 4 0v8M20 15v-3a2 2 0 0 1 4 0v8a8 8 0 0 1-8 8h-1a8 8 0 0 1-7-4l-4-7a2 2 0 0 1 3.4-2L8 18" fill="${G2}" opacity=".6" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`,
   footprint: `<g fill="currentColor"><ellipse cx="15" cy="19" rx="5.5" ry="8"/><circle cx="8.5" cy="10" r="2.3"/><circle cx="13" cy="7" r="2.3"/><circle cx="18.5" cy="7" r="2.3"/><circle cx="23.5" cy="10" r="2.3"/></g>`,
+  // Learning memory layer
+  archive: `<path d="M4 12h24v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" fill="${G2}" opacity=".6"/>
+    <path d="M3 7a2 2 0 0 1 2-2h22a2 2 0 0 1 2 2v5H3z" fill="currentColor"/>
+    <path d="M13 16h6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M4 12h24" stroke="currentColor" stroke-width="1.6" opacity=".5"/>`,
+  library: `<path d="M5 6h5v20H5zM11 6h5v20h-5z" fill="${G2}" opacity=".6"/>
+    <path d="M5 6h5v4H5zM11 6h5v4h-5z" fill="currentColor"/>
+    <path d="M17.5 7.5l4.5-1.2 5 18.6-4.5 1.2z" fill="currentColor"/>
+    <path d="M5 22h11M18.8 20.2l4.4-1.2" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>`,
+  scroll: `<path d="M8 6h16a3 3 0 0 1 3 3v1H11z" fill="currentColor"/>
+    <path d="M8 6a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h13a3 3 0 0 0 3-3V10H8z" fill="${G2}" opacity=".6"/>
+    <path d="M5 23a3 3 0 0 0 3 3h13" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M11 15h8M11 19h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`,
+  leaf: `<path d="M5 27C5 15 12 7 27 5c-1 15-8 22-22 22z" fill="${G2}" opacity=".6"/>
+    <path d="M5 27C9 19 15 13 22 9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    <path d="M12 21c3 0 5-1 7-3M9 24c2 0 4-.5 5-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>`,
 };
 
 export function glyph(name, size = 28, cls = '') {

@@ -39,3 +39,21 @@ export function stringList(items, onChange, placeholder = 'Yeni…') {
 
 /** null = undefined ratio (e.g. no classified completions yet) → '–', never a misleading 0%. */
 export const fmtPct = (v) => (v === null ? '–' : `${Math.round((v || 0) * 100)}%`);
+
+export function dateInput(value, onChange, attrs = {}) {
+  return h('input', { class: 'input input-date', type: 'date', value: value || '', onchange: (e) => onChange(e.target.value || null), ...attrs });
+}
+
+export function monthInput(value, onChange, attrs = {}) {
+  return h('input', { class: 'input input-date', type: 'month', value: value || '', onchange: (e) => onChange(e.target.value || null), ...attrs });
+}
+
+export function selectInput(options, value, onChange, attrs = {}) {
+  return h('select', { class: 'input', onchange: (e) => onChange(e.target.value), ...attrs },
+    options.map(([v, label]) => h('option', { value: v, selected: v === value ? true : null }, label)));
+}
+
+/** Small key/value line used by the learning-layer cards. */
+export function kv(label, value) {
+  return h('div', { class: 'kv' }, h('span', {}, label), h('span', {}, value ?? '—'));
+}

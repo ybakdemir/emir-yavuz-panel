@@ -7,6 +7,9 @@ import { renderPresentations } from './presentations.js';
 import { renderRewards } from './rewards.js';
 import { renderProgress } from './progress.js';
 import { renderSettings } from './settings.js';
+import { renderLibrary } from './library.js';
+import { renderMemory } from './memory.js';
+import { renderReflections } from './reflections.js';
 
 const TABS = [
   ['dashboard', 'Panel', 'chart', renderDashboard],
@@ -15,6 +18,9 @@ const TABS = [
   ['presentations', 'Sunumlar', 'mic', renderPresentations],
   ['rewards', 'Ödüller', 'gift', renderRewards],
   ['progress', 'İlerleme', 'calendar', renderProgress],
+  ['library', 'Kitaplık', 'library', renderLibrary],
+  ['memory', 'Ezber', 'scroll', renderMemory],
+  ['reflections', 'Yansımalar', 'leaf', renderReflections],
   ['settings', 'Ayarlar', 'gear', renderSettings],
 ];
 

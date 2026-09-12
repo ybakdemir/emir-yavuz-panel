@@ -42,6 +42,11 @@ const P = {
   hand: '<path d="M7 11V6a1.5 1.5 0 0 1 3 0v5M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V6a1.5 1.5 0 0 1 3 0v6M16 12V9a1.5 1.5 0 0 1 3 0v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.4L3 13a1.5 1.5 0 0 1 2.4-1.8L7 13"/>',
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"/>',
   people: '<circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14a5 5 0 0 1 6 5"/>',
+  archive: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v10a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19V9M10 13h4"/>',
+  scroll: '<path d="M7 4h11a2 2 0 0 1 2 2v1H9"/><path d="M7 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7"/><path d="M9 11h6M9 15h6"/>',
+  library: '<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M15.5 5.2l3.8-1 4 15.5-3.8 1z"/>',
+  leaf: '<path d="M4 20c0-9 5-14 16-16-1 11-6 16-14 16z"/><path d="M4 20c4-6 8-9 12-12"/>',
+  clockSmall: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 };
 
 export function icon(name, size = 24, cls = '') {

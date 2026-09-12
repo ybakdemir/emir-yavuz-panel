@@ -8,6 +8,8 @@ import { visibleSteps, stepsDone, toggleStep } from '../../core/routines.js';
 import { targetsFor, physicalProgress, toggleExercise } from '../../core/physical.js';
 import { activeSkill } from '../../core/skills.js';
 import { isComeback } from '../../core/analytics.js';
+import { activeBook } from '../../core/library.js';
+import { dueItems } from '../../core/memorization.js';
 import { ring, trail, howChips, taskIcon, checkCircle, stamp, ICON_TONE } from './components.js';
 import { heroScene, exerciseGlyph } from '../art.js';
 
@@ -66,11 +68,20 @@ export function renderToday(main, ctx) {
       icon('map', 28), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni keşif!'), h('div', { class: 's' }, 'Keşif haritasında yeni bir şey buldun.')), icon('chevron', 22)));
   }
 
+  // A memorization review that is due today is the only long-term record that
+  // shows up here — as a quiet link, never as a task or a count.
+  const due = dueItems(state, today);
+  if (due.length) {
+    add(main, h('a', { class: 'quiet-link', href: '#/archive/memory' },
+      icon('scroll', 20), h('span', { class: 'grow' }, 'Bugün tekrar zamanı: ', h('b', {}, due.map((d) => d.title).join(', '))), icon('chevron', 18)));
+  }
+
   // ── task cards
   const expandable = items.filter((it) => ['routine', 'physical'].includes(it.kind) && !isCompleted(getStatus(day, it.id)));
   autoOpenId = expandable.find((it) => it.kind !== 'routine' || visibleSteps(state.config.routines[it.id]).length)?.id || null;
   const list = h('div', { class: 'tasks' });
-  for (const item of items) add(list, renderCard(item, day, ctx));
+  const book = activeBook(state);
+  for (const item of items) add(list, renderCard(item.id === 'reading' && book ? { ...item, subtitle: book.title, bookId: book.id, keepSub: true } : item, day, ctx));
   add(main, list);
 
   if (allDone) {
@@ -97,7 +108,11 @@ function renderCard(item, day, ctx) {
   // One tap = done. Independence is never assumed; the chips below are optional.
   const complete = (val = DEFAULT_COMPLETION) => {
     justDone.add(item.id); howOpen.clear(); howOpen.add(item.id);
-    ctx.update((s) => { const d = ensureDay(s, today); setStatus(d, item.id, val); if (item.kind === 'homework') d.homework = 'exists'; });
+    ctx.update((s) => {
+      const d = ensureDay(s, today); setStatus(d, item.id, val);
+      if (item.kind === 'homework') d.homework = 'exists';
+      if (item.bookId) d.bookId = item.bookId; // which book the family reading was about (structural room for pages later)
+    });
   };
   const undo = () => ctx.update((s) => { setStatus(ensureDay(s, today), item.id, null); });
   const pick = (val) => { if (val !== DEFAULT_COMPLETION) howOpen.delete(item.id); ctx.update((s) => { setStatus(ensureDay(s, today), item.id, val); }); };
@@ -123,7 +138,7 @@ function mainRow(item, { title, sub, done, onTap, expandable = false, open = fal
 
 function renderSimpleCard(card, item, day, ctx, a) {
   add(card, stamp(), mainRow(item, {
-    title: item.title, sub: a.done ? null : item.subtitle, done: a.done,
+    title: item.title, sub: a.done && !item.keepSub ? null : item.subtitle, done: a.done,
     onTap: () => (a.done ? null : a.complete()),
     onCheck: () => (a.done ? a.undo() : a.complete()),
   }));

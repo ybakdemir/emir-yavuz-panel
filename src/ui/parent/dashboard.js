@@ -1,7 +1,10 @@
 import { h, add } from '../dom.js';
 import { icon } from '../icons.js';
 import { addDays, weekKey, weekDays, formatShort, dayNameShort, fromKey } from '../../core/dates.js';
-import { independenceStats, dailySeries, itemTrend, recentAchievements } from '../../core/analytics.js';
+import { independenceStats, dailySeries, itemTrend, recentAchievements, explorerStats } from '../../core/analytics.js';
+import { bookStats, activeBook } from '../../core/library.js';
+import { dueItems, memoByStatus } from '../../core/memorization.js';
+import { activeProject } from '../../core/projects.js';
 import { activeSkill, evaluateGraduation, graduateSkill } from '../../core/skills.js';
 import { weeklyStatus } from '../../core/rewards.js';
 import { pcard, fmtPct } from './common.js';
@@ -79,6 +82,34 @@ export function renderDashboard(body, ctx) {
     h('div', { class: 'kv' }, h('span', {}, 'Sunum'), h('span', {}, pres.presented ? `Yapıldı (${formatShort(pres.presentedOn || wk)})` : 'Bekliyor')),
     h('div', { class: 'kv' }, h('span', {}, 'İyi gün'), h('span', {}, `${w.goodDays} / ${w.needed}`)),
     h('div', { class: 'kv' }, h('span', {}, state.config.rewards.weekly.title), h('span', {}, w.chosen ? w.chosen : w.unlocked ? 'Açıldı — seçim bekliyor' : 'Henüz açılmadı'))));
+
+  // ── Little Explorer — derived from the daily records; descriptive, never a streak
+  const ex = explorerStats(state, today);
+  add(grid, pcard('Little Explorer', 'compass',
+    h('div', { class: 'row', style: { alignItems: 'flex-end', gap: '22px' } },
+      h('div', {}, h('div', { class: 'big' }, String(ex.thisWeek)), h('div', { class: 'small muted' }, 'çalışma günü · bu hafta')),
+      h('div', {}, h('div', { class: 'big', style: { fontSize: '28px', color: 'var(--ink-2)' } }, String(ex.thisMonth)), h('div', { class: 'small muted' }, 'bu ay'))),
+    h('div', { class: 'small muted', style: { margin: '10px 0 4px', fontWeight: 800 } }, 'Son 14 gün'),
+    h('div', { class: 'study-dots', 'aria-label': 'Son 14 günün çalışma günleri' }, ex.last14.map((d) => h('span', { class: d.studied ? 'on' : '', title: `${formatShort(d.key)}: ${d.studied ? 'çalıştı' : 'kayıt yok'}` }))),
+    h('div', { class: 'trend', style: { marginTop: '10px' } }, ex.weeks.map((w) => h('div', { class: 'w' }, h('div', { class: 'v' }, String(w.days)), h('div', { class: 'l' }, formatShort(w.wk))))),
+    h('div', { class: 'small muted', style: { marginTop: '8px' } }, ex.lastStudied ? `Son çalışma: ${formatShort(ex.lastStudied)}. ` : '', 'Bugün ekranında elle işaretlenen "Little Explorer" günlerinden türetilir; işaretlenmeyen gün çalışma sayılmaz.')));
+
+  // ── Learning memory — lifetime records, not thresholds
+  const bs = bookStats(state);
+  const book = activeBook(state);
+  const memo = memoByStatus(state);
+  const due = dueItems(state, today);
+  const project = activeProject(state);
+  add(grid, pcard('Öğrenme arşivi', 'archive',
+    h('div', { class: 'kv' }, h('span', {}, 'Tamamlanan kitap'), h('span', {}, `${bs.completedBooks} kitap · ${bs.completedPages} sayfa`)),
+    h('div', { class: 'kv' }, h('span', {}, 'Aile okuması kitabı'), h('span', {}, book ? book.title : '—')),
+    h('div', { class: 'kv' }, h('span', {}, 'Ezber'), h('span', {}, `${memo.mastered.length} ezberlendi · ${memo.learning.length} öğreniliyor`)),
+    h('div', { class: 'kv' }, h('span', {}, 'Tekrar zamanı'), h('span', {}, due.length ? due.map((d) => d.title).join(', ') : '—')),
+    h('div', { class: 'kv' }, h('span', {}, 'Ayın hafıza projesi'), h('span', {}, project ? project.title : '—')),
+    h('div', { class: 'row wrap', style: { marginTop: '10px', gap: '6px 14px' } },
+      h('a', { class: 'small', href: '#/parent/library', style: { fontWeight: 800 } }, 'Kitaplık →'),
+      h('a', { class: 'small', href: '#/parent/memory', style: { fontWeight: 800 } }, 'Ezber →'),
+      h('a', { class: 'small', href: '#/parent/reflections', style: { fontWeight: 800 } }, 'Yansımalar →'))));
 
   // ── Achievements
   const ach = recentAchievements(state, today, 8);

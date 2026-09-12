@@ -63,7 +63,7 @@ export const DEFAULT_ROUTINES = {
 export const DEFAULT_ITEMS = [
   { id: 'morning', title: 'Sabah rutinim', kind: 'routine', days: 'all', icon: 'sun' },
   { id: 'homework', title: 'Okul ödevim', kind: 'homework', days: 'weekday', icon: 'pencil' },
-  { id: 'explorer', title: 'Little Explorer', subtitle: 'Little Explorer çalışmamı yaptım', kind: 'simple', days: 'weekday', icon: 'compass' },
+  { id: 'explorer', title: 'Little Explorer', subtitle: 'Bugünkü İngilizce çalışmamı yaptım', kind: 'simple', days: 'weekday', icon: 'compass' },
   { id: 'reading', title: '20 sayfa aile okuması', subtitle: 'Aile okuma zamanı', kind: 'simple', days: 'all', icon: 'book' },
   { id: 'quran', title: '3 ayet', kind: 'simple', days: 'all', icon: 'quran' },
   { id: 'prayer', title: 'Namaz', kind: 'simple', days: 'all', icon: 'prayer' },
@@ -205,3 +205,38 @@ export const DEFAULT_SETTINGS = {
   parentPin: '',            // empty = parent mode is not PIN-protected yet
   weeklyMessage: '',        // optional custom message on My Week (empty = auto)
 };
+
+// ── Learning memory layer (books, memorization, memory project, reflection) ──
+// Long-term personal history: dates and status, never points or scores.
+
+export const BOOK_STATUS = { READING: 'READING', COMPLETED: 'COMPLETED' };
+export const BOOK_STATUS_LABEL = { READING: 'Okuyorum', COMPLETED: 'Tamamladım' };
+
+export const MEMO_TYPE = { SURA: 'SURA', POEM: 'POEM', SONG: 'SONG', OTHER: 'OTHER' };
+export const MEMO_TYPE_LABEL = { SURA: 'Sure', POEM: 'Şiir', SONG: 'Şarkı', OTHER: 'Diğer' };
+export const MEMO_STATUS = { LEARNING: 'LEARNING', MASTERED: 'MASTERED' };
+export const MEMO_STATUS_LABEL = { LEARNING: 'Öğreniyorum', MASTERED: 'Ezberledim' };
+export const MEMO_STATUS_LABEL_PARENT = { LEARNING: 'Öğreniliyor', MASTERED: 'Ezberlendi' };
+
+// Review outcomes are separate from daily-task independence (see core/completion.js).
+export const REVIEW_RESULT = { SELF: 'self', ASSISTED: 'assisted', NEEDS_WORK: 'needs_work' };
+export const REVIEW_RESULT_LABEL = { self: 'Kendim okudum', assisted: 'Biraz yardım aldım', needs_work: 'Tekrar çalışmam gerekiyor' };
+
+// Spaced-review suggestion. A suggestion, not a fixed algorithm: parents can
+// change every number here and override any next-review date by hand.
+export const DEFAULT_REVIEW = {
+  intervals: [1, 3, 7, 14, 30], // days until the next review; "Kendim okudum" advances one step
+  needsWorkDays: 1,             // "Tekrar çalışmam gerekiyor" → review again after this many days
+};
+
+export const PROJECT_STATUS = { ACTIVE: 'ACTIVE', COMPLETED: 'COMPLETED', REPLACED: 'REPLACED' };
+export const PROJECT_STATUS_LABEL = { ACTIVE: 'Devam ediyor', COMPLETED: 'Tamamlandı', REPLACED: 'Değiştirildi' };
+export const PROJECT_TYPE = { POEM: 'POEM', SONG: 'SONG', TEXT: 'TEXT', PASSAGE: 'PASSAGE', FREE: 'FREE' };
+export const PROJECT_TYPE_LABEL = { POEM: 'Kısa şiir', SONG: 'Sevdiği bir şarkı', TEXT: 'Kısa metin', PASSAGE: 'Seçilmiş bölüm', FREE: 'Serbest seçim' };
+
+// "Haftamı Düşünüyorum" — at most three prompts, every one optional.
+export const REFLECTION_PROMPTS = [
+  { id: 'own', q: 'Bu hafta hangi işi kendim yaptım?' },
+  { id: 'learned', q: 'Bu hafta öğrendiğim en güzel şey neydi?' },
+  { id: 'next', q: 'Gelecek hafta neyi daha iyi yapmak istiyorum?' },
+];

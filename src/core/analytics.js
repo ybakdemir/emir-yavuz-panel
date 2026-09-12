@@ -90,3 +90,32 @@ export function recentAchievements(state, today, limit = 6) {
   if (isComeback(state, today)) list.push({ type: 'comeback', date: today });
   return list.filter((a) => a.date && a.date <= today).sort((a, b) => b.date.localeCompare(a.date)).slice(0, limit);
 }
+
+/**
+ * Days in [from, to] on which `itemId` was completed — derived from the day
+ * records, nothing is stored separately. A day without a record, or with the
+ * item unmarked, is simply not a study day. Used for Little Explorer.
+ */
+export function studyDays(state, itemId, from, to) {
+  return range(from, to).filter((k) => isCompleted(getStatus(state.days[k], itemId)));
+}
+
+/** Calm, descriptive Little Explorer numbers: no streaks, no points. */
+export function explorerStats(state, today, itemId = 'explorer') {
+  const wk = weekKey(today);
+  const monthStart = today.slice(0, 8) + '01';
+  const weeks = [];
+  for (let i = 3; i >= 0; i--) {
+    const w = addDays(wk, -7 * i);
+    const days = weekDays(w).filter((k) => k <= today);
+    weeks.push({ wk: w, days: studyDays(state, itemId, days[0], days[days.length - 1]).length });
+  }
+  const last14 = range(addDays(today, -13), today).map((k) => ({ key: k, studied: isCompleted(getStatus(state.days[k], itemId)) }));
+  return {
+    thisWeek: studyDays(state, itemId, wk, today).length,
+    thisMonth: studyDays(state, itemId, monthStart, today).length,
+    last30: studyDays(state, itemId, addDays(today, -29), today).length,
+    weeks, last14,
+    lastStudied: Object.keys(state.days).filter((k) => k <= today && isCompleted(getStatus(state.days[k], itemId))).sort().pop() || null,
+  };
+}

@@ -32,11 +32,15 @@ src/core/               pure logic (tested)
   skills.js             skill lifecycle + configurable graduation evaluation
   rewards.js            good days, Weekly Choice, monthly celebration
   expedition.js         write-once discoveries (never taken away)
-  analytics.js          independence stats, trends, comeback
+  analytics.js          independence stats, trends, comeback, Little Explorer study days
+  library.js            books (Kitaplığım): add/edit/complete, active family-reading book, lifetime totals
+  memorization.js       memorized items (Ezberlerim) + review history + configurable spaced review
+  projects.js           monthly memory project (one active at a time, history kept)
+  reflections.js        "Haftamı Düşünüyorum" weekend reflection (optional, skippable)
   migrate.js            v1 → v2 import (idempotent, archive-preserving), ensureShape
   store.js / sync.js    offline-first store + Firebase adapter
-src/ui/child/           Today · My Week · Expedition · My Skills
-src/ui/parent/          Dashboard · Routines · Skills · Presentations · Rewards · Progress · Settings
+src/ui/child/           Today · My Week · Expedition · My Skills · Arşivim (Kitaplığım · Ezberlerim · Sunumlarım)
+src/ui/parent/          Dashboard · Routines · Skills · Presentations · Rewards · Progress · Kitaplık · Ezber · Yansımalar · Settings
 src/ui/print.js         "Haftamı yazdır" paper mode
 src/ui/art.js           original SVG art: duotone task glyphs, exercise pictograms, hero
                         landscape, expedition zone scenes, mastery badge, desktop backdrop
@@ -59,9 +63,24 @@ state
 ├─ months[YYYY-MM] { celebration{chosen,chosenAt} }
 ├─ expedition    { discovered{ itemId → date } }
 ├─ achievements  [{type,date,…}]
+├─ books[id]     { title, totalPages, startedAt, finishedAt, status: READING|COMPLETED, note, cover{tone} }
+├─ reading       { activeBookId }                      ← the book "20 sayfa aile okuması" shows; days[k].bookId snapshots it
+├─ memorizationItems[id]   { title, type: SURA|POEM|SONG|OTHER, status: LEARNING|MASTERED, startedAt, masteredAt,
+│                            lastReviewedAt, lastResult, nextReviewAt, intervalIndex, note, archived }
+├─ memorizationReviews[id] { itemId, date, result: self|assisted|needs_work, by, nextReviewAt, note }
+├─ memoryProjects[id]      { title, type, startedAt, targetMonth, completedAt, status: ACTIVE|COMPLETED|REPLACED, note }
+├─ weeklyReflections[monday] { answers{own,learned,next}, skipped, savedOn, updatedAt }
+├─ config.review { intervals: [1,3,7,14,30], needsWorkDays: 1 }   (parent-editable suggestion, not a fixed algorithm)
 ├─ legacy        { importedAt, sources{firebase|localStorage → date}, v1{ raw v1 blobs } }
 └─ meta          { updatedAt, writer }
 ```
+
+The learning memory layer (books, memorization, memory project, reflections)
+is purely additive: a state saved before it existed loads unchanged and gets
+empty collections plus the default review schedule from `ensureShape`. Review
+outcomes (`self` / `assisted` / `needs_work`) are separate from daily-task
+statuses and never enter the independence rate. Little Explorer statistics are
+derived from `days[k].items.explorer`, nothing is stored twice.
 
 Completion status values: `done` = **COMPLETED_UNSPECIFIED** ("Yaptım" — what a
 plain tap records, and what imported v1 ticks carry), `independent` ("Kendim

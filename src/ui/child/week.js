@@ -1,15 +1,18 @@
 import { h, add, openSheet } from '../dom.js';
 import { icon } from '../icons.js';
-import { weekKey, weekDays, weekLabel, dayNameShort, fromKey, formatLong } from '../../core/dates.js';
+import { weekKey, weekDays, weekLabel, dayNameShort, fromKey, formatLong, formatShort } from '../../core/dates.js';
 import { dayCompletion, weeklyStatus, chooseWeekly } from '../../core/rewards.js';
 import { activeSkill, evaluateGraduation } from '../../core/skills.js';
 import { coreItemsForDay } from '../../core/schedule.js';
 import { getStatus, isCompleted } from '../../core/completion.js';
 import { independenceStats } from '../../core/analytics.js';
 import { weeklyMessageFor } from '../../core/messages.js';
-import { STATUS_LABEL, SKILL_STATUS_LABEL } from '../../content/defaults.js';
+import { STATUS_LABEL, SKILL_STATUS_LABEL, PROJECT_TYPE_LABEL, REFLECTION_PROMPTS } from '../../content/defaults.js';
+import { activeProject } from '../../core/projects.js';
+import { reflectionFor, saveReflection, skipReflection, unskipReflection, isReflectionWindow, hasAnswers } from '../../core/reflections.js';
+import { monthName } from '../../core/dates.js';
 import { taskIcon } from './components.js';
-import { motif } from '../art.js';
+import { motif, glyph } from '../art.js';
 import { dino } from '../dinos.js';
 
 export function renderWeek(main, ctx) {
@@ -88,8 +91,43 @@ export function renderWeek(main, ctx) {
   }
   add(main, choiceCard);
 
+  // ── Ayın Hafıza Projesi — planning context only; there is nothing to tick here.
+  const project = activeProject(state);
+  if (project) {
+    add(main, h('div', { class: 'card week-card wc-project' }, motif('leaf'),
+      h('div', { class: 'hd' }, taskIcon('leaf', 'gold'), h('div', { class: 'grow' }, h('h3', {}, 'Ayın Hafıza Projesi'), h('div', { class: 'small muted' }, `${PROJECT_TYPE_LABEL[project.type] || ''} · ${monthName(project.targetMonth + '-01')}`))),
+      h('div', { class: 'bd' },
+        h('div', { class: 'wc-title' }, project.title),
+        h('div', { class: 'wc-hint' }, 'Acele yok. Bu ay boyunca küçük parçalar hâlinde ezberliyoruz.'),
+        h('a', { class: 'small', href: '#/archive/memory', style: { display: 'inline-block', marginTop: '8px', fontWeight: 800 } }, 'Ezberlerim →'))));
+  }
+
+  // ── Haftamı Düşünüyorum — optional, weekend only, three short prompts, skippable.
+  if (isReflectionWindow(today)) add(main, reflectionCard(ctx, wk));
+
   add(main, h('div', { class: 'row', style: { marginTop: '18px', justifyContent: 'center' } },
     h('a', { class: 'btn btn-ghost', href: `#/print/${wk}` }, icon('printer', 20), 'Haftamı yazdır')));
+}
+
+function reflectionCard(ctx, wk) {
+  const r = reflectionFor(ctx.state, wk);
+  const card = h('div', { class: 'card week-card wc-reflect' }, motif('leaf'),
+    h('div', { class: 'hd' }, taskIcon('leaf', 'forest'), h('div', { class: 'grow' }, h('h3', {}, 'Haftamı Düşünüyorum'), h('div', { class: 'small muted' }, 'İstersen. Kısa cümleler yeter.'))));
+  if (r?.skipped && !hasAnswers(r)) {
+    add(card, h('div', { class: 'bd row wrap' }, h('div', { class: 'small muted grow' }, 'Bu hafta atladın — sorun değil.'),
+      h('button', { class: 'btn btn-ghost btn-sm', onclick: () => ctx.update((s) => unskipReflection(s, wk)) }, 'Yine de yazayım')));
+    return card;
+  }
+  const inputs = {};
+  const body = h('div', { class: 'bd stack' }, REFLECTION_PROMPTS.map((p) => {
+    inputs[p.id] = h('input', { class: 'input reflect-in', type: 'text', maxlength: '140', value: r?.answers?.[p.id] || '', placeholder: '…', 'aria-label': p.q });
+    return h('label', { class: 'reflect-q' }, h('span', {}, p.q), inputs[p.id]);
+  }));
+  const saved = hasAnswers(r);
+  add(card, body, h('div', { class: 'row wrap', style: { padding: '0 18px 18px' } },
+    h('button', { class: 'btn btn-primary btn-sm', onclick: () => { ctx.update((s) => saveReflection(s, wk, Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value])), ctx.today)); ctx.toast(saved ? 'Güncelledim.' : 'Kaydettim. Teşekkürler.'); } }, icon('check', 16), saved ? 'Güncelle' : 'Kaydet'),
+    saved ? h('span', { class: 'small muted' }, `Yazdım: ${formatShort(r.savedOn || wk)}`) : h('button', { class: 'btn btn-ghost btn-sm', onclick: () => ctx.update((s) => skipReflection(s, wk, ctx.today)) }, 'Bu hafta geç')));
+  return card;
 }
 
 function weeklyMessage(ctx, wk) {
@@ -101,4 +139,21 @@ function weeklyMessage(ctx, wk) {
 function weekWindow(wk, today) {
   const days = weekDays(wk).filter((k) => k <= today);
   return [days[0], days[days.length - 1]];
+}
+function openDaySheet(ctx, key) {
+  const { state } = ctx;
+  const day = state.days[key];
+  const items = day ? coreItemsForDay(state.config, key, day) : [];
+  const close = openSheet([
+    h('div', { class: 'sheet-title' }, formatLong(key)),
+    !day ? h('div', { class: 'empty' }, 'Bu gün için kayıt yok.') : h('div', { class: 'stack' }, items.map((it) => {
+      const st = getStatus(day, it.id);
+      const title = it.kind === 'skill' ? (state.skills.pool.find((s) => s.id === day.skillId)?.title || it.title) : it.title;
+      return h('div', { class: 'row', style: { minHeight: '44px' } },
+        h('span', { class: `pill ${isCompleted(st) ? 'pill-green' : 'pill-sand'}` }, isCompleted(st) ? icon('check', 14) : null),
+        h('div', { class: 'grow', style: { fontWeight: 700 } }, title),
+        h('div', { class: 'small muted' }, st ? STATUS_LABEL[st] : 'Yapılmadı'));
+    })),
+    h('div', { class: 'sheet-actions' }, h('button', { class: 'btn btn-primary', onclick: () => close() }, 'Tamam')),
+  ]);
 }

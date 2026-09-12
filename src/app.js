@@ -50,7 +50,7 @@ function route() {
   document.body.classList.toggle('is-parent', parts[0] === 'parent');
   if (parts[0] === 'parent') return renderParentShell(root, ctx, parts.slice(1));
   if (parts[0] === 'print') return renderPrint(root, ctx, parts[1]);
-  return renderChildShell(root, ctx, parts[0] || 'today');
+  return renderChildShell(root, ctx, parts[0] || 'today', parts.slice(1));
 }
 
 window.addEventListener('hashchange', () => { window.scrollTo(0, 0); route(); });

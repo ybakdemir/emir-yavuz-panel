@@ -1,6 +1,6 @@
 import {
   SCHEMA_VERSION, STATUS, DEFAULT_ROUTINES, DEFAULT_ITEMS, DEFAULT_PHYSICAL, DEFAULT_SKILL_POOL,
-  DEFAULT_GRADUATION, DEFAULT_REWARDS, DEFAULT_PRESENTATION, DEFAULT_EXPEDITION, DEFAULT_SETTINGS,
+  DEFAULT_GRADUATION, DEFAULT_REWARDS, DEFAULT_PRESENTATION, DEFAULT_EXPEDITION, DEFAULT_SETTINGS, DEFAULT_REVIEW,
 } from '../content/defaults.js';
 import { weekKey } from './dates.js';
 import { emptyDay } from './completion.js';
@@ -20,6 +20,7 @@ export function buildInitialState(today, writer = 'init') {
       rewards: clone(DEFAULT_REWARDS),
       expedition: clone(DEFAULT_EXPEDITION),
       settings: clone(DEFAULT_SETTINGS),
+      review: clone(DEFAULT_REVIEW),
     },
     skills: {
       pool: DEFAULT_SKILL_POOL.map((s) => ({ ...s, status: 'pool' })),
@@ -31,6 +32,14 @@ export function buildInitialState(today, writer = 'init') {
     months: {},
     expedition: { discovered: {} },
     achievements: [],
+    // Learning memory layer — keyed by id (Firebase keeps keyed objects intact,
+    // and drops them when empty; ensureShape puts the containers back).
+    books: {},
+    reading: { activeBookId: null },
+    memorizationItems: {},
+    memorizationReviews: {},
+    memoryProjects: {},
+    weeklyReflections: {},
     legacy: null,
     meta: { updatedAt: 0, writer },
   };
@@ -67,6 +76,17 @@ export function ensureShape(state) {
   state.expedition ||= { discovered: {} };
   state.expedition.discovered ||= {};
   state.achievements ||= [];
+  // Learning memory layer: a state saved before it existed gets empty
+  // collections and the default review schedule; nothing else is touched.
+  state.config.review.intervals ||= clone(DEFAULT_REVIEW.intervals);
+  if (state.config.review.needsWorkDays === undefined) state.config.review.needsWorkDays = DEFAULT_REVIEW.needsWorkDays;
+  state.books ||= {};
+  state.reading ||= { activeBookId: null };
+  if (state.reading.activeBookId === undefined) state.reading.activeBookId = null;
+  state.memorizationItems ||= {};
+  state.memorizationReviews ||= {};
+  state.memoryProjects ||= {};
+  state.weeklyReflections ||= {};
   if (state.legacy === undefined) state.legacy = null;
   state.meta ||= { updatedAt: 0, writer: 'unknown' };
   return state;
