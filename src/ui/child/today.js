@@ -64,7 +64,7 @@ export function renderToday(main, ctx) {
           h('div', { class: 'hero-title' }, headline),
           h('div', { class: 'hero-sub' }, subline)),
         h('div', { class: 'hero-progress' }, ring(doneCount, core.length, 74, 'hero'), trail(doneCount, core.length))),
-      h('div', { class: 'hero-dino' }, dino(allDone ? 'trex' : doneCount > 0 ? 'triceratops' : 'brachiosaurus'))));
+      h('div', { class: 'hero-dino' }, dino(allDone ? 'trex' : doneCount > 0 ? 'triceratops' : 'brachiosaurus', { silhouette: true }))));
 
   if (comeback && doneCount > 0) {
     add(main, h('div', { class: 'note' }, icon('hand', 22), 'Geri dönmek güzel. Bugün yeniden başlıyoruz.'));

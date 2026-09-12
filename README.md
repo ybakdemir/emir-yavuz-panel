@@ -23,6 +23,10 @@ index.html              shell
 src/app.js              boot, hash router, side effects (discoveries, skill auto-advance)
 src/content/defaults.js seed content: routines, daily items, physical pattern, skill pool,
                         graduation thresholds, rewards, presentation topics, expedition map
+src/content/dinopedia.js dinosaur atlas: species cards (six facts + "Biliyor muydun?"), periods,
+                        Keşif Notları — reference content, opens nothing
+src/content/artwork.js  raster artwork registry (hero, species, note covers) → assets/
+assets/                 WebP artwork: scenes/ (hero, note covers), dinos/ (species cards)
 src/core/               pure logic (tested)
   dates.js              local-time date keys (v1's UTC bug is gone)
   schedule.js           which items apply to a day (weekday/weekend/homework)
@@ -39,7 +43,8 @@ src/core/               pure logic (tested)
   reflections.js        "Haftamı Düşünüyorum" weekend reflection (optional, skippable)
   migrate.js            v1 → v2 import (idempotent, archive-preserving), ensureShape
   store.js / sync.js    offline-first store + Firebase adapter
-src/ui/child/           Today · My Week · Expedition · My Skills · Arşivim (Kitaplığım · Ezberlerim · Sunumlarım)
+src/ui/child/           Today · My Week · Expedition (Dinozor Keşif Üssü: hero · Tür Atlası · Keşif Notları · map) ·
+                        My Skills · Arşivim (Kitaplığım · Ezberlerim · Sunumlarım)
 src/ui/parent/          Dashboard · Routines · Skills · Presentations · Rewards · Progress · Kitaplık · Ezber · Yansımalar · Settings
 src/ui/print.js         "Haftamı yazdır" paper mode
 src/ui/art.js           original SVG art: duotone task glyphs, exercise pictograms, hero

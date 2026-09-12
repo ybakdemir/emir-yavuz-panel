@@ -68,3 +68,37 @@ Prototype of the *Premium Friendly Expedition* direction inside the real app. Sc
 * QA: `node --test` 76/76 · Playwright 390×844 + 1280×900, 6 routes, 0 page/console errors, 0 overflow, reveal and
   detail sheets fit with CTA visible, reduced-motion pass · Firebase SDK stubbed at the network layer (0 requests
   reached Firebase hosts).
+
+## Dinosaur Discovery Visual Redesign v1 (2026-09-12)
+Expedition → **Dinozor Keşif Üssü**: real artwork + the presentation's content architecture. Scope: `src/ui/child/expedition.js`,
+`src/content/dinopedia.js` (new), `src/content/artwork.js` (registry filled; `notes` slot; `{src, focus}` entries), `src/ui/dinos.js`
+(`focus`, `silhouette`), `styles/child.css`, `assets/` (8 WebP, 1.2 MB), `vercel.json` (immutable cache for `/assets`), tests, docs.
+No change to `src/core`, `src/content/defaults.js`, migration, Firebase, routing or reward semantics; Today/Haftam/celebration
+slots explicitly keep their SVG silhouettes (`silhouette: true`).
+* **Base (dark)** — full-bleed hero on the sauropod-forest photo (344 / 380 / 440 px), kicker, "Dinozor Keşif Üssü", sub-line,
+  `n / 28 keşif`, `x / 12 tür`, current zone, gold progress; then the unchanged next-discovery line + milestone chips.
+* **Tür Atlası (cream)** — period pills Tümü · Triyas · Jura · Kretase; horizontal snap shelf of 4:5 cover cards (grid 3-up ≥ 700,
+  4-up ≥ 960): artwork with per-species focus, period tag, `Keşfedildi` (gold) / `Keşfedilmedi`, name, tagline. Discovered first.
+  Undiscovered: desaturated + mist, still readable. Triyas has no species in the current content → an honest empty card with the
+  era's fact. Species without artwork show the gold SVG silhouette on the tinted scene.
+* **Keşif Notları (cream)** — five editorial rows (cover thumb, kicker, title, teaser): Dinozor nedir? · Nasıl ortaya çıktılar? ·
+  Üç büyük dönem · Dinozorlar yaşarken dünya · Nasıl yok oldular? Sheet: cover → kicker → title → points (numbered for the
+  extinction sequence) → closing "Biliyor muydun?". Always readable; opens nothing.
+* **Species sheet** (T-Rex = master) — 16:10 hero with period + state chips, "TÜR KARTI · KRETASE", name, tagline, six fact tiles
+  (Boy · Ağırlık · Beslenme · Dönem · Yaşadığı yer · Özellik), gold "Biliyor muydun?", summary paragraph; if discovered: zone + date
+  chips, development-moment card, CTA "Harika"; if not: one quiet line ("… bölgesinde bir gelişim anıyla keşfedilir"), CTA
+  "Haritada gör" (scrolls to and spotlights the map card). Map card / reveal "Keşfi İncele" open the same sheet for species.
+* **Map (dark)** — unchanged structure under a "Keşif Haritası" head; discovered species cards now show the raster, locked cards
+  keep the silhouette in mist.
+* **Content** — `SPECIES` (12, keyed by dino kind; `source: 'pptx'` for T-Rex, Triceratops, Diplodocus, Spinosaurus,
+  Mamenchisaurus with the six facts copied verbatim; `'general'` for the seven species the presentation did not cover),
+  `PERIODS`, `FIELD_NOTES`.
+* **Content integrity** — the presentation is the only verifiable source in the repo. The seven `general` species
+  (Brachiosaurus, Stegosaurus, Allosaurus, Velociraptor, Ankylosaurus, Pteranodon, Parasaurolophus) therefore keep
+  Boy / Ağırlık / Dönem / Yaşadığı yer as `null` and carry no figures in tagline, "Biliyor muydun?" or summary — only
+  the qualitative Beslenme and Özellik. The species sheet hides null facts and shows one quiet line
+  ("Boy, Ağırlık, Dönem, Yaşadığı yer bilgisi hazırlanıyor."). `tests/dinopedia.test.js` enforces both halves.
+* QA — `node --test` 84/84 · Playwright 390×844 (touch) + 1280×900, seeded (23 finds) and fresh states: 0 page errors,
+  0 console errors beyond the harness-aborted Firebase loads, 0 failed/404 requests, 0 horizontal overflow (page and inside
+  sheets), all 4 filters, T-Rex sheet discovered/undiscovered, note sheet, fossil sheet, Today hero + Haftam note still SVG ·
+  reveal flow (skill graduated → Today banner with raster thumb → cinematic reveal → species sheet) under `prefers-reduced-motion`.

@@ -1,5 +1,5 @@
 import { svg } from './dom.js';
-import { dinoArt } from '../content/artwork.js';
+import { dinoArt, dinoFocus } from '../content/artwork.js';
 
 // Flat, two-tone dinosaur silhouettes (viewBox 240×160). Colours come from
 // CSS variables so the same drawing works on warm day screens and on the
@@ -166,14 +166,19 @@ const D = {
  * registered in content/artwork.js (see docs/ARTWORK.md for the asset spec).
  * The image keeps the same 3:2 box and the `dino` class so layouts don't move.
  * Raster art is lazy-loaded unless `eager` (hero / reveal sheet) is set.
+ * `silhouette` forces the SVG — for decorative slots that are drawn as a
+ * tinted shape (Today hero, Haftam note, milestone sheets), where a photo
+ * would not fit the composition.
  */
-export function dino(kind, { size = 120, cls = '', eager = false } = {}) {
-  const art = dinoArt(kind);
+export function dino(kind, { size = 120, cls = '', eager = false, silhouette = false } = {}) {
+  const art = silhouette ? null : dinoArt(kind);
   if (art) {
     const img = document.createElement('img');
     img.src = art; img.alt = ''; img.width = size; img.height = Math.round(size * 2 / 3);
     img.loading = eager ? 'eager' : 'lazy'; img.decoding = 'async';
     img.className = `dino dino-${kind} dino-art ${cls}`;
+    const focus = dinoFocus(kind);
+    if (focus) img.style.objectPosition = focus;
     return img;
   }
   const inner = D[kind] || D.egg;

@@ -36,7 +36,7 @@ export function renderWeek(main, ctx) {
 
   // ── encouraging message
   add(main, h('div', { class: 'msg' },
-    h('div', { class: 'msg-dino' }, dino('velociraptor', { size: 84 })),
+    h('div', { class: 'msg-dino' }, dino('velociraptor', { size: 84, silhouette: true })),
     h('div', { class: 'grow' }, h('div', { class: 'msg-kicker' }, 'Kaşif notu'), h('div', { class: 'msg-txt' }, weeklyMessage(ctx, wk)))));
 
   // ── Skill of the week

@@ -27,7 +27,7 @@ export function milestoneSheet({ title, message, dinoKind, kicker }) {
   const close = openSheet([
     h('div', { class: 'lbl' }, kicker),
     h('div', { class: 'sheet-title' }, title),
-    h('div', { class: 'cine-art' }, dino(dinoKind, { size: 260 })),
+    h('div', { class: 'cine-art' }, dino(dinoKind, { size: 260, silhouette: true })),
     h('div', { class: 'fact' }, message),
     h('div', { class: 'sheet-actions' }, h('button', { class: 'btn btn-primary', onclick: () => close() }, 'Harika')),
   ], { cls: 'cine' });

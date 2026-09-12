@@ -198,32 +198,42 @@
 .skill-badge { position: relative; z-index: 1; width: 52px; height: 52px; display: grid; place-items: center; flex: none; filter: drop-shadow(0 3px 6px rgba(185, 133, 46, .35)); }
 .mastered-mark { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: #fff; display: grid; place-items: center; flex: none; }
 
-/* ── EXPEDITION (cinematic) ─────────────────────────────────────────── */
-.cinematic { margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter) 30px; color: var(--ivory); position: relative; overflow: hidden;
-  background: linear-gradient(180deg, #10241C 0%, #12302A 30%, #14283A 70%, #0E1B2B 100%); border-radius: 0 0 var(--r-xl) var(--r-xl); }
-.cinematic .kicker { color: var(--gold); }
+/* ── EXPEDITION — Dinozor Keşif Üssü ─────────────────────────────────
+   Three surfaces: a dark cinematic base (hero on real artwork + the next-
+   discovery line), the warm cream atlas + notes (editorial, image-led), and
+   the dark discovery map. Night Navy stays scoped to .exp-top / .cinematic. */
+.exp-top, .cinematic { margin: 0 calc(-1 * var(--gutter)); padding: 0 var(--gutter) 22px; color: var(--ivory); position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #10241C 0%, #12302A 40%, #14283A 100%); border-radius: 0 0 var(--r-xl) var(--r-xl); }
+.cinematic { margin-top: 26px; padding-top: 18px; padding-bottom: 30px; border-radius: var(--r-xl); background: linear-gradient(180deg, #10241C 0%, #12302A 30%, #14283A 70%, #0E1B2B 100%); }
+.exp-top .kicker, .cinematic .kicker { color: var(--gold); }
 .cinematic h1 { font-size: 30px; margin-top: 2px; }
 
-/* Hero: artwork (built-in SVG scene or registered AI concept) → shade → copy */
-.exp-hero { position: relative; margin: 0 calc(-1 * var(--gutter)); height: 332px; overflow: hidden; isolation: isolate; }
+/* Section heads: kicker + title (+ a count chip). Forest on cream, ivory on the dark panel. */
+.exp-sec-hd { display: flex; align-items: flex-end; gap: 12px; margin: 26px 0 12px; }
+.exp-sec-hd h2 { font-size: 22px; font-weight: 900; color: var(--forest); letter-spacing: -.02em; line-height: 1.1; margin-top: 2px; }
+.cinematic .exp-sec-hd { margin-top: 4px; }
+.cinematic .exp-sec-hd h2 { color: var(--ivory); }
+.sec-count { flex: none; padding: 5px 12px; border-radius: var(--r-pill); background: var(--forest); color: var(--gold); font-weight: 900; font-size: 13px; letter-spacing: .02em; }
+.cinematic .sec-count { background: rgba(14, 27, 43, .6); border: 1px solid rgba(217, 166, 74, .35); }
+
+/* Hero: artwork (registered raster or the built-in SVG scene) → shade → copy */
+.exp-hero { position: relative; margin: 0 calc(-1 * var(--gutter)); height: 344px; overflow: hidden; isolation: isolate; }
 .exp-hero-art { position: absolute; inset: 0; z-index: 0; }
 .exp-hero-art .world-scene, .exp-hero-art .world-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 50% 55%; }
 .exp-hero-shade { position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(180deg, rgba(14, 27, 43, .18) 0%, rgba(16, 36, 28, 0) 26%, rgba(16, 36, 28, .42) 56%, rgba(16, 36, 28, .88) 84%, #10241C 100%),
-              linear-gradient(90deg, rgba(16, 36, 28, .38), rgba(16, 36, 28, 0) 62%); }
-.exp-hero-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 0 var(--gutter) 18px; max-width: 78%; }
-.exp-hero h1 { font-size: 27px; line-height: 1.08; letter-spacing: -.02em; text-shadow: 0 2px 8px rgba(0, 0, 0, .45); }
+  background: linear-gradient(180deg, rgba(14, 27, 43, .22) 0%, rgba(16, 36, 28, 0) 24%, rgba(16, 36, 28, .30) 50%, rgba(16, 36, 28, .84) 80%, #10241C 100%),
+              linear-gradient(90deg, rgba(16, 36, 28, .42), rgba(16, 36, 28, 0) 64%); }
+.exp-hero-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 0 var(--gutter) 18px; max-width: 92%; }
+.exp-hero h1 { font-size: 30px; line-height: 1.04; letter-spacing: -.025em; text-shadow: 0 2px 10px rgba(0, 0, 0, .5); }
 .exp-hero .kicker { text-shadow: 0 1px 4px rgba(0, 0, 0, .5); }
-.exp-hero-sub { margin-top: 5px; font-size: 14.5px; font-weight: 700; color: var(--ivory-2); text-shadow: 0 1px 4px rgba(0, 0, 0, .5); }
-.exp-hero-meta { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-.exp-count { display: inline-flex; align-items: baseline; gap: 2px; font-weight: 800; color: var(--ivory-2); font-size: 13.5px; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); }
-.exp-count b { font-size: 24px; color: var(--gold); font-weight: 900; line-height: 1; }
+.exp-hero-sub { margin-top: 6px; font-size: 15px; font-weight: 700; color: var(--ivory-2); text-shadow: 0 1px 4px rgba(0, 0, 0, .55); }
+.exp-hero-meta { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.exp-count { display: inline-flex; align-items: baseline; gap: 2px; font-weight: 800; color: var(--ivory-2); font-size: 13.5px; text-shadow: 0 1px 3px rgba(0, 0, 0, .5); margin-right: 4px; }
+.exp-count b { font-size: 26px; color: var(--gold); font-weight: 900; line-height: 1; }
 .exp-zone { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: var(--r-pill); background: rgba(14, 27, 43, .48); border: 1px solid rgba(246, 240, 228, .16); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); font-size: 12.5px; font-weight: 900; color: var(--ivory); }
 .exp-zone .glyph { color: var(--gold); --g2: #F1D7A3; }
 .exp-progress { margin-top: 12px; height: 8px; border-radius: 6px; background: rgba(255, 255, 255, .14); overflow: hidden; }
 .exp-progress > i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-2), var(--gold), #F1D7A3); border-radius: 6px; transition: width .6s var(--ease); box-shadow: 0 0 12px rgba(217, 166, 74, .5); }
-.exp-companion { position: absolute; right: 8px; bottom: 14px; z-index: 2; width: 96px; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); animation: bob 5s ease-in-out infinite; }
-.exp-companion .companion { width: 100%; height: auto; display: block; }
 @keyframes bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
 .exp-next { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
 .exp-next-t { font-size: 14px; color: var(--ivory-2); font-weight: 700; display: flex; align-items: flex-start; gap: 8px; line-height: 1.35; }
@@ -231,6 +241,51 @@
 .exp-milestones { display: flex; gap: 6px; flex-wrap: wrap; padding-left: 26px; }
 .exp-ms { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--r-pill); background: rgba(246, 240, 228, .07); border: 1px solid rgba(246, 240, 228, .12); font-size: 12px; font-weight: 800; color: var(--ivory-2); }
 .exp-ms .glyph { color: var(--gold); --g2: #F1D7A3; }
+
+/* ── Tür Atlası: period pills + a shelf of portrait cover cards ──────── */
+.period-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.pp { min-height: 38px; padding: 0 16px; border-radius: var(--r-pill); font-weight: 800; font-size: 14px; background: var(--paper); color: var(--ink-2); border: 1.5px solid var(--line-2); transition: background .15s, color .15s, transform .15s var(--ease); }
+.pp:active { transform: scale(.97); }
+.pp.on { background: var(--forest); color: var(--ivory); border-color: var(--forest); box-shadow: 0 6px 14px rgba(23, 63, 53, .22); }
+.sp-shelf { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--gutter)); padding: 4px var(--gutter) 14px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.sp-shelf::-webkit-scrollbar { display: none; }
+.sp-card { flex: 0 0 66%; max-width: 250px; scroll-snap-align: start; border-radius: 22px; overflow: hidden; background: var(--forest); color: var(--ivory); box-shadow: var(--shadow-2); position: relative; isolation: isolate; transition: transform .2s var(--ease), box-shadow .2s var(--ease); }
+.sp-btn { display: block; width: 100%; text-align: left; color: inherit; position: relative; aspect-ratio: 4 / 5; }
+.sp-cover { position: absolute; inset: 0; --scene-a: #2B6A56; --scene-b: #173F35; background: linear-gradient(170deg, var(--scene-a), var(--scene-b)); display: grid; place-items: center; overflow: hidden; }
+.sp-cover img.dino-art { width: 100%; height: 100%; object-fit: cover; border-radius: 0; transition: transform .5s var(--ease); }
+.sp-cover svg.dino { width: 88%; height: auto; --dino-a: #E0B36A; --dino-b: #F3DDAF; --dino-c: #10241C; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, .45)); transform: translateY(-8%); }
+.sp-shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(14, 27, 43, .18) 0%, rgba(14, 27, 43, 0) 32%, rgba(16, 36, 28, .18) 52%, rgba(16, 36, 28, .86) 82%, #10241C 100%); }
+.sp-period, .sp-state { position: absolute; top: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: var(--r-pill); font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.sp-period { left: 10px; background: rgba(14, 27, 43, .55); color: var(--ivory); border: 1px solid rgba(246, 240, 228, .18); }
+.sp-state { right: 10px; background: rgba(14, 27, 43, .45); color: var(--ivory-3); border: 1px solid rgba(246, 240, 228, .12); letter-spacing: .04em; text-transform: none; font-size: 11.5px; }
+.sp-state.on { background: var(--gold); color: var(--forest-2); border-color: var(--gold); }
+.sp-state .ic { color: currentColor; }
+.sp-body { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 0 14px 14px; }
+.sp-name { font-size: 20px; font-weight: 900; letter-spacing: -.02em; line-height: 1.08; text-shadow: 0 1px 6px rgba(0, 0, 0, .5); }
+.sp-tag { font-size: 13px; font-weight: 700; color: var(--ivory-2); margin-top: 3px; line-height: 1.3; text-shadow: 0 1px 4px rgba(0, 0, 0, .5); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sp-card.off .sp-cover img.dino-art { filter: saturate(.35) brightness(.72); }
+.sp-card.off .sp-cover svg.dino { --dino-a: #10302A; --dino-b: #10302A; --dino-c: transparent; opacity: .9; filter: none; }
+.sp-card.off .sp-cover svg.dino [fill="#fff"], .sp-card.off .sp-cover svg.dino [fill="#F4EFE6"] { fill: #10302A; }
+.sp-card.off .sp-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(220, 234, 243, .14), rgba(220, 234, 243, .04) 50%, rgba(220, 234, 243, .16)); pointer-events: none; }
+.sp-card.off .sp-name { color: var(--ivory-2); }
+.sp-card.on:hover, .sp-card.on:focus-within { transform: translateY(-3px); box-shadow: 0 18px 36px rgba(23, 63, 53, .28), 0 0 0 1px rgba(217, 166, 74, .45); }
+.sp-card.on:hover .sp-cover img.dino-art { transform: scale(1.04); }
+.sp-card.fresh { animation: unlock .7s var(--ease-pop); }
+.atlas-empty { flex: 1 1 100%; padding: 18px; border-radius: 22px; background: var(--paper); border: 1px dashed var(--line-2); color: var(--ink); }
+.atlas-empty-t { font-size: 16px; font-weight: 800; color: var(--forest); margin-top: 4px; line-height: 1.35; }
+.atlas-empty-s { font-size: 13.5px; font-weight: 700; color: var(--ink-3); margin-top: 6px; }
+
+/* ── Keşif Notları: editorial rows with a cover thumb ───────────────── */
+.note-list { display: flex; flex-direction: column; gap: 10px; }
+.note-card { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px 10px 10px; border-radius: 20px; background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow-1); color: var(--ink); transition: transform .2s var(--ease), box-shadow .2s var(--ease); }
+.note-card:hover, .note-card:focus-visible { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.note-card:active { transform: scale(.99); }
+.note-card > .ic:last-child { color: var(--ink-3); flex: none; }
+.note-thumb { flex: none; width: 84px; height: 84px; border-radius: 16px; overflow: hidden; background: linear-gradient(160deg, #2B6A56, #173F35); display: grid; place-items: center; color: #F1D7A3; --g2: var(--gold); }
+.note-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.note-k { font-size: 10.5px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; color: var(--gold-2); }
+.note-t { font-size: 17px; font-weight: 900; color: var(--forest); letter-spacing: -.01em; line-height: 1.15; margin-top: 1px; }
+.note-s { font-size: 13px; font-weight: 600; color: var(--ink-2); line-height: 1.35; margin-top: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* Zones (trail) — unchanged structure, calmer surfaces */
 .map-trail { position: relative; margin-top: 22px; padding-left: 28px; }
@@ -339,16 +394,61 @@
 .detail-fact { padding: 12px 14px; border-radius: var(--r-md); background: linear-gradient(135deg, #F7E7C6, #F1D7A3); color: #3B2617; font-size: 16px; font-weight: 700; line-height: 1.4; box-shadow: 0 6px 16px rgba(0, 0, 0, .25); }
 .detail-fact-k { font-size: 11.5px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #7A4E14; margin-bottom: 3px; }
 
+/* ── Species card sheet (T-Rex is the master example) ───────────────── */
+.sheet.species, .sheet.fieldnote { padding-top: 12px; }
+.sp-hero { --scene-a: #2B6A56; --scene-b: #173F35; position: relative; aspect-ratio: 16 / 10; width: 100%; border-radius: 20px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(170deg, var(--scene-a), var(--scene-b)); box-shadow: 0 12px 30px rgba(0, 0, 0, .4), inset 0 0 0 1px rgba(246, 240, 228, .1); margin-bottom: 14px; }
+.sp-hero.tone-warm { --scene-a: #6B4A2E; --scene-b: #2A211A; }
+.sp-hero.tone-amber { --scene-a: #A66B3E; --scene-b: #3B2617; }
+.sp-hero.tone-blue { --scene-a: #3D7EA6; --scene-b: #1F3D52; }
+.sp-hero.tone-ice { --scene-a: #5E88A0; --scene-b: #2C4A5E; }
+.sheet.cine .sp-hero img.dino-art { width: 100%; height: 100%; max-width: none; object-fit: cover; border-radius: 0; margin: 0; filter: none; }
+.sp-hero svg.dino { width: 74%; max-width: 340px; height: auto; --dino-a: #E0B36A; --dino-b: #F3DDAF; --dino-c: #10241C; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .45)); }
+.sheet.cine .sp-hero.off img.dino-art { filter: saturate(.45) brightness(.8); }
+.sp-hero .sp-period { top: 12px; left: 12px; }
+.sp-hero .sp-state { top: 12px; right: 12px; }
+.sp-tagline { font-size: 16px; font-weight: 800; color: var(--ivory-2); margin: -2px 0 14px; line-height: 1.35; }
+.sp-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+.sp-stat { padding: 10px 12px; border-radius: 14px; background: rgba(246, 240, 228, .07); border: 1px solid rgba(246, 240, 228, .12); min-width: 0; }
+.sp-stat .k { font-size: 10.5px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.sp-stat .v { font-size: 14.5px; font-weight: 800; color: var(--ivory); line-height: 1.3; margin-top: 2px; overflow-wrap: anywhere; }
+.sp-pending { display: flex; align-items: center; gap: 6px; margin: -6px 0 14px; font-size: 12.5px; font-weight: 700; color: var(--ivory-2); opacity: .8; }
+.sp-pending .glyph { color: var(--gold); --g2: #F1D7A3; flex: none; }
+.sp-summary { margin-top: 14px; font-size: 15px; font-weight: 600; line-height: 1.5; color: var(--ivory-2); }
+.sp-locked { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; padding: 10px 12px; border-radius: var(--r-md); background: rgba(246, 240, 228, .06); border: 1px dashed rgba(246, 240, 228, .22); color: var(--ivory-2); font-size: 14px; font-weight: 700; line-height: 1.35; }
+.sp-locked .glyph { color: var(--gold); --g2: #F1D7A3; flex: none; margin-top: 1px; }
+.sheet.species .detail-chips { margin-top: 14px; }
+.sheet.species .sheet-actions .btn .ic { margin-left: -4px; }
+
+/* Keşif Notu sheet */
+.note-hero { position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 20px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(170deg, #2B6A56, #173F35); box-shadow: 0 12px 30px rgba(0, 0, 0, .4), inset 0 0 0 1px rgba(246, 240, 228, .1); margin-bottom: 14px; }
+.note-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.note-points { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: np; }
+.note-points li { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 16px; background: rgba(246, 240, 228, .06); border: 1px solid rgba(246, 240, 228, .1); counter-increment: np; }
+.np-mark { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); margin-top: 7px; box-shadow: 0 0 0 4px rgba(217, 166, 74, .18); }
+.note-points.numbered .np-mark { width: 28px; height: 28px; margin-top: 0; display: grid; place-items: center; font-size: 13px; font-weight: 900; color: var(--forest-2); box-shadow: none; }
+.note-points.numbered .np-mark::before { content: counter(np); }
+.np-h { font-size: 16px; font-weight: 900; color: var(--ivory); line-height: 1.2; }
+.np-t { font-size: 14.5px; font-weight: 600; color: var(--ivory-2); line-height: 1.45; margin-top: 3px; }
+.sheet.fieldnote .detail-fact { margin-top: 14px; }
+
+/* "Haritada gör": brief spotlight on the find's map card */
+.disc.spot { animation: glow 1.2s ease-out 2; }
+.sheet.cine .reveal-art img.dino-art { width: 100%; height: 100%; max-width: none; object-fit: cover; border-radius: 20px; filter: none; box-shadow: 0 12px 30px rgba(0, 0, 0, .45); }
+
 /* ── DESKTOP: scenic world around the action column ─────────────────── */
 .world { display: none; }
 @media (min-width: 700px) {
   .child { padding-top: 22px; }
   .finds { grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 14px; }
   .disc-fact { display: -webkit-box; }
-  .exp-hero { height: 360px; }
-  .exp-hero h1 { font-size: 34px; }
-  .exp-hero-body { max-width: 70%; padding-bottom: 22px; }
-  .exp-companion { width: 120px; right: 18px; bottom: 18px; }
+  .exp-hero { height: 380px; }
+  .exp-hero h1 { font-size: 36px; }
+  .exp-hero-body { max-width: 74%; padding-bottom: 22px; }
+  .sp-shelf { display: grid; grid-template-columns: repeat(3, 1fr); overflow: visible; margin: 0; padding: 4px 0 6px; }
+  .sp-card { flex: none; max-width: none; }
+  .note-list { display: grid; grid-template-columns: repeat(2, 1fr); }
+  .note-card { align-items: flex-start; }
+  .sp-stats { grid-template-columns: repeat(3, 1fr); }
   .hero { min-height: 320px; }
   .hero .hello { font-size: 36px; }
 }
@@ -360,13 +460,16 @@
   .child { padding-bottom: calc(var(--nav-h) + 48px); }
   .nav { background: rgba(255, 253, 249, .88); }
   .nav-inner { max-width: 520px; }
-  .cinematic { border-radius: var(--r-xl); margin-top: 8px; box-shadow: var(--shadow-2); }
+  .exp-top, .cinematic { border-radius: var(--r-xl); box-shadow: var(--shadow-2); }
+  .exp-top { margin-top: 8px; }
+  .cinematic { margin-top: 30px; }
   /* Expedition uses the width: wider column, 4-up discovery grid */
   #page-expedition { max-width: 940px; }
-  .exp-hero { height: 400px; border-radius: var(--r-xl) var(--r-xl) 0 0; }
-  .exp-hero-body { max-width: 60%; padding-left: 28px; padding-bottom: 26px; }
-  .exp-hero h1 { font-size: 38px; }
-  .exp-next, .map-trail, .map-foot { padding-left: 12px; padding-right: 12px; }
+  .exp-hero { height: 440px; border-radius: var(--r-xl) var(--r-xl) 0 0; }
+  .exp-hero-body { max-width: 62%; padding-left: 28px; padding-bottom: 28px; }
+  .exp-hero h1 { font-size: 42px; }
+  .exp-next, .map-trail, .map-foot, .cinematic .exp-sec-hd { padding-left: 12px; padding-right: 12px; }
+  .sp-shelf { grid-template-columns: repeat(4, 1fr); gap: 14px; }
   .map-trail { padding-left: 40px; }
   .map-trail::before { left: 25px; }
   .finds { grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 16px; }
