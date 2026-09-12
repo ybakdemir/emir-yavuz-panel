@@ -1,46 +1,72 @@
 /* ── Design tokens ─────────────────────────────────────────────────────
-   A (dinosaur adventure) + C (premium/cinematic on expedition screens)
-   + B (clean week hierarchy). Warm daytime palette by default; the deep
-   palette is scoped to .cinematic panels only — never a global night mode. */
+   Dinosaur Adventure (A) + Cinematic Premium Depth (C) + Clean Weekly
+   Hierarchy (B). Warm expedition-cream daytime surface; Deep Forest and
+   Explorer Green carry the brand; Jurassic Gold is the reward/highlight
+   accent; Night Navy is scoped to .cinematic surfaces only — never a
+   global dark mode. */
 :root {
   --font: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  --sand: #F4ECDF;          /* page background */
-  --sand-2: #EADFCC;        /* dividers, wells */
-  --paper: #FFFCF7;         /* cards */
-  --ink: #1F2A24;           /* primary text */
-  --ink-2: #4E5A52;         /* secondary text */
-  --ink-3: #8A9389;         /* muted */
-  --line: rgba(31, 42, 36, .10);
+  /* surfaces */
+  --cream: #F6F0E4;         /* page background (Warm Expedition Cream) */
+  --cream-2: #EDE4D2;       /* wells, dividers, strips */
+  --cream-3: #E2D6BF;       /* stronger separators */
+  --paper: #FFFDF9;         /* cards */
 
-  --jungle: #2F6B4F;        /* primary action / done */
-  --jungle-2: #245641;
-  --jungle-soft: #DCEBDD;
-  --jungle-tint: #EEF5EE;
-  --amber: #D9822B;         /* warm accent */
-  --amber-soft: #FBE8D3;
-  --clay: #B4553A;          /* terracotta, used sparingly */
-  --clay-soft: #F6DED5;
-  --sky: #3D7EA6;
-  --sky-soft: #DCEAF3;
+  /* ink */
+  --ink: #17261F;
+  --ink-2: #44554C;
+  --ink-3: #75847B;
+  --line: rgba(23, 63, 53, .10);
+  --line-2: rgba(23, 63, 53, .18);
+
+  /* brand family */
+  --forest: #173F35;        /* Deep Forest */
+  --forest-2: #10302A;
+  --forest-3: #215446;
+  --green: #2F7659;         /* Explorer Green — primary action / done */
+  --green-2: #245E46;
+  --green-soft: #D6E8DB;
+  --green-tint: #EAF3EC;
+  --gold: #D9A64A;          /* Jurassic Gold / Amber */
+  --gold-2: #B9852E;
+  --gold-soft: #F7E7C6;
+  --gold-tint: #FBF3E1;
+  --sky: #3D7EA6;           /* Discovery Blue — supporting only */
+  --sky-soft: #D9E8F1;
+  --sky-ink: #23506B;
+  --clay: #B95A3A;          /* energetic terracotta, used sparingly */
+  --clay-soft: #F5DED2;
   --fossil: #8A6A4C;
-  --fossil-soft: #EFE3D3;
-  --gold: #E0B36A;
+  --fossil-soft: #EFE3D1;
+  --night: #2E3F6B;         /* evening / moon accent (small doses) */
+  --night-soft: #DDE2F2;
 
-  /* cinematic (expedition) */
+  /* cinematic (expedition, collection detail) */
+  --navy: #0E1B2B;
+  --navy-2: #14283A;
   --deep: #10241C;
   --deep-2: #1B3A2E;
-  --deep-3: #24513F;
   --ivory: #F6F0E4;
   --ivory-2: rgba(246, 240, 228, .72);
+  --ivory-3: rgba(246, 240, 228, .45);
 
-  --r-lg: 22px; --r-md: 16px; --r-sm: 12px; --r-pill: 999px;
-  --shadow-1: 0 1px 2px rgba(31, 42, 36, .05), 0 4px 14px rgba(31, 42, 36, .06);
-  --shadow-2: 0 10px 30px rgba(31, 42, 36, .14);
+  /* legacy aliases (kept so nothing breaks) */
+  --sand: var(--cream); --sand-2: var(--cream-2);
+  --jungle: var(--green); --jungle-2: var(--green-2); --jungle-soft: var(--green-soft); --jungle-tint: var(--green-tint);
+  --amber: var(--gold); --amber-soft: var(--gold-soft); --deep-3: var(--forest-3);
+
+  /* shape & depth */
+  --r-xl: 28px; --r-lg: 22px; --r-md: 16px; --r-sm: 12px; --r-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(23, 63, 53, .05), 0 6px 18px rgba(23, 63, 53, .07);
+  --shadow-2: 0 2px 6px rgba(23, 63, 53, .08), 0 14px 36px rgba(23, 63, 53, .16);
+  --shadow-hero: 0 18px 44px rgba(16, 48, 42, .30);
   --tap: 56px;
-  --nav-h: 74px;
+  --nav-h: 76px;
   --gutter: 16px;
   --maxw-child: 640px;
-  --maxw-parent: 1080px;
+  --maxw-parent: 1180px;
   --ease: cubic-bezier(.2, .8, .2, 1);
+  --ease-pop: cubic-bezier(.34, 1.4, .64, 1);
+  --dur: .22s;
 }

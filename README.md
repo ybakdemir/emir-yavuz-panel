@@ -38,6 +38,8 @@ src/core/               pure logic (tested)
 src/ui/child/           Today · My Week · Expedition · My Skills
 src/ui/parent/          Dashboard · Routines · Skills · Presentations · Rewards · Progress · Settings
 src/ui/print.js         "Haftamı yazdır" paper mode
+src/ui/art.js           original SVG art: duotone task glyphs, exercise pictograms, hero
+                        landscape, expedition zone scenes, mastery badge, desktop backdrop
 styles/                 tokens, base components, child, parent, print
 legacy/index.html       v1 (star economy) kept verbatim as an archive
 docs/                   AUDIT.md (phase 0), V2_REPORT.md (delivery report),

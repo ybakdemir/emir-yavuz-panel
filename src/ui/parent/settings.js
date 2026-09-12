@@ -10,7 +10,7 @@ export function renderSettings(body, ctx) {
   const { state } = ctx;
   const st = state.config.settings;
   const set = (fn) => ctx.update((s) => fn(s.config));
-  const grid = h('div', { class: 'grid grid-2' });
+  const grid = h('div', { class: 'grid grid-2 grid-wide' });
 
   add(grid, pcard('Genel', 'user',
     field('Çocuğun adı', textInput(st.childName, (v) => set((c) => { c.settings.childName = v; }))),

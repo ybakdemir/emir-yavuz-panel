@@ -9,6 +9,8 @@ import { independenceStats } from '../../core/analytics.js';
 import { weeklyMessageFor } from '../../core/messages.js';
 import { STATUS_LABEL, SKILL_STATUS_LABEL } from '../../content/defaults.js';
 import { taskIcon } from './components.js';
+import { motif } from '../art.js';
+import { dino } from '../dinos.js';
 
 export function renderWeek(main, ctx) {
   const { state, today } = ctx;
@@ -16,7 +18,7 @@ export function renderWeek(main, ctx) {
   const days = weekDays(wk);
   const goodRatio = state.config.rewards.goodDayRatio;
 
-  add(main, h('header', { class: 'week-head' }, h('h1', {}, 'Bu Hafta'), h('div', { class: 'muted', style: { fontWeight: 800 } }, weekLabel(wk))));
+  add(main, h('header', { class: 'week-head' }, h('div', {}, h('div', { class: 'kicker' }, 'Haftalık yolculuk'), h('h1', {}, 'Bu Hafta')), h('div', { class: 'week-range' }, weekLabel(wk))));
 
   // ── Mon–Sun strip
   add(main, h('div', { class: 'week-strip' }, days.map((k) => {
@@ -30,17 +32,19 @@ export function renderWeek(main, ctx) {
   })));
 
   // ── encouraging message
-  add(main, h('div', { class: 'msg' }, icon('hand', 26), weeklyMessage(ctx, wk)));
+  add(main, h('div', { class: 'msg' },
+    h('div', { class: 'msg-dino' }, dino('velociraptor', { size: 84 })),
+    h('div', { class: 'grow' }, h('div', { class: 'msg-kicker' }, 'Kaşif notu'), h('div', { class: 'msg-txt' }, weeklyMessage(ctx, wk)))));
 
   // ── Skill of the week
   const skill = activeSkill(state);
-  const skillCard = h('div', { class: 'card week-card' },
-    h('div', { class: 'hd' }, taskIcon('seed'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Becerisi'), h('div', { class: 'small muted' }, skill ? SKILL_STATUS_LABEL[skill.status] : ''))));
+  const skillCard = h('div', { class: 'card week-card wc-skill' }, motif('seed'),
+    h('div', { class: 'hd' }, taskIcon('seed', 'gold'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Becerisi'), h('div', { class: 'small muted' }, skill ? SKILL_STATUS_LABEL[skill.status] : ''))));
   if (skill) {
     const ev = evaluateGraduation(state, skill.id, today);
     add(skillCard, h('div', { class: 'bd' },
-      h('div', { style: { fontSize: '18px', fontWeight: 800 } }, skill.title),
-      skill.hint ? h('div', { class: 'small muted', style: { marginTop: '2px' } }, skill.hint) : null,
+      h('div', { class: 'wc-title' }, skill.title),
+      skill.hint ? h('div', { class: 'wc-hint' }, skill.hint) : null,
       h('div', { class: 'dots', 'aria-label': 'Bu haftaki günler' }, days.map((k) => {
         const st = state.days[k]?.items?.skill?.status;
         return h('span', { class: st === 'independent' ? 'ok' : isCompleted(st) ? 'half' : '', title: dayNameShort(k) });
@@ -54,11 +58,11 @@ export function renderWeek(main, ctx) {
   // ── Presentation of the week
   const pres = state.weeks?.[wk]?.presentation || {};
   const setPres = (patch) => ctx.update((s) => { s.weeks[wk] ||= {}; s.weeks[wk].presentation = { ...(s.weeks[wk].presentation || {}), ...patch }; });
-  const presCard = h('div', { class: 'card week-card' },
+  const presCard = h('div', { class: 'card week-card wc-pres' }, motif('mic'),
     h('div', { class: 'hd' }, taskIcon('mic', 'sky'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Sunumu'), h('div', { class: 'small muted' }, `${state.config.presentation.targetMinutes} dakika`))),
     h('div', { class: 'bd' },
       pres.topic
-        ? h('div', {}, h('div', { style: { fontSize: '18px', fontWeight: 800 } }, pres.topic),
+        ? h('div', {}, h('div', { class: 'wc-title' }, pres.topic),
           h('div', { class: 'row wrap', style: { marginTop: '10px' } },
             h('button', { class: `chip ${pres.prepared ? 'on' : ''}`, onclick: () => setPres({ prepared: !pres.prepared }) }, pres.prepared ? icon('check', 16) : null, 'Hazırlandım'),
             h('button', { class: `chip ${pres.presented ? 'on' : ''}`, onclick: () => setPres(pres.presented ? { presented: false, presentedOn: null } : { presented: true, prepared: true, presentedOn: today }) }, pres.presented ? icon('check', 16) : null, 'Sundum'),
@@ -70,10 +74,10 @@ export function renderWeek(main, ctx) {
   // ── Weekly Choice
   const w = weeklyStatus(state, wk);
   const r = state.config.rewards.weekly;
-  const choiceCard = h('div', { class: 'card week-card' },
-    h('div', { class: 'hd' }, taskIcon('gift', 'amber'), h('div', { class: 'grow' }, h('h3', {}, r.title), h('div', { class: 'small muted' }, w.unlocked ? 'Açıldı!' : `${w.goodDays}/${w.needed} iyi gün` + (w.requirePresentation ? (w.presentationDone ? ' · sunum tamam' : ' · sunum bekliyor') : '')))));
+  const choiceCard = h('div', { class: `card week-card wc-choice ${w.unlocked ? 'unlocked' : ''}` }, motif('gift'),
+    h('div', { class: 'hd' }, taskIcon('gift', 'gold'), h('div', { class: 'grow' }, h('h3', {}, r.title), h('div', { class: 'small muted' }, w.unlocked ? 'Açıldı!' : `${w.goodDays}/${w.needed} iyi gün` + (w.requirePresentation ? (w.presentationDone ? ' · sunum tamam' : ' · sunum bekliyor') : '')))));
   if (w.chosen) {
-    add(choiceCard, h('div', { class: 'bd' }, h('div', { class: 'pill pill-amber' }, icon('check', 14), 'Seçimin'), h('div', { style: { fontSize: '18px', fontWeight: 800, marginTop: '6px' } }, w.chosen)));
+    add(choiceCard, h('div', { class: 'bd' }, h('div', { class: 'pill pill-gold' }, icon('check', 14), 'Seçimin'), h('div', { class: 'wc-title', style: { marginTop: '6px' } }, w.chosen)));
   } else if (w.unlocked) {
     add(choiceCard, h('div', { class: 'bd stack' }, h('div', { class: 'small muted' }, 'Bu hafta sen seçiyorsun:'),
       r.options.map((o) => h('button', { class: 'choice-opt', onclick: () => ctx.update((s) => chooseWeekly(s, wk, o, today)) }, icon('chevron', 18), o))));

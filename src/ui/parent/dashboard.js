@@ -11,7 +11,7 @@ export function renderDashboard(body, ctx) {
   const { state, today } = ctx;
   const s7 = independenceStats(state, addDays(today, -6), today);
   const s30 = independenceStats(state, addDays(today, -29), today);
-  const grid = h('div', { class: 'grid grid-2' });
+  const grid = h('div', { class: 'grid grid-2 grid-wide' });
 
   // ── North star: independent / classified (unspecified completions are outside the ratio)
   add(grid, pcard('Bağımsız Tamamlama Oranı', 'compass',

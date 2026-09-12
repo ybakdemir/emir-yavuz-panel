@@ -8,7 +8,8 @@ import { visibleSteps, stepsDone, toggleStep } from '../../core/routines.js';
 import { targetsFor, physicalProgress, toggleExercise } from '../../core/physical.js';
 import { activeSkill } from '../../core/skills.js';
 import { isComeback } from '../../core/analytics.js';
-import { ring, howChips, taskIcon, checkCircle, stamp, ICON_TONE } from './components.js';
+import { ring, trail, howChips, taskIcon, checkCircle, stamp, ICON_TONE } from './components.js';
+import { heroScene, exerciseGlyph } from '../art.js';
 
 const openCards = new Map();    // itemId → bool (session only); unset = auto
 const justDone = new Set();     // for the footprint stamp animation
@@ -38,19 +39,22 @@ export function renderToday(main, ctx) {
   const allDone = core.length > 0 && doneCount === core.length;
   const comeback = isComeback(state, today);
 
-  // ── header + hero
-  add(main, 
-    h('header', { class: 'child-header' },
-      h('div', { class: 'grow' },
-        h('div', { class: 'hello' }, `Merhaba ${name}`),
-        h('div', { class: 'date' }, formatLong(today))),
-      h('a', { href: '#/parent', class: 'parent-link', 'aria-label': 'Ebeveyn modu' }, icon('gear', 22))),
-    h('section', { class: 'hero' },
-      dino(allDone ? 'trex' : doneCount > 0 ? 'triceratops' : 'brachiosaurus'),
-      h('div', { class: 'grow' },
-        h('div', { class: 'hero-title' }, allDone ? 'Bugün tamamlandı!' : doneCount === 0 ? 'Bugünkü keşfe hazır mısın?' : 'Harika gidiyorsun'),
-        h('div', { class: 'hero-sub' }, allDone ? 'Kaşif işini bitirdi.' : `${core.length - doneCount} görev kaldı`)),
-      ring(doneCount, core.length)));
+  // ── hero: greeting, date, encouragement, progress — inside one scenic card
+  const remaining = core.length - doneCount;
+  const headline = allDone ? 'Bugünün keşfi tamamlandı!' : doneCount === 0 ? 'Bugünkü keşfe hazır mısın?' : remaining === 1 ? 'Son bir adım kaldı' : 'Harika gidiyorsun, kaşif';
+  const subline = allDone ? 'Her görevi kendi yolunla bitirdin.' : doneCount === 0 ? `${core.length} görev seni bekliyor.` : `${remaining} görev kaldı — yolun açık.`;
+  add(main,
+    h('section', { class: `hero ${allDone ? 'complete' : ''}`, 'aria-label': 'Bugün' },
+      heroScene(),
+      h('a', { href: '#/parent', class: 'parent-link', 'aria-label': 'Ebeveyn modu' }, icon('gear', 20)),
+      h('div', { class: 'hero-body' },
+        h('div', { class: 'hero-date' }, formatLong(today)),
+        h('h1', { class: 'hello' }, `Merhaba ${name}`),
+        h('div', { class: 'hero-copy' },
+          h('div', { class: 'hero-title' }, headline),
+          h('div', { class: 'hero-sub' }, subline)),
+        h('div', { class: 'hero-progress' }, ring(doneCount, core.length, 74, 'hero'), trail(doneCount, core.length))),
+      h('div', { class: 'hero-dino' }, dino(allDone ? 'trex' : doneCount > 0 ? 'triceratops' : 'brachiosaurus'))));
 
   if (comeback && doneCount > 0) {
     add(main, h('div', { class: 'note' }, icon('hand', 22), 'Geri dönmek güzel. Bugün yeniden başlıyoruz.'));
@@ -71,8 +75,8 @@ export function renderToday(main, ctx) {
 
   if (allDone) {
     add(main, h('div', { class: 'day-done' },
-      h('div', { class: 'trail' }, footprintStamp(22), footprintStamp(22), footprintStamp(22)),
-      h('div', { class: 'grow' }, h('div', { class: 't' }, 'Bugünün işi bitti.'), h('div', { class: 's' }, 'Yarın yeni bir gün. Şimdi dinlenme zamanı.'))));
+      h('div', { class: 'trail on' }, footprintStamp(22), footprintStamp(22), footprintStamp(22)),
+      h('div', { class: 'grow' }, h('div', { class: 't' }, 'Kamp ateşi yandı.'), h('div', { class: 's' }, 'Bugünün işi bitti. Yarın yeni bir keşif.'))));
   }
 
   // Weekend: let the child add homework if there is some.
@@ -87,7 +91,7 @@ function renderCard(item, day, ctx) {
   const { today } = ctx;
   const status = getStatus(day, item.id);
   const done = isCompleted(status);
-  const card = h('div', { class: `task ${done ? 'done' : ''} ${justDone.has(item.id) ? 'just-done' : ''}`, id: 'task-' + item.id });
+  const card = h('div', { class: `task tone-${ICON_TONE[item.id] || 'forest'} ${done ? 'done' : ''} ${justDone.has(item.id) ? 'just-done' : ''}`, id: 'task-' + item.id });
   if (justDone.has(item.id)) setTimeout(() => justDone.delete(item.id), 900);
 
   // One tap = done. Independence is never assumed; the chips below are optional.
@@ -113,7 +117,7 @@ function mainRow(item, { title, sub, done, onTap, expandable = false, open = fal
   return h('div', { class: 'task-main', role: 'button', tabindex: '0', onclick: onTap, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(); } } },
     taskIcon(item.icon, ICON_TONE[item.id] || ''),
     h('div', { class: 'grow' }, h('div', { class: 'task-title' }, title), sub ? h('div', { class: 'task-sub' }, sub) : null),
-    expandable ? h('span', { class: 'muted', style: { transform: open ? 'rotate(180deg)' : '', transition: 'transform .2s' } }, icon('chevronDown', 22)) : null,
+    expandable ? h('span', { class: `task-chev ${open ? 'open' : ''}`, 'aria-hidden': 'true' }, icon('chevronDown', 22)) : null,
     checkCircle(done, onCheck));
 }
 
@@ -150,7 +154,7 @@ function renderRoutineCard(card, item, day, ctx, a) {
     add(card, h('div', { class: 'task-body' }, h('div', { class: 'steps' },
       steps.map((st) => {
         const on = !!day.steps?.[item.id]?.[st.id];
-        return h('div', { class: `step ${on ? 'on' : ''}`, role: 'checkbox', 'aria-checked': on ? 'true' : 'false', tabindex: '0', onclick: () => {
+        return h('div', { class: `step ${on ? 'on' : ''}`, role: 'checkbox', 'aria-checked': on ? 'true' : 'false', tabindex: '0', onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }, onclick: () => {
           ctx.update((s) => {
             const d = ensureDay(s, ctx.today);
             const nowOn = toggleStep(d, item.id, st.id);
@@ -180,10 +184,12 @@ function renderPhysicalCard(card, item, day, ctx, a) {
     },
   }));
   if (open) {
-    add(card, h('div', { class: 'task-body' }, h('div', { class: 'steps' },
+    add(card, h('div', { class: 'task-body challenge' },
+      h('div', { class: 'challenge-hd' }, h('span', {}, 'Bugünün hedefi'), h('span', { class: 'muted' }, `${prog.done}/${prog.total}`)),
+      h('div', { class: 'exercises' },
       targets.map((t) => {
         const on = !!day.physical?.[t.id];
-        return h('div', { class: `exercise ${on ? 'on' : ''}`, role: 'checkbox', 'aria-checked': on ? 'true' : 'false', tabindex: '0', onclick: () => {
+        return h('div', { class: `exercise ${on ? 'on' : ''}`, role: 'checkbox', 'aria-checked': on ? 'true' : 'false', tabindex: '0', 'aria-label': `${t.name} ${t.target} ${t.unit}`, onclick: () => {
           ctx.update((s) => {
             const d = ensureDay(s, ctx.today);
             const nowOn = toggleExercise(d, t.id);
@@ -191,10 +197,11 @@ function renderPhysicalCard(card, item, day, ctx, a) {
             if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, DEFAULT_COMPLETION); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
             if (!nowOn && isCompleted(getStatus(d, item.id))) setStatus(d, item.id, null);
           });
-        } },
-        h('div', { class: 'step-check' }, icon('check', 20)),
+        }, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } } },
+        h('div', { class: 'ex-pic' }, exerciseGlyph(t.id, 44)),
         h('div', { class: 'grow' }, h('div', { class: 'step-txt' }, t.name)),
-        h('div', { class: 'n' }, t.target), h('div', { class: 'unit' }, t.unit === 'saniye' ? 'sn' : 'kez'));
+        h('div', { class: 'ex-target' }, h('span', { class: 'n' }, t.target), h('span', { class: 'unit' }, t.unit === 'saniye' ? 'sn' : 'kez')),
+        h('div', { class: 'step-check' }, icon('check', 20)));
       }))));
   }
   if (a.done) add(card, a.how());

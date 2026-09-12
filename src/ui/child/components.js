@@ -1,16 +1,30 @@
 import { h, svg } from '../dom.js';
 import { icon, footprintStamp } from '../icons.js';
+import { glyph, GLYPH_NAMES } from '../art.js';
 import { STATUS, STATUS_LABEL } from '../../content/defaults.js';
 
-export const ICON_TONE = { morning: '', homework: 'amber', explorer: 'sky', reading: 'fossil', quran: '', prayer: '', physical: 'amber', skill: '', presentation: 'sky', evening: '' };
+/** Category tone per item — drives the glyph tile colour and the card accent. */
+export const ICON_TONE = { morning: 'dawn', homework: 'sky', explorer: 'sky', reading: 'fossil', quran: 'forest', prayer: 'forest', physical: 'clay', skill: 'gold', presentation: 'sky', evening: 'night' };
 
-export function ring(done, total, size = 66) {
-  const r = (size - 8) / 2, c = 2 * Math.PI * r, ratio = total ? done / total : 0;
-  return h('div', { class: 'ring', role: 'img', 'aria-label': `${done} / ${total}` },
-    svg(`<circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="rgba(31,42,36,.10)" stroke-width="7"/>
-         <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="var(--jungle)" stroke-width="7" stroke-linecap="round"
-           stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - ratio)}" style="transition:stroke-dashoffset .5s var(--ease)"/>`, { size, viewBox: `0 0 ${size} ${size}` }),
-    h('div', { class: 'lbl' }, `${done}/${total}`));
+/**
+ * Progress ring. `tone: 'hero'` draws ivory-on-forest with a gold arc for the
+ * Today hero; the default is green-on-cream for light surfaces.
+ */
+export function ring(done, total, size = 66, tone = '') {
+  const r = (size - 10) / 2, c = 2 * Math.PI * r, ratio = total ? done / total : 0;
+  const track = tone === 'hero' ? 'rgba(246,240,228,.18)' : 'rgba(23,63,53,.10)';
+  const arc = tone === 'hero' ? 'var(--gold)' : 'var(--green)';
+  return h('div', { class: `ring ${tone ? 'ring-' + tone : ''}`, role: 'img', 'aria-label': `${done} / ${total} görev tamamlandı` },
+    svg(`<circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${track}" stroke-width="8"/>
+         <circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${arc}" stroke-width="8" stroke-linecap="round"
+           stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - ratio)}" style="transition:stroke-dashoffset .6s var(--ease)"/>`, { size, viewBox: `0 0 ${size} ${size}` }),
+    h('div', { class: 'lbl' }, h('b', {}, done), h('small', {}, `/${total}`)));
+}
+
+/** Footprint trail: one print per core task, filled as they complete. */
+export function trail(done, total) {
+  return h('div', { class: 'trail', 'aria-hidden': 'true' },
+    Array.from({ length: total }, (_, i) => h('span', { class: `tp ${i < done ? 'on' : ''}` }, footprintStamp(18))));
 }
 
 /**
@@ -38,12 +52,13 @@ export function howChips(status, onPick, { open = true, onToggle = null } = {}) 
     }, status === val ? icon('check', 16) : null, label)));
 }
 
+/** Category tile: duotone glyph when we have one, line icon otherwise. */
 export function taskIcon(name, tone = '') {
-  return h('div', { class: `task-icon ${tone}` }, icon(name, 26));
+  return h('div', { class: `task-icon ${tone}` }, GLYPH_NAMES.includes(name) ? glyph(name, 28) : icon(name, 26));
 }
 
 export function checkCircle(done, onClick) {
-  return h('button', { class: 'task-check', 'aria-label': done ? 'Geri al' : 'Tamamla', onclick: (e) => { e.stopPropagation(); onClick(); } }, icon('check', 26));
+  return h('button', { class: 'task-check', 'aria-label': done ? 'Geri al' : 'Tamamla', 'aria-pressed': done ? 'true' : 'false', onclick: (e) => { e.stopPropagation(); onClick(); } }, icon('check', 26));
 }
 
 export function stamp() { return h('div', { class: 'task-stamp' }, footprintStamp(34)); }
