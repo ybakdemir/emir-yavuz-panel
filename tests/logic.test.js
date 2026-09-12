@@ -146,3 +146,18 @@ test('independence analytics + comeback', () => {
   assert.ok(isComeback(s, '2026-09-12'));
   assert.equal(activeDaysInRow(s, '2026-09-12'), 0);
 });
+
+test('skill activated mid-day shows up for today', async () => {
+  const { effectiveSkillId, ensureDay: ed } = await import('../src/core/completion.js');
+  const s = mk();
+  const d = ed(s, '2026-09-14');
+  assert.equal(d.skillId, null);
+  activateSkill(s, 'bag', '2026-09-14');
+  assert.equal(s.days['2026-09-14'].skillId, 'bag');
+  // a day that already worked on another skill keeps it
+  s.days['2026-09-14'].items.skill = { status: 'independent' };
+  activateSkill(s, 'bed', '2026-09-14');
+  assert.equal(s.days['2026-09-14'].skillId, 'bag');
+  assert.equal(effectiveSkillId(s, s.days['2026-09-14']), 'bag');
+  assert.equal(effectiveSkillId(s, { items: {} }), 'bed');
+});

@@ -1,0 +1,46 @@
+/* ── Design tokens ─────────────────────────────────────────────────────
+   A (dinosaur adventure) + C (premium/cinematic on expedition screens)
+   + B (clean week hierarchy). Warm daytime palette by default; the deep
+   palette is scoped to .cinematic panels only — never a global night mode. */
+:root {
+  --font: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --sand: #F4ECDF;          /* page background */
+  --sand-2: #EADFCC;        /* dividers, wells */
+  --paper: #FFFCF7;         /* cards */
+  --ink: #1F2A24;           /* primary text */
+  --ink-2: #4E5A52;         /* secondary text */
+  --ink-3: #8A9389;         /* muted */
+  --line: rgba(31, 42, 36, .10);
+
+  --jungle: #2F6B4F;        /* primary action / done */
+  --jungle-2: #245641;
+  --jungle-soft: #DCEBDD;
+  --jungle-tint: #EEF5EE;
+  --amber: #D9822B;         /* warm accent */
+  --amber-soft: #FBE8D3;
+  --clay: #B4553A;          /* terracotta, used sparingly */
+  --clay-soft: #F6DED5;
+  --sky: #3D7EA6;
+  --sky-soft: #DCEAF3;
+  --fossil: #8A6A4C;
+  --fossil-soft: #EFE3D3;
+  --gold: #E0B36A;
+
+  /* cinematic (expedition) */
+  --deep: #10241C;
+  --deep-2: #1B3A2E;
+  --deep-3: #24513F;
+  --ivory: #F6F0E4;
+  --ivory-2: rgba(246, 240, 228, .72);
+
+  --r-lg: 22px; --r-md: 16px; --r-sm: 12px; --r-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(31, 42, 36, .05), 0 4px 14px rgba(31, 42, 36, .06);
+  --shadow-2: 0 10px 30px rgba(31, 42, 36, .14);
+  --tap: 56px;
+  --nav-h: 74px;
+  --gutter: 16px;
+  --maxw-child: 640px;
+  --maxw-parent: 1080px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+}

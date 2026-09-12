@@ -57,6 +57,9 @@ export function activateSkill(state, skillId, date) {
   }
   state.skills.activeId = skillId;
   state.weeks ||= {};
+  // Today's record (if any) adopts the new skill unless another was already done today.
+  const today = state.days[date];
+  if (today && !today.items?.skill) today.skillId = skillId;
 }
 
 export function deactivateSkill(state) {
