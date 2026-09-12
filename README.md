@@ -65,9 +65,20 @@ Completion status values: `done` = **COMPLETED_UNSPECIFIED** ("Yaptım" — what
 plain tap records, and what imported v1 ticks carry), `independent` ("Kendim
 yaptım"), `reminder` ("Hatırlatılınca yaptım"), `assisted` ("Birlikte yaptık"),
 `not_done`. A completion is never independent unless Emir or a parent explicitly
-picks it; the Independent Completion Rate counts only `independent` in its
-numerator, so unspecified completions can never inflate it (they still count
-as done for good days, the expedition and the child's progress ring).
+picks it. Three rates, three denominators (`src/core/analytics.js`):
+
+* **Completion rate** = completed / applicable — completed includes
+  `done`, `independent`, `reminder`, `assisted`.
+* **Independent Completion Rate** (north star) = `independent` / classified,
+  where classified = `independent` + `reminder` + `assisted`. Unspecified
+  completions are outside both numerator and denominator: a tap can neither
+  inflate nor penalise the rate. Undefined (shown as "–") until something is
+  classified.
+* **Classification coverage** = classified / completed — how much of the
+  completed work has been classified at all.
+
+Unspecified completions still count as done for good days, the expedition and
+the child's progress ring.
 
 ## Storage & migration
 

@@ -60,12 +60,13 @@ export function renderProgress(body, ctx, parts) {
     rows.length ? h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
       h('thead', {}, h('tr', {}, h('th', {}, 'Görev'), h('th', {}, 'Tamamlama'), h('th', {}, 'Kendi'), h('th', {}, 'Hatırlatma'), h('th', {}, 'Birlikte'))),
       h('tbody', {}, rows.map(({ it, s }) => h('tr', {}, h('td', { style: { fontWeight: 800 } }, it.title), h('td', {}, fmtPct(s.completionRate)), h('td', {}, fmtPct(s.rate)), h('td', {}, s.reminder), h('td', {}, s.assisted)))))) : h('div', { class: 'muted small' }, 'Henüz veri yok.'),
-    h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Bağımsızlık = "Kendim yaptım" / uygulanabilir görev. "Yaptı (?)" tamamlandı sayılır ama bağımsız sayılmaz.')));
+    h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Tamamlama = tamamlanan / uygulanabilir görev ("Yaptı (?)" dahil). Kendi = "Kendim yaptım" / sınıflandırılmış tamamlama (Kendi + Hatırlatma + Birlikte); "Yaptı (?)" bu orana girmez, "–" = henüz sınıflandırılmış yok.')));
 
   // ── independence trend 8 weeks (all items)
   const trend = itemTrend(state, null, today, 8);
   add(grid, pcard('Bağımsızlık eğilimi — 8 hafta', 'compass',
-    h('div', { class: 'bars' }, trend.map((w) => h('div', { class: 'b', title: `${w.wk}: ${fmtPct(w.rate)}` }, h('i', { class: w.applicable ? '' : 'none', style: { height: `${Math.max(4, w.rate * 100)}%` } }), h('span', {}, fromKey(w.wk).getDate()))))));
+    h('div', { class: 'small muted', style: { marginBottom: '6px' } }, 'Haftalık: "Kendim yaptım" / sınıflandırılmış tamamlama. Boş çubuk = o hafta sınıflandırılmış tamamlama yok.'),
+    h('div', { class: 'bars' }, trend.map((w) => h('div', { class: 'b', title: `${w.wk}: ${fmtPct(w.rate)}` }, h('i', { class: w.classified ? '' : 'none', style: { height: `${Math.max(4, (w.rate || 0) * 100)}%` } }), h('span', {}, fromKey(w.wk).getDate()))))));
 
   add(body, grid);
   add(body, h('div', { class: 'row', style: { marginTop: '14px' } }, h('a', { class: 'btn btn-ghost btn-sm', href: `#/print/${wk}` }, icon('printer', 16), 'Bu haftayı yazdır')));

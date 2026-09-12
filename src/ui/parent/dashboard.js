@@ -13,15 +13,19 @@ export function renderDashboard(body, ctx) {
   const s30 = independenceStats(state, addDays(today, -29), today);
   const grid = h('div', { class: 'grid grid-2' });
 
-  // ── North star
+  // ── North star: independent / classified (unspecified completions are outside the ratio)
   add(grid, pcard('Bağımsız Tamamlama Oranı', 'compass',
     h('div', { class: 'row', style: { alignItems: 'flex-end', gap: '22px' } },
-      h('div', {}, h('div', { class: 'big' }, fmtPct(s7.rate)), h('div', { class: 'small muted' }, 'son 7 gün')),
-      h('div', {}, h('div', { class: 'big', style: { fontSize: '28px', color: 'var(--ink-2)' } }, fmtPct(s30.rate)), h('div', { class: 'small muted' }, 'son 30 gün'))),
+      h('div', {}, h('div', { class: 'big' }, fmtPct(s7.rate)), h('div', { class: 'small muted' }, `son 7 gün · ${s7.independent}/${s7.classified} sınıflandırılmış`)),
+      h('div', {}, h('div', { class: 'big', style: { fontSize: '28px', color: 'var(--ink-2)' } }, fmtPct(s30.rate)), h('div', { class: 'small muted' }, `son 30 gün · ${s30.independent}/${s30.classified}`))),
     stackBar(s7),
     h('div', { class: 'small muted', style: { marginTop: '8px' } }, s7.days ? `${s7.days} kayıtlı gün · ${s7.applicable} görev` : 'Bu hafta henüz kayıt yok.'),
+    h('div', { class: 'small muted', style: { marginTop: '4px' } },
+      'Bağımsız oran = "Kendim yaptım" / sınıflandırılmış tamamlamalar (Kendi + Hatırlatma + Birlikte). "Belirtilmedi" bu orana girmez.'),
+    h('div', { class: 'small muted', style: { marginTop: '4px' } },
+      `Sınıflandırma kapsamı: ${fmtPct(s7.classifiedRate)} (7 gün) · ${fmtPct(s30.classifiedRate)} (30 gün) — tamamlanan görevlerin nasıl yapıldığı belirtilen payı.`),
     s7.unspecified ? h('div', { class: 'small muted', style: { marginTop: '4px' } },
-      `${s7.unspecified} tamamlanan görevin nasıl yapıldığı belirtilmedi (bağımsız sayılmaz). `,
+      `${s7.unspecified} tamamlanan görevin nasıl yapıldığı belirtilmedi. `,
       h('a', { href: '#/parent/progress', style: { fontWeight: 800 } }, 'İlerleme\'de işaretle →')) : null));
 
   // ── Completion overview (14 days)
@@ -31,7 +35,7 @@ export function renderDashboard(body, ctx) {
     h('div', { class: 'bars' }, series.map((d) => h('div', { class: 'b', title: `${formatShort(d.key)}: ${d.done}/${d.total}` },
       h('i', { class: !d.recorded || !d.total ? 'none' : d.ratio < state.config.rewards.goodDayRatio ? 'low' : '', style: { height: `${Math.max(4, d.ratio * 100)}%` } }),
       h('span', {}, dayNameShort(d.key)[0])))),
-    h('div', { class: 'small muted', style: { marginTop: '6px' } }, `Tamamlama: ${fmtPct(s7.completionRate)} (7 gün) · ${fmtPct(s30.completionRate)} (30 gün)`)));
+    h('div', { class: 'small muted', style: { marginTop: '6px' } }, `Tamamlama oranı = tamamlanan / uygulanabilir görev (Belirtilmedi dahil): ${fmtPct(s7.completionRate)} (7 gün) · ${fmtPct(s30.completionRate)} (30 gün)`)));
 
   // ── Routine trends
   const trendCard = pcard('Rutin eğilimi — 4 hafta', 'list');
@@ -40,7 +44,7 @@ export function renderDashboard(body, ctx) {
     add(trendCard, h('div', { style: { fontWeight: 800, fontSize: '14px', margin: '8px 0 6px' } }, state.config.routines[id].title),
       h('div', { class: 'trend' }, t.map((w) => h('div', { class: 'w' },
         h('div', { class: 'v' }, w.applicable ? fmtPct(w.completionRate) : '–'),
-        h('div', { class: 'l' }, w.applicable ? `${fmtPct(w.rate)} kendi` : formatShort(w.wk))))));
+        h('div', { class: 'l' }, !w.applicable ? formatShort(w.wk) : w.classified ? `${fmtPct(w.rate)} kendi` : 'belirtilmedi')))));
   }
   add(grid, trendCard);
 

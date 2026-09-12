@@ -37,4 +37,5 @@ export function stringList(items, onChange, placeholder = 'Yeni…') {
   return list;
 }
 
-export const fmtPct = (v) => `${Math.round((v || 0) * 100)}%`;
+/** null = undefined ratio (e.g. no classified completions yet) → '–', never a misleading 0%. */
+export const fmtPct = (v) => (v === null ? '–' : `${Math.round((v || 0) * 100)}%`);

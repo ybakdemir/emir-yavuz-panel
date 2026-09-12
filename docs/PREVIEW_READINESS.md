@@ -9,7 +9,7 @@ Gate for pushing branch `v2` to GitHub so Vercel builds a **Preview** (not produ
 | Completed ≠ independent | ✅ `STATUS.COMPLETED_UNSPECIFIED = 'done'`; `DEFAULT_COMPLETION` is that, never `independent` |
 | Explicit later classification (Emir or parent) | ✅ child chips "Nasıl yaptın?" (optional, none preselected); parent Progress 5-state incl. "Yaptı (?)" |
 | NOT_DONE available | ✅ unchanged |
-| Rate not inflated | ✅ `rate = independent / applicable`; unspecified only in denominator; `unspecified` + `classifiedRate` exposed |
+| Rate not inflated or penalised | ✅ `rate = independent / classified` (classified = independent + reminder + assisted; unspecified in neither side, `null` when none classified); `completionRate = completed / applicable`; `classifiedRate = classified / completed` (coverage) |
 | Migrated v1 not read as independent | ✅ imports carry `done`; prod snapshot dry run: 98 completions, 0 independent |
 | History preserved | ✅ reclassify keeps `at`, adds `classifiedAt`; no record deleted; wire value unchanged so existing `ey_v6`/`/v2` data (none in prod yet) stays valid |
 | No mandatory dialog | ✅ chips are inline and skippable; compact to "Yaptım ▾" |

@@ -8,13 +8,21 @@ import { dayCompletion } from './rewards.js';
  * North-star numbers for [from, to]. Only days that have a record count;
  * within a recorded day every applicable core item counts, unmarked = not done.
  *
- * `rate` (Independent Completion Rate) = independent / applicable. Completed-
- * but-unspecified items sit in the denominator only, so a quick tap can never
- * raise the rate; only an explicit "Kendim yaptım" can. `unspecified` is
- * reported so parents can see how much is still unclassified.
+ * Three rates, three denominators:
+ *  - `completionRate`  = completed / applicable. Completed = INDEPENDENT +
+ *    REMINDER + ASSISTED + COMPLETED_UNSPECIFIED (a quick tap or a migrated v1
+ *    tick counts as done).
+ *  - `rate` (Independent Completion Rate) = independent / classified, where
+ *    classified = INDEPENDENT + REMINDER + ASSISTED. COMPLETED_UNSPECIFIED is
+ *    out of both numerator and denominator: it says nothing about *how* the
+ *    task went, so it neither raises nor lowers the rate. `null` when nothing
+ *    has been classified yet (undefined, not 0%).
+ *  - `classifiedRate` (classification coverage) = classified / completed —
+ *    how much of the completed work has been classified at all. A data-
+ *    quality hint, not the north star.
  */
 export function independenceStats(state, from, to, filterItem = null) {
-  const out = { applicable: 0, independent: 0, reminder: 0, assisted: 0, notDone: 0, unspecified: 0, completed: 0, days: 0 };
+  const out = { applicable: 0, independent: 0, reminder: 0, assisted: 0, notDone: 0, unspecified: 0, completed: 0, classified: 0, days: 0 };
   for (const key of range(from, to)) {
     const day = state.days[key];
     if (!day) continue;
@@ -31,10 +39,10 @@ export function independenceStats(state, from, to, filterItem = null) {
       if (isCompleted(s)) out.completed++;
     }
   }
-  out.rate = out.applicable ? out.independent / out.applicable : 0;          // independent completion rate
+  out.classified = out.independent + out.reminder + out.assisted;
   out.completionRate = out.applicable ? out.completed / out.applicable : 0;
-  // Share of completions that have been classified at all — a data-quality hint, not the north star.
-  out.classifiedRate = out.completed ? (out.completed - out.unspecified) / out.completed : 0;
+  out.rate = out.classified ? out.independent / out.classified : null;      // independent completion rate
+  out.classifiedRate = out.completed ? out.classified / out.completed : 0;  // classification coverage
   return out;
 }
 

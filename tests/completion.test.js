@@ -27,7 +27,7 @@ test('a plain completion is COMPLETED_UNSPECIFIED, never independent', () => {
   assert.equal(dayCompletion(s, '2026-09-14').done, 1);
 });
 
-test('unspecified completions never raise the Independent Completion Rate', () => {
+test('unspecified completions are outside the Independent Completion Rate (numerator and denominator)', () => {
   const s = mk();
   const d = ensureDay(s, '2026-09-14'); d.homework = 'none';
   CORE.forEach((id) => complete(d, id));
@@ -35,20 +35,50 @@ test('unspecified completions never raise the Independent Completion Rate', () =
   assert.equal(st.applicable, 7);
   assert.equal(st.completed, 7);
   assert.equal(st.unspecified, 7);
+  assert.equal(st.classified, 0);
   assert.equal(st.independent, 0);
-  assert.equal(st.rate, 0);
-  assert.equal(st.completionRate, 1);
-  assert.equal(st.classifiedRate, 0);
+  assert.equal(st.rate, null);            // nothing classified → undefined, not 0% (taps neither raise nor lower it)
+  assert.equal(st.completionRate, 1);     // completion counts unspecified
+  assert.equal(st.classifiedRate, 0);     // coverage: 0 of 7 completions classified
   assert.ok(isGoodDay(s, '2026-09-14')); // completion is still rewarded
-  // explicit classification afterwards moves the needle
+  // explicit classification afterwards: rate is over classified completions only
   setStatus(d, 'reading', STATUS.INDEPENDENT);
   setStatus(d, 'quran', STATUS.REMINDER);
   setStatus(d, 'prayer', STATUS.ASSISTED);
   st = independenceStats(s, '2026-09-14', '2026-09-14');
   assert.equal(st.independent, 1); assert.equal(st.reminder, 1); assert.equal(st.assisted, 1);
   assert.equal(st.unspecified, 4);
-  assert.ok(Math.abs(st.rate - 1 / 7) < 1e-9);
-  assert.ok(Math.abs(st.classifiedRate - 3 / 7) < 1e-9);
+  assert.equal(st.classified, 3);
+  assert.equal(st.completed, 7);
+  assert.ok(Math.abs(st.rate - 1 / 3) < 1e-9);            // independent / classified
+  assert.equal(st.completionRate, 1);                     // completed / applicable
+  assert.ok(Math.abs(st.classifiedRate - 3 / 7) < 1e-9);  // classified / completed
+});
+
+test('three rates, three denominators', () => {
+  const s = mk();
+  const d = ensureDay(s, '2026-09-14'); d.homework = 'none'; // 7 applicable
+  setStatus(d, 'morning', STATUS.INDEPENDENT);
+  setStatus(d, 'reading', STATUS.INDEPENDENT);
+  setStatus(d, 'quran', STATUS.REMINDER);
+  setStatus(d, 'prayer', STATUS.ASSISTED);
+  complete(d, 'explorer');                       // unspecified
+  setStatus(d, 'physical', STATUS.NOT_DONE);
+  // evening left unmarked → not done
+  const st = independenceStats(s, '2026-09-14', '2026-09-14');
+  assert.equal(st.applicable, 7);
+  assert.equal(st.completed, 5);     // 2 ind + 1 rem + 1 ass + 1 unspecified
+  assert.equal(st.classified, 4);    // 2 ind + 1 rem + 1 ass
+  assert.equal(st.notDone, 2);
+  assert.ok(Math.abs(st.completionRate - 5 / 7) < 1e-9);
+  assert.ok(Math.abs(st.rate - 2 / 4) < 1e-9);
+  assert.ok(Math.abs(st.classifiedRate - 4 / 5) < 1e-9);
+  // reclassifying the unspecified one as independent moves all three consistently
+  setStatus(d, 'explorer', STATUS.INDEPENDENT);
+  const st2 = independenceStats(s, '2026-09-14', '2026-09-14');
+  assert.ok(Math.abs(st2.completionRate - 5 / 7) < 1e-9); // completion unchanged
+  assert.ok(Math.abs(st2.rate - 3 / 5) < 1e-9);
+  assert.equal(st2.classifiedRate, 1);
 });
 
 test('reclassifying keeps the original completion time and records classifiedAt', () => {
@@ -79,8 +109,12 @@ test('migrated v1 ticks are unspecified — no independence is invented', () => 
   assert.equal(st.reminder, 0);
   assert.equal(st.assisted, 0);
   assert.equal(st.unspecified, st.completed);
-  assert.equal(st.rate, 0);
-  assert.ok(st.completionRate > 0);
+  assert.equal(st.classified, 0);
+  assert.equal(st.rate, null);          // no classified completions → rate undefined, never penalised
+  assert.equal(st.classifiedRate, 0);
+  assert.ok(st.completionRate > 0);     // history still counts as completed
+  // historical records are untouched: still COMPLETED_UNSPECIFIED after computing analytics
+  for (const day of Object.values(s.days)) for (const it of Object.values(day.items)) assert.equal(it.status, STATUS.COMPLETED_UNSPECIFIED);
 });
 
 test('skill graduation does not count unspecified completions as independent', () => {

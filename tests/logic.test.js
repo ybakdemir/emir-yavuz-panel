@@ -141,7 +141,10 @@ test('independence analytics + comeback', () => {
   assert.equal(st.independent, 1); assert.equal(st.reminder, 1); assert.equal(st.assisted, 1);
   assert.equal(st.notDone, 5);
   assert.equal(st.completed, 3);
-  assert.ok(Math.abs(st.rate - 1 / 8) < 1e-9);
+  assert.equal(st.classified, 3);
+  assert.ok(Math.abs(st.rate - 1 / 3) < 1e-9);           // independent / classified
+  assert.ok(Math.abs(st.completionRate - 3 / 8) < 1e-9); // completed / applicable
+  assert.equal(st.classifiedRate, 1);                    // every completion classified
   ensureDay(s, '2026-09-12');
   assert.ok(isComeback(s, '2026-09-12'));
   assert.equal(activeDaysInRow(s, '2026-09-12'), 0);
