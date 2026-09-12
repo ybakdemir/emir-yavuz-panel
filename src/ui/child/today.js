@@ -10,8 +10,16 @@ import { activeSkill } from '../../core/skills.js';
 import { isComeback } from '../../core/analytics.js';
 import { activeBook } from '../../core/library.js';
 import { dueItems } from '../../core/memorization.js';
+import { dailyReviewSet, expandDailySet, recordDailyReview } from '../../core/dailyReview.js';
+import { eventForItem } from '../../core/celebration.js';
+import { REVIEW_RESULT, REVIEW_RESULT_LABEL, HEALTH_LABEL } from '../../content/defaults.js';
 import { ring, trail, howChips, taskIcon, checkCircle, stamp, ICON_TONE } from './components.js';
-import { heroScene, exerciseGlyph } from '../art.js';
+import { heroScene, exerciseGlyph, glyph } from '../art.js';
+import { discoveryCopy } from './celebrate.js';
+
+/** Items whose subtitle is the habit itself and stays after completion. */
+const KEEP_SUB = new Set(['explorer']);
+const REVIEW_CARD = 'memoryReview';   // openCards key for the daily review card
 
 const openCards = new Map();    // itemId → bool (session only); unset = auto
 const justDone = new Set();     // for the footprint stamp animation
@@ -64,16 +72,31 @@ export function renderToday(main, ctx) {
 
   const fresh = ctx.peekDiscoveries();
   if (fresh.length) {
-    add(main, h('a', { class: 'discovery-banner', href: '#/expedition', onclick: () => ctx.takeDiscoveries() },
-      icon('map', 28), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni keşif!'), h('div', { class: 's' }, 'Keşif haritasında yeni bir şey buldun.')), icon('chevron', 22)));
+    const { title, reason } = discoveryCopy(state, fresh[fresh.length - 1]);
+    // The Expedition page takes the pending discoveries and reveals the newest; the banner only navigates.
+    add(main, h('a', { class: 'discovery-banner', href: '#/expedition' },
+      icon('map', 28), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni keşif!'), h('div', { class: 's' }, `${title}. ${reason}`)), icon('chevron', 22)));
   }
 
-  // A memorization review that is due today is the only long-term record that
-  // shows up here — as a quiet link, never as a task or a count.
-  const due = dueItems(state, today);
-  if (due.length) {
-    add(main, h('a', { class: 'quiet-link', href: '#/archive/memory' },
-      icon('scroll', 20), h('span', { class: 'grow' }, 'Bugün tekrar zamanı: ', h('b', {}, due.map((d) => d.title).join(', '))), icon('chevron', 18)));
+  // A skill graduated today is a milestone worth seeing all day, not just once.
+  const masteredToday = (state.achievements || []).filter((a) => a.type === 'skill_mastered' && a.date === today);
+  if (masteredToday.length) {
+    const sk = state.skills.pool.find((x) => x.id === masteredToday[masteredToday.length - 1].skillId);
+    add(main, h('button', { class: 'milestone-banner', onclick: () => ctx.celebrate('skill_mastered', { dinoKind: 'stegosaurus', kicker: 'Yeni beceri', message: `${sk?.title || 'Bir beceri'} — artık kendi başına yapabiliyorsun.` }) },
+      glyph('seed', 26), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni beceri'), h('div', { class: 's' }, sk ? `${sk.title} — artık kendin yapabiliyorsun.` : 'Artık kendin yapabiliyorsun.')), icon('chevron', 22)));
+  }
+
+  // ── Bugünkü Ezber Tekrarım — one compact card for the Daily Review Pool,
+  // placed in the task flow right after "3 ayet" (the natural moment for
+  // sura review) so the top of Today stays calm. Only when the pool has
+  // something; a due item outside the pool still gets the quiet link.
+  const review = dailyReviewSet(state, today);
+  if (!review.total) {
+    const due = dueItems(state, today);
+    if (due.length) {
+      add(main, h('a', { class: 'quiet-link', href: '#/archive/memory' },
+        icon('scroll', 20), h('span', { class: 'grow' }, 'Bugün tekrar zamanı: ', h('b', {}, due.map((d) => d.title).join(', '))), icon('chevron', 18)));
+    }
   }
 
   // ── task cards
@@ -81,7 +104,15 @@ export function renderToday(main, ctx) {
   autoOpenId = expandable.find((it) => it.kind !== 'routine' || visibleSteps(state.config.routines[it.id]).length)?.id || null;
   const list = h('div', { class: 'tasks' });
   const book = activeBook(state);
-  for (const item of items) add(list, renderCard(item.id === 'reading' && book ? { ...item, subtitle: book.title, bookId: book.id, keepSub: true } : item, day, ctx));
+  // after "3 ayet" when it is on the list, otherwise just before the evening routine, otherwise last
+  const anchor = items.find((it) => it.id === 'quran') ? { after: 'quran' } : items.find((it) => it.id === 'evening') ? { before: 'evening' } : { after: items.at(-1)?.id };
+  let placed = false;
+  for (const item of items) {
+    if (review.total && anchor.before === item.id) { add(list, renderDailyReviewCard(review, ctx)); placed = true; }
+    add(list, renderCard(item.id === 'reading' && book ? { ...item, subtitle: book.title, bookId: book.id, keepSub: true } : KEEP_SUB.has(item.id) ? { ...item, keepSub: true } : item, day, ctx));
+    if (review.total && anchor.after === item.id) { add(list, renderDailyReviewCard(review, ctx)); placed = true; }
+  }
+  if (review.total && !placed) add(list, renderDailyReviewCard(review, ctx));
   add(main, list);
 
   if (allDone) {
@@ -113,6 +144,8 @@ function renderCard(item, day, ctx) {
       if (item.kind === 'homework') d.homework = 'exists';
       if (item.bookId) d.bookId = item.bookId; // which book the family reading was about (structural room for pages later)
     });
+    const ev = eventForItem(item.id);
+    if (ev) ctx.celebrate(ev, { glyph: item.icon });
   };
   const undo = () => ctx.update((s) => { setStatus(ensureDay(s, today), item.id, null); });
   const pick = (val) => { if (val !== DEFAULT_COMPLETION) howOpen.delete(item.id); ctx.update((s) => { setStatus(ensureDay(s, today), item.id, val); }); };
@@ -205,13 +238,15 @@ function renderPhysicalCard(card, item, day, ctx, a) {
       targets.map((t) => {
         const on = !!day.physical?.[t.id];
         return h('div', { class: `exercise ${on ? 'on' : ''}`, role: 'checkbox', 'aria-checked': on ? 'true' : 'false', tabindex: '0', 'aria-label': `${t.name} ${t.target} ${t.unit}`, onclick: () => {
+          let completedNow = false;
           ctx.update((s) => {
             const d = ensureDay(s, ctx.today);
             const nowOn = toggleExercise(d, t.id);
             const p = physicalProgress(physical, d);
-            if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, DEFAULT_COMPLETION); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
+            if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, DEFAULT_COMPLETION); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); completedNow = true; }
             if (!nowOn && isCompleted(getStatus(d, item.id))) setStatus(d, item.id, null);
           });
+          if (completedNow) { const ev = eventForItem(item.id); if (ev) ctx.celebrate(ev, { glyph: item.icon }); }
         }, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } } },
         h('div', { class: 'ex-pic' }, exerciseGlyph(t.id, 44)),
         h('div', { class: 'grow' }, h('div', { class: 'step-txt' }, t.name)),
@@ -266,7 +301,10 @@ function renderPresentationCard(card, item, day, ctx) {
   const done = !!pres.presented;
   if (done) card.classList.add('done');
   const open = openCards.has(item.id) ? openCards.get(item.id) : false;
-  const setPres = (patch) => ctx.update((s) => { s.weeks[wk] ||= {}; s.weeks[wk].presentation = { ...(s.weeks[wk].presentation || {}), ...patch }; });
+  const setPres = (patch) => {
+    ctx.update((s) => { s.weeks[wk] ||= {}; s.weeks[wk].presentation = { ...(s.weeks[wk].presentation || {}), ...patch }; });
+    if (patch.presented && !done) ctx.celebrate('presentation_done', { dinoKind: 'parasaurolophus', kicker: 'Haftanın sunumu', title: pres.topic || 'Haftanın sunumu' });
+  };
   add(card, stamp(), mainRow(item, {
     title: item.title, sub: pres.topic ? `Konu: ${pres.topic}` : 'Bir konu seç', done, expandable: true, open, onTap: () => toggleOpen(ctx, item.id),
     onCheck: () => setPres(done ? { presented: false, presentedOn: null } : { presented: true, prepared: true, presentedOn: ctx.today }),
@@ -280,6 +318,53 @@ function renderPresentationCard(card, item, day, ctx) {
         h('button', { class: `chip ${pres.prepared ? 'on' : ''}`, onclick: () => setPres({ prepared: !pres.prepared }) }, pres.prepared ? icon('check', 16) : null, 'Hazırlandım'),
         h('button', { class: `chip ${pres.presented ? 'on' : ''}`, onclick: () => setPres(pres.presented ? { presented: false, presentedOn: null } : { presented: true, prepared: true, presentedOn: ctx.today }) }, pres.presented ? icon('check', 16) : null, 'Sundum'),
         h('button', { class: 'chip muted', onclick: () => setPres({ topic: null }) }, 'Konuyu değiştir')) : null));
+  }
+  return card;
+}
+
+// ── Bugünkü Ezber Tekrarım ──────────────────────────────────────────
+// One card, never one card per sura. Closed: the list with ✓/○ and a count.
+// Open ("Tekrarlara Başla"): each unfinished item shows the three review
+// outcomes — the same three as Ezberlerim, recorded through the same engine.
+// Those outcomes never touch the daily-task independence statuses.
+function renderDailyReviewCard(set, ctx) {
+  const { today } = ctx;
+  const open = openCards.get(REVIEW_CARD) ?? false;
+  const card = h('div', { class: `task tone-forest memo-daily ${set.complete ? 'done' : ''} ${open ? 'open' : ''}`, id: 'task-memory-review' });
+  const sub = set.complete
+    ? 'Bugünkü tekrarların tamamlandı.'
+    : set.done ? `${set.done} / ${set.total} tamamlandı` : `${set.total} tekrar bugün`;
+  add(card, h('div', { class: 'task-main', role: 'button', tabindex: '0', onclick: () => toggleOpen(ctx, REVIEW_CARD),
+    onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleOpen(ctx, REVIEW_CARD); } } },
+    taskIcon('scroll', 'forest'),
+    h('div', { class: 'grow' }, h('div', { class: 'task-title' }, 'Bugünkü Ezber Tekrarım'), h('div', { class: 'task-sub' }, sub)),
+    h('span', { class: `task-chev ${open ? 'open' : ''}`, 'aria-hidden': 'true' }, icon('chevronDown', 22)),
+    h('span', { class: `memo-count ${set.complete ? 'on' : ''}`, 'aria-label': `${set.done} / ${set.total} tamamlandı` }, set.complete ? icon('check', 22) : `${set.done}/${set.total}`)));
+
+  const pick = (it, result) => {
+    ctx.update((s) => recordDailyReview(s, it.id, result, today));
+    const after = dailyReviewSet(ctx.state, today);
+    if (after.complete) { openCards.set(REVIEW_CARD, false); ctx.celebrate('reviews_done', { glyph: 'scroll' }); }
+    else ctx.toast(result === REVIEW_RESULT.SELF ? 'Harika, kaydettim.' : result === REVIEW_RESULT.ASSISTED ? 'Kaydettim. Yakında bir daha bakarız.' : 'Kaydettim. Birlikte biraz daha çalışırız.');
+  };
+
+  add(card, h('div', { class: 'memo-list' }, set.items.map((it) => h('div', { class: `memo-row ${it.done ? 'on' : ''}` },
+    h('div', { class: 'memo-row-hd' },
+      h('span', { class: 'memo-tick', 'aria-hidden': 'true' }, it.done ? icon('check', 16) : null),
+      h('span', { class: 'memo-title' }, it.title),
+      it.done
+        ? h('span', { class: 'memo-res' }, REVIEW_RESULT_LABEL[it.review.result])
+        : it.health && it.health !== 'strong' ? h('span', { class: `memo-health h-${it.health}` }, HEALTH_LABEL[it.health]) : null),
+    open && !it.done ? h('div', { class: 'how memo-how' },
+      h('button', { class: 'chip', onclick: () => pick(it, REVIEW_RESULT.SELF) }, REVIEW_RESULT_LABEL.self),
+      h('button', { class: 'chip warm', onclick: () => pick(it, REVIEW_RESULT.ASSISTED) }, REVIEW_RESULT_LABEL.assisted),
+      h('button', { class: 'chip sky', onclick: () => pick(it, REVIEW_RESULT.NEEDS_WORK) }, REVIEW_RESULT_LABEL.needs_work)) : null))));
+
+  const canExpand = !set.all && set.poolSize > set.total;
+  if (!set.complete || canExpand) {
+    add(card, h('div', { class: 'task-actions memo-actions' },
+      !set.complete && !open ? h('button', { class: 'btn btn-primary btn-sm', onclick: () => { openCards.set(REVIEW_CARD, true); ctx.store.update(() => {}); } }, icon('check', 18), 'Tekrarlara Başla') : null,
+      canExpand ? h('button', { class: 'memo-all', onclick: () => { openCards.set(REVIEW_CARD, true); ctx.update((s) => expandDailySet(s, today)); } }, `Tümünü Tekrar Et (${set.poolSize})`) : null));
   }
   return card;
 }

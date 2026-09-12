@@ -1,4 +1,5 @@
 import { svg } from './dom.js';
+import { ARTWORK } from '../content/artwork.js';
 
 // Flat, two-tone dinosaur silhouettes (viewBox 240×160). Colours come from
 // CSS variables so the same drawing works on warm day screens and on the
@@ -28,6 +29,16 @@ const D = {
     <path d="M164 96 C192 90 214 74 230 56" stroke="${A}" stroke-width="16" stroke-linecap="round" fill="none"/>
     <ellipse cx="228" cy="54" rx="13" ry="8" fill="${A}"/>
     ${eye(229, 51)}`,
+  mamenchisaurus: `
+    ${leg(76, 112, 16, 40)}${leg(118, 112, 16, 40)}
+    <ellipse cx="100" cy="106" rx="46" ry="24" fill="${A}"/>
+    <ellipse cx="100" cy="116" rx="32" ry="11" fill="${B}"/>
+    ${leg(88, 118, 16, 36)}${leg(130, 118, 16, 36)}
+    <path d="M56 104 C30 104 14 120 2 148" stroke="${A}" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <path d="M142 96 C170 90 196 70 214 40 C222 26 228 16 232 8" stroke="${A}" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M150 92 C176 84 200 66 216 40" stroke="${B}" stroke-width="4" stroke-linecap="round" fill="none" opacity=".7"/>
+    <ellipse cx="230" cy="8" rx="11" ry="7" fill="${A}"/>
+    ${eye(231, 5)}`,
   stegosaurus: `
     <g fill="${B}">
       <path d="M72 78 L84 46 L96 80z"/><path d="M96 70 L112 30 L128 72z"/><path d="M128 68 L146 26 L164 70z"/><path d="M164 74 L180 42 L194 80z"/>
@@ -150,7 +161,19 @@ const D = {
     <g fill="${A}"><circle cx="100" cy="72" r="8"/><circle cx="140" cy="60" r="6"/><circle cx="132" cy="108" r="9"/><circle cx="96" cy="116" r="5"/></g>`,
 };
 
+/**
+ * A dinosaur, drawn from the SVG set unless production artwork for it has been
+ * registered in content/artwork.js (see docs/ARTWORK.md for the asset spec).
+ * The image keeps the same 3:2 box and the `dino` class so layouts don't move.
+ */
 export function dino(kind, { size = 120, cls = '' } = {}) {
+  const art = ARTWORK[kind];
+  if (art) {
+    const img = document.createElement('img');
+    img.src = art; img.alt = ''; img.width = size; img.height = Math.round(size * 2 / 3); img.loading = 'lazy'; img.decoding = 'async';
+    img.className = `dino dino-${kind} dino-art ${cls}`;
+    return img;
+  }
   const inner = D[kind] || D.egg;
   return svg(inner, { size, viewBox: '0 0 240 160', cls: `dino dino-${kind} ${cls}` });
 }

@@ -2,7 +2,8 @@ import { h, add, confirmSheet } from '../dom.js';
 import { icon } from '../icons.js';
 import { LOCAL_KEY } from '../../core/store.js';
 import { ensureShape } from '../../core/migrate.js';
-import { pcard, field, textInput, checkbox } from './common.js';
+import { pcard, field, textInput, checkbox, selectInput } from './common.js';
+import { daysFor, setItemDays } from '../../core/schedule.js';
 
 const DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
@@ -31,11 +32,16 @@ export function renderSettings(body, ctx) {
       ]))));
   add(grid, pattern);
 
-  // ── Daily items on/off
+  // ── Daily items on/off + which days. A day-rule change applies from today;
+  // earlier days keep their old rule, so past ratios never move.
+  const DAY_OPTS = [['all', 'her gün'], ['weekday', 'hafta içi'], ['weekend', 'hafta sonu']];
   add(grid, pcard('Günlük görevler', 'list',
-    h('div', { class: 'small muted', style: { marginBottom: '6px' } }, 'Bir görevi geçici olarak kapatabilirsiniz; geçmiş kayıtlar korunur.'),
+    h('div', { class: 'small muted', style: { marginBottom: '6px' } }, 'Bir görevi geçici olarak kapatabilirsiniz; geçmiş kayıtlar korunur. Gün kuralı bugünden itibaren geçerli olur.'),
     state.config.items.map((it, i) => h('div', { class: 'list-row' },
-      h('div', { class: 'grow', style: { fontWeight: 800 } }, it.title, h('span', { class: 'small muted' }, ` · ${it.days === 'all' ? 'her gün' : it.days === 'weekday' ? 'hafta içi' : 'hafta sonu'}`)),
+      h('div', { class: 'grow', style: { fontWeight: 800 } }, it.title),
+      ['skill', 'presentation'].includes(it.kind)
+        ? h('span', { class: 'small muted' }, it.kind === 'skill' ? 'aktif beceri varken' : 'hafta sonu')
+        : selectInput(DAY_OPTS, daysFor(it, ctx.today), (v) => set((c) => setItemDays(c.items[i], v, ctx.today)), { class: 'input input-sm', 'aria-label': `${it.title} günleri` }),
       checkbox('', it.enabled !== false, (on) => set((c) => { c.items[i].enabled = on; }))))));
 
   // ── Data

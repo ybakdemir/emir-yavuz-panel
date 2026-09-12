@@ -1,16 +1,20 @@
 import { h, add, confirmSheet } from '../dom.js';
 import { icon } from '../icons.js';
-import { formatShort, monthName, monthKey } from '../../core/dates.js';
-import { MEMO_TYPE, MEMO_TYPE_LABEL, MEMO_STATUS, MEMO_STATUS_LABEL_PARENT, REVIEW_RESULT, REVIEW_RESULT_LABEL, PROJECT_TYPE, PROJECT_TYPE_LABEL, PROJECT_STATUS, PROJECT_STATUS_LABEL } from '../../content/defaults.js';
+import { formatShort, monthName, monthKey, addDays, dayNameShort } from '../../core/dates.js';
+import { MEMO_TYPE, MEMO_TYPE_LABEL, MEMO_STATUS, MEMO_STATUS_LABEL_PARENT, REVIEW_RESULT, REVIEW_RESULT_LABEL, PROJECT_TYPE, PROJECT_TYPE_LABEL, PROJECT_STATUS, PROJECT_STATUS_LABEL, HEALTH_LABEL } from '../../content/defaults.js';
+import { poolItems, inPool, setDailyReview, dailyTarget, setDailyTarget, dailyReviewSet, dailyReviewHistory, memoryHealth, freezeDailySet } from '../../core/dailyReview.js';
 import { addMemoItem, updateMemoItem, markMastered, markLearning, recordReview, reviewsFor, dueItems, setNextReview, archiveMemoItem, memoItems, updateReview, removeReview, reviewIntervals } from '../../core/memorization.js';
 import { activeProject, createProject, completeProject, updateProject, projectHistory, reopenProject } from '../../core/projects.js';
-import { pcard, field, textInput, numberInput, dateInput, monthInput, selectInput, kv } from './common.js';
+import { pcard, field, textInput, numberInput, dateInput, monthInput, selectInput, kv, checkbox } from './common.js';
 
 // Ezber — memorization items, review history and schedule; the monthly memory project.
 // Calm and data-oriented: dates, status, outcomes. Nothing is scored.
 
 const RESULT_CLS = { self: 'ind', assisted: 'rem', needs_work: 'no' };
+const RESULT_PILL = { self: 'pill-green', assisted: 'pill-amber', needs_work: 'pill-clay' };
+const HEALTH_PILL = { strong: 'pill-green', refresh: 'pill-amber', today: 'pill-clay' };
 const openHistory = new Set();
+let recentOpen = false; // "Son 7 gün" disclosure
 
 export function renderMemory(body, ctx, parts = []) {
   const { state, today } = ctx;
@@ -41,9 +45,13 @@ export function renderMemory(body, ctx, parts = []) {
   // ── overview + schedule
   const learning = items.filter((i) => !i.archived && i.status === MEMO_STATUS.LEARNING).length;
   const mastered = items.filter((i) => !i.archived && i.status === MEMO_STATUS.MASTERED).length;
+  const pool = poolItems(state);
   add(grid, pcard('Tekrar düzeni', 'refresh',
     kv('Öğreniliyor', String(learning)), kv('Ezberlendi', String(mastered)),
-    kv('Bugün tekrar zamanı', due.length ? due.map((d) => d.title).join(', ') : '—'),
+    kv('Günlük tekrar havuzu', pool.length ? `${pool.length} ezber` : '—'),
+    kv('Bugün tekrar zamanı (aralık)', due.length ? due.map((d) => d.title).join(', ') : '—'),
+    h('div', { class: 'kv', style: { marginTop: '8px' } }, h('span', {}, 'Günlük hedef (Bugün ekranında kaç tekrar)'), numberInput(dailyTarget(state), (v) => ctx.update((s) => setDailyTarget(s, v)), { min: 1, max: 30 })),
+    h('div', { class: 'small muted', style: { margin: '4px 0 10px' } }, 'Havuzdaki ezberlerden her gün bu kadarı seçilir: önce aralığı gelenler, sonra "tekrar çalışmalı" ve "yardım aldı" olanlar, kalanlar sırayla döner. Emir isterse "Tümünü Tekrar Et" ile havuzun tamamını görür.'),
     h('div', { class: 'small muted', style: { margin: '10px 0 6px' } }, 'Önerilen aralıklar (gün). "Kendim okudum" bir adım ileri, "Biraz yardım aldım" bir adım geri, "Tekrar çalışmam gerekiyor" başa döner. Bu bir öneridir; her tarih elle değiştirilebilir.'),
     field('Aralıklar (gün, virgülle)', textInput(reviewIntervals(state).join(', '), (v) => {
       const next = v.split(/[,\s]+/).map(Number).filter((n) => n > 0);
@@ -53,12 +61,16 @@ export function renderMemory(body, ctx, parts = []) {
     h('div', { class: 'kv', style: { marginTop: '8px' } }, h('span', {}, '"Tekrar çalışmam gerekiyor" → kaç gün sonra'), numberInput(state.config.review.needsWorkDays, (v) => ctx.update((s) => { s.config.review.needsWorkDays = Math.max(1, v || 1); }), { min: 1, max: 30 }))));
   add(body, grid);
 
+  // ── today + recent (what was reviewed, how it went, what needs attention)
+  add(body, h('div', { class: 'section-title' }, 'Bugün ve son günler'));
+  add(body, recentSection(ctx));
+
   // ── items
   add(body, h('div', { class: 'section-title' }, 'Ezberler'));
   const visible = items.filter((i) => !i.archived).sort((a, b) => (a.status === b.status ? (b.masteredAt || b.startedAt || '').localeCompare(a.masteredAt || a.startedAt || '') : a.status === MEMO_STATUS.MASTERED ? -1 : 1));
   if (!visible.length) add(body, h('div', { class: 'pcard muted small' }, 'Henüz ezber eklenmedi.'));
   else add(body, h('div', { class: 'table-wrap' }, h('table', { class: 'table memo-table' },
-    h('thead', {}, h('tr', {}, h('th', {}, 'Ezber'), h('th', {}, 'Durum'), h('th', {}, 'Tekrar zamanı'), h('th', {}, 'Son tekrar'), h('th', {}, 'Sonuç'), h('th', {}, ''))),
+    h('thead', {}, h('tr', {}, h('th', {}, 'Ezber'), h('th', {}, 'Durum'), h('th', {}, 'Günlük havuz'), h('th', {}, 'Hafıza'), h('th', {}, 'Sonraki tekrar'), h('th', {}, 'Son tekrar'), h('th', {}, 'Sonuç'), h('th', {}, ''))),
     h('tbody', {}, visible.flatMap((it) => itemRows(ctx, it, due.some((d) => d.id === it.id)))))));
 
   const archived = items.filter((i) => i.archived);
@@ -78,6 +90,7 @@ function itemRows(ctx, it, isDue) {
   const { state, today } = ctx;
   const mastered = it.status === MEMO_STATUS.MASTERED;
   const hist = reviewsFor(state, it.id);
+  const health = memoryHealth(it, today);
   const open = openHistory.has(it.id);
   const rows = [];
   rows.push(h('tr', { class: isDue ? 'due' : '' },
@@ -85,14 +98,16 @@ function itemRows(ctx, it, isDue) {
       h('div', { style: { fontWeight: 800 } }, it.title),
       h('div', { class: 'small muted' }, `${MEMO_TYPE_LABEL[it.type]} · başlangıç ${formatShort(it.startedAt)}`, it.masteredAt ? ` · ezber ${formatShort(it.masteredAt)}` : '')),
     h('td', {}, h('span', { class: `pill ${mastered ? 'pill-green' : 'pill-amber'}` }, MEMO_STATUS_LABEL_PARENT[it.status])),
+    h('td', {}, mastered ? checkbox(inPool(it) ? 'Açık' : 'Kapalı', inPool(it), (on) => ctx.update((s) => setDailyReview(s, it.id, on))) : h('span', { class: 'muted small' }, '—')),
+    h('td', {}, health ? h('span', { class: `pill ${HEALTH_PILL[health]}` }, HEALTH_LABEL[health]) : h('span', { class: 'muted small' }, '—')),
     h('td', {}, mastered
       ? h('div', {}, dateInput(it.nextReviewAt, (v) => ctx.update((s) => setNextReview(s, it.id, v))), isDue ? h('div', { class: 'small', style: { color: 'var(--clay)', fontWeight: 800 } }, 'Tekrar zamanı') : null)
       : h('span', { class: 'muted small' }, '—')),
     h('td', {}, it.lastReviewedAt ? formatShort(it.lastReviewedAt) : h('span', { class: 'muted' }, '—')),
-    h('td', {}, it.lastResult ? h('span', { class: `pill ${it.lastResult === 'self' ? 'pill-green' : it.lastResult === 'assisted' ? 'pill-amber' : 'pill-clay'}` }, REVIEW_RESULT_LABEL[it.lastResult]) : h('span', { class: 'muted' }, '—')),
+    h('td', {}, it.lastResult ? h('span', { class: `pill ${RESULT_PILL[it.lastResult]}` }, REVIEW_RESULT_LABEL[it.lastResult]) : h('span', { class: 'muted' }, '—')),
     h('td', {}, h('button', { class: 'btn btn-ghost btn-sm', 'aria-expanded': open ? 'true' : 'false', onclick: () => { if (open) openHistory.delete(it.id); else openHistory.add(it.id); ctx.store.update(() => {}); } }, open ? 'Kapat' : 'Yönet'))));
   if (!open) return rows;
-  rows.push(h('tr', { class: 'detail' }, h('td', { colspan: '6' }, itemDetail(ctx, it, hist))));
+  rows.push(h('tr', { class: 'detail' }, h('td', { colspan: '8' }, itemDetail(ctx, it, hist))));
   return rows;
 }
 
@@ -124,7 +139,7 @@ function itemDetail(ctx, it, hist) {
           h('div', { class: 'row wrap', style: { alignItems: 'flex-end' } },
             dateInput(today, (v) => { rev.date = v || today; }),
             selectInput(Object.entries(REVIEW_RESULT_LABEL), rev.result, (v) => { rev.result = v; }),
-            h('button', { class: 'btn btn-soft btn-sm', disabled: !mastered ? true : null, onclick: () => { ctx.update((s) => recordReview(s, it.id, rev.result, rev.date, { note: rev.note, by: 'parent' })); ctx.toast('Tekrar kaydedildi.'); } }, icon('plus', 16), 'Kaydet')),
+            h('button', { class: 'btn btn-soft btn-sm', disabled: !mastered ? true : null, onclick: () => { ctx.update((s) => { if (rev.date === today) freezeDailySet(s, today); recordReview(s, it.id, rev.result, rev.date, { note: rev.note, by: 'parent' }); }); ctx.toast('Tekrar kaydedildi.'); } }, icon('plus', 16), 'Kaydet')),
           !mastered ? h('div', { class: 'small muted' }, 'Tekrar kaydı için önce "Ezberlendi" işaretleyin.') : null),
         h('div', { class: 'small muted', style: { margin: '12px 0 6px', fontWeight: 800 } }, `Tekrar geçmişi (${hist.length})`),
         hist.length ? h('div', { class: 'stack', style: { gap: '4px' } }, [...hist].reverse().map((r) => h('div', { class: 'list-row', style: { padding: '6px 0' } },
@@ -133,6 +148,44 @@ function itemDetail(ctx, it, hist) {
           h('span', { class: 'small muted' }, r.by === 'parent' ? 'ebeveyn' : 'Emir'),
           h('button', { class: 'icon-btn', 'aria-label': 'Sil', onclick: () => ctx.update((s) => removeReview(s, r.id)) }, icon('trash', 16)))))
           : h('div', { class: 'small muted' }, 'Henüz tekrar yok.'))));
+}
+
+/**
+ * "Bugün ne tekrar etti? Nasıl okudu? Hangisi zorlandı?" — today's set as a
+ * small table, the last seven days behind a disclosure. All derived from the
+ * review records; nothing here is a score.
+ */
+function recentSection(ctx) {
+  const { state, today } = ctx;
+  const set = dailyReviewSet(state, today);
+  const wrap = h('div', { class: 'grid grid-2' });
+  const todayCard = pcard(`Bugün · ${set.total ? `${set.done}/${set.total} tamamlandı` : 'havuz boş'}`, 'today');
+  if (!set.total) {
+    add(todayCard, h('div', { class: 'small muted' }, 'Günlük havuzda ezber yok. Bir ezberi "Ezberlendi" işaretleyince havuza girer; havuz sütunundan açıp kapatabilirsiniz.'));
+  } else {
+    add(todayCard, h('div', { class: 'table-wrap' }, h('table', { class: 'table' },
+      h('thead', {}, h('tr', {}, h('th', {}, 'Ezber'), h('th', {}, 'Bugün'), h('th', {}, 'Sonuç'), h('th', {}, 'Hafıza'))),
+      h('tbody', {}, set.items.map((it) => h('tr', {},
+        h('td', { style: { fontWeight: 800 } }, it.title),
+        h('td', {}, it.done ? h('span', { class: 'pill pill-green' }, icon('check', 12)) : h('span', { class: 'muted' }, '—')),
+        h('td', {}, it.done ? h('span', { class: `pill ${RESULT_PILL[it.review.result]}` }, REVIEW_RESULT_LABEL[it.review.result], it.review.by === 'parent' ? ' · ebeveyn' : '') : h('span', { class: 'muted small' }, 'Bekliyor')),
+        h('td', {}, it.health ? h('span', { class: `pill ${HEALTH_PILL[it.health]}` }, HEALTH_LABEL[it.health]) : '—')))))),
+      h('div', { class: 'small muted', style: { marginTop: '8px' } },
+        set.all ? 'Emir bugün "Tümünü Tekrar Et" dedi; havuzun tamamı listede.' : set.frozen ? 'Bugünkü liste ilk tekrarla sabitlendi; havuz veya hedef değişirse yeni ezberler yarından itibaren seçilir.' : 'Bugünkü liste henüz sabitlenmedi; havuz veya hedef değişince yeniden seçilir.'));
+  }
+  add(wrap, todayCard);
+
+  const recent = dailyReviewHistory(state, addDays(today, -7), addDays(today, -1)).reverse().filter((d) => d.planned || d.reviewed);
+  const recentCard = pcard('Son 7 gün', 'calendar',
+    h('button', { class: 'btn btn-ghost btn-sm', 'aria-expanded': recentOpen ? 'true' : 'false', onclick: () => { recentOpen = !recentOpen; ctx.store.update(() => {}); } }, recentOpen ? 'Gizle' : `Göster (${recent.length} gün)`));
+  if (recentOpen) {
+    if (!recent.length) add(recentCard, h('div', { class: 'small muted', style: { marginTop: '8px' } }, 'Son yedi günde tekrar kaydı yok.'));
+    else add(recentCard, h('div', { class: 'stack', style: { marginTop: '10px', gap: '8px' } }, recent.map((d) => h('div', { class: 'list-row', style: { alignItems: 'flex-start' } },
+      h('div', { style: { minWidth: '92px', fontWeight: 800 } }, `${dayNameShort(d.date)} ${formatShort(d.date)}`, h('div', { class: 'small muted' }, d.planned ? `${d.done}/${d.planned}${d.complete ? ' ✓' : ''}` : 'plan dışı')),
+      h('div', { class: 'row wrap grow', style: { gap: '6px' } }, d.rows.map((r) => h('span', { class: `pill ${r.result ? RESULT_PILL[r.result] : 'pill-sand'}`, title: r.result ? REVIEW_RESULT_LABEL[r.result] : 'Tekrar edilmedi' }, r.result ? icon('check', 12) : null, r.title, r.result ? '' : ' —')))))));
+  }
+  add(wrap, recentCard);
+  return wrap;
 }
 
 function projectSection(ctx) {

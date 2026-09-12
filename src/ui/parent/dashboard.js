@@ -4,6 +4,8 @@ import { addDays, weekKey, weekDays, formatShort, dayNameShort, fromKey } from '
 import { independenceStats, dailySeries, itemTrend, recentAchievements, explorerStats } from '../../core/analytics.js';
 import { bookStats, activeBook } from '../../core/library.js';
 import { dueItems, memoByStatus } from '../../core/memorization.js';
+import { dailyReviewSet } from '../../core/dailyReview.js';
+import { REVIEW_RESULT_LABEL } from '../../content/defaults.js';
 import { activeProject } from '../../core/projects.js';
 import { activeSkill, evaluateGraduation, graduateSkill } from '../../core/skills.js';
 import { weeklyStatus } from '../../core/rewards.js';
@@ -100,11 +102,13 @@ export function renderDashboard(body, ctx) {
   const memo = memoByStatus(state);
   const due = dueItems(state, today);
   const project = activeProject(state);
+  const set = dailyReviewSet(state, today);
   add(grid, pcard('Öğrenme arşivi', 'archive',
     h('div', { class: 'kv' }, h('span', {}, 'Tamamlanan kitap'), h('span', {}, `${bs.completedBooks} kitap · ${bs.completedPages} sayfa`)),
     h('div', { class: 'kv' }, h('span', {}, 'Aile okuması kitabı'), h('span', {}, book ? book.title : '—')),
     h('div', { class: 'kv' }, h('span', {}, 'Ezber'), h('span', {}, `${memo.mastered.length} ezberlendi · ${memo.learning.length} öğreniliyor`)),
-    h('div', { class: 'kv' }, h('span', {}, 'Tekrar zamanı'), h('span', {}, due.length ? due.map((d) => d.title).join(', ') : '—')),
+    h('div', { class: 'kv' }, h('span', {}, 'Bugünkü tekrar'), h('span', {}, set.total ? `${set.done}/${set.total} · ${set.items.map((it) => (it.done ? '✓ ' : '○ ') + it.title + (it.done ? ` (${REVIEW_RESULT_LABEL[it.review.result].split(' ')[0].toLowerCase()})` : '')).join(', ')}` : '—')),
+    h('div', { class: 'kv' }, h('span', {}, 'Aralığı gelen'), h('span', {}, due.length ? due.map((d) => d.title).join(', ') : '—')),
     h('div', { class: 'kv' }, h('span', {}, 'Ayın hafıza projesi'), h('span', {}, project ? project.title : '—')),
     h('div', { class: 'row wrap', style: { marginTop: '10px', gap: '6px 14px' } },
       h('a', { class: 'small', href: '#/parent/library', style: { fontWeight: 800 } }, 'Kitaplık →'),

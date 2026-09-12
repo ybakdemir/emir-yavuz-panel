@@ -4,6 +4,7 @@ import { dino } from '../dinos.js';
 import { glyph, zoneScene } from '../art.js';
 import { expeditionView, expeditionSteps } from '../../core/expedition.js';
 import { formatShort } from '../../core/dates.js';
+import { DISCOVERY_REASON } from '../../core/celebration.js';
 
 const TYPE_GLYPH = { location: 'flag', fossil: 'fossil', fact: 'footprint', card: null };
 const TYPE_LABEL = { card: 'Dinozor Kartı', fossil: 'Fosil', location: 'Harita Noktası', fact: 'Biliyor muydun?' };
@@ -51,7 +52,7 @@ export function renderExpedition(main, ctx) {
         const art = it.type === 'card' ? dino(it.dino, { size: 72 }) : glyph(TYPE_GLYPH[it.type] || 'flag', 36);
         return h('div', { class: `find ${on ? 'on' : 'off'} ${isNext ? 'next' : ''} ${fresh.has(it.id) ? 'fresh' : ''}`,
           role: on ? 'button' : null, tabindex: on ? '0' : null, 'aria-label': on ? it.title : isNext ? 'Sıradaki keşif' : 'Henüz keşfedilmedi',
-          onclick: () => { if (on) openFind(it); }, onkeydown: (e) => { if (on && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openFind(it); } } },
+          onclick: () => { if (on) openFind(it, state); }, onkeydown: (e) => { if (on && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openFind(it, state); } } },
           h('div', { class: 'find-art' }, art),
           h('div', { class: 't' }, on ? it.title : (isNext ? 'Sıradaki' : TYPE_SHORT[it.type])));
       })));
@@ -64,15 +65,19 @@ export function renderExpedition(main, ctx) {
   add(main, panel);
   // Reveal the newest discovery once, not one sheet per item.
   const newest = [...fresh].map((id) => state.config.expedition.items.find((it) => it.id === id)).filter(Boolean).pop();
-  if (newest) setTimeout(() => openFind(newest), 350);
+  if (newest) setTimeout(() => openFind(newest, state, true), 350);
 }
 
-function openFind(it) {
+/** Reveal sheet. A fresh discovery also says why it opened (milestone or good days). */
+function openFind(it, state, fresh = false) {
+  const reason = state?.expedition?.reasons?.[it.id];
+  const why = reason && reason !== 'steps' ? DISCOVERY_REASON[reason] : fresh ? DISCOVERY_REASON.steps : null;
   const close = openSheet([
-    h('div', { class: 'lbl' }, TYPE_LABEL[it.type] || 'Keşif'),
-    h('div', { class: 'sheet-title' }, it.title),
+    h('div', { class: 'lbl' }, fresh ? 'Yeni keşif!' : TYPE_LABEL[it.type] || 'Keşif'),
+    h('div', { class: 'sheet-title' }, fresh ? `${it.title} keşfedildi` : it.title),
     h('div', { class: 'cine-art' }, it.type === 'card' ? dino(it.dino, { size: 280 }) : h('div', { class: 'cine-glyph' }, glyph(TYPE_GLYPH[it.type] || 'flag', 72))),
     h('div', { class: 'fact' }, it.fact),
+    why ? h('div', { class: 'cine-why' }, glyph('footprint', 16), why) : null,
     it.discoveredAt ? h('div', { class: 'cine-date' }, icon('flag', 16), `Keşif tarihi: ${formatShort(it.discoveredAt)}`) : null,
     h('div', { class: 'sheet-actions' }, h('button', { class: 'btn btn-primary', onclick: () => close() }, 'Harika')),
   ], { cls: 'cine' });

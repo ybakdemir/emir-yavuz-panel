@@ -68,7 +68,7 @@ export function renderWeek(main, ctx) {
         ? h('div', {}, h('div', { class: 'wc-title' }, pres.topic),
           h('div', { class: 'row wrap', style: { marginTop: '10px' } },
             h('button', { class: `chip ${pres.prepared ? 'on' : ''}`, onclick: () => setPres({ prepared: !pres.prepared }) }, pres.prepared ? icon('check', 16) : null, 'Hazırlandım'),
-            h('button', { class: `chip ${pres.presented ? 'on' : ''}`, onclick: () => setPres(pres.presented ? { presented: false, presentedOn: null } : { presented: true, prepared: true, presentedOn: today }) }, pres.presented ? icon('check', 16) : null, 'Sundum'),
+            h('button', { class: `chip ${pres.presented ? 'on' : ''}`, onclick: () => { const was = pres.presented; setPres(was ? { presented: false, presentedOn: null } : { presented: true, prepared: true, presentedOn: today }); if (!was) ctx.celebrate('presentation_done', { dinoKind: 'parasaurolophus', kicker: 'Haftanın sunumu', title: pres.topic || 'Haftanın sunumu' }); } }, pres.presented ? icon('check', 16) : null, 'Sundum'),
             h('button', { class: 'chip muted', onclick: () => setPres({ topic: null }) }, 'Değiştir')))
         : h('div', {}, h('div', { class: 'small muted', style: { marginBottom: '8px' } }, 'Bu hafta ne anlatmak istersin?'),
           h('div', { class: 'row wrap' }, state.config.presentation.topics.map((t) => h('button', { class: 'chip', onclick: () => setPres({ topic: t }) }, t))))));
@@ -125,7 +125,7 @@ function reflectionCard(ctx, wk) {
   }));
   const saved = hasAnswers(r);
   add(card, body, h('div', { class: 'row wrap', style: { padding: '0 18px 18px' } },
-    h('button', { class: 'btn btn-primary btn-sm', onclick: () => { ctx.update((s) => saveReflection(s, wk, Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value])), ctx.today)); ctx.toast(saved ? 'Güncelledim.' : 'Kaydettim. Teşekkürler.'); } }, icon('check', 16), saved ? 'Güncelle' : 'Kaydet'),
+    h('button', { class: 'btn btn-primary btn-sm', onclick: () => { ctx.update((s) => saveReflection(s, wk, Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value])), ctx.today)); if (saved) ctx.toast('Güncelledim.'); else ctx.celebrate('reflection_saved', { glyph: 'leaf' }); } }, icon('check', 16), saved ? 'Güncelle' : 'Kaydet'),
     saved ? h('span', { class: 'small muted' }, `Yazdım: ${formatShort(r.savedOn || wk)}`) : h('button', { class: 'btn btn-ghost btn-sm', onclick: () => ctx.update((s) => skipReflection(s, wk, ctx.today)) }, 'Bu hafta geç')));
   return card;
 }

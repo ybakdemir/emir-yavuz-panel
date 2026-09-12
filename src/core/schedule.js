@@ -1,11 +1,34 @@
-import { isWeekend } from './dates.js';
+import { isWeekend, addDays } from './dates.js';
 
 export function dayType(key, day) {
   return day?.dayType || (isWeekend(key) ? 'weekend' : 'weekday');
 }
 
-function matchesDayType(item, type) {
-  return item.days === 'all' || item.days === type;
+/**
+ * Which day rule applies to `item` on `key`. A schedule change is effective
+ * from the day it was made: `days` stays the rule for days before `daysFrom`,
+ * `daysNow` is the rule from then on. So changing a rule never rewrites the
+ * history behind past ratios and good days — and a build that only knows
+ * `days` (e.g. the current Production reading the shared /v2 node) keeps
+ * the old behaviour instead of applying the new rule to the past.
+ */
+export function daysFor(item, key) {
+  if (item.daysFrom && item.daysNow && key >= item.daysFrom) return item.daysNow;
+  return item.days;
+}
+
+/** Change an item's day rule from `today` on; the rule in force yesterday stays for earlier days. */
+export function setItemDays(item, days, today) {
+  if (daysFor(item, today) === days && daysFor(item, addDays(today, -1)) === days) return item;
+  item.days = daysFor(item, addDays(today, -1));
+  item.daysFrom = today;
+  item.daysNow = days;
+  return item;
+}
+
+function matchesDayType(item, type, key) {
+  const days = daysFor(item, key);
+  return days === 'all' || days === type;
 }
 
 /**
@@ -23,7 +46,7 @@ export function itemsForDay(config, key, day) {
       return type === 'weekday';
     }
     if (item.kind === 'skill') return !!day?.skillId;
-    return matchesDayType(item, type);
+    return matchesDayType(item, type, key);
   });
 }
 

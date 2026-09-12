@@ -3,9 +3,10 @@ import { icon } from '../icons.js';
 import { glyph } from '../art.js';
 import { formatShort, formatLong, weekLabel, monthName } from '../../core/dates.js';
 import { booksReading, booksCompleted, bookStats, activeBook, readingDaysForBook } from '../../core/library.js';
-import { memoByStatus, dueItems, recordReview } from '../../core/memorization.js';
+import { memoByStatus, dueItems } from '../../core/memorization.js';
+import { recordDailyReview, memoryHealth, inPool, dailyReviewSet } from '../../core/dailyReview.js';
 import { activeProject, projectHistory } from '../../core/projects.js';
-import { MEMO_TYPE, MEMO_TYPE_LABEL, REVIEW_RESULT, REVIEW_RESULT_LABEL, PROJECT_STATUS, PROJECT_TYPE_LABEL } from '../../content/defaults.js';
+import { MEMO_TYPE, MEMO_TYPE_LABEL, REVIEW_RESULT, REVIEW_RESULT_LABEL, PROJECT_STATUS, PROJECT_TYPE_LABEL, HEALTH_LABEL } from '../../content/defaults.js';
 
 // ARŞİVİM — "my growing collection of things I have learned and completed".
 // Dates, status and a durable-collection feel; no stars, scores or bars.
@@ -127,6 +128,13 @@ function renderMemory(main, ctx) {
 
   add(main, head('Ezberlerim', 'Ezberlerim', 'Ezberlediklerim ve tekrar ettiklerim.', { href: '#/archive', label: 'Arşivim' }));
 
+  // Today's pool set lives on Bugün; here it is only a one-line pointer.
+  const set = dailyReviewSet(state, today);
+  if (set.total) {
+    add(main, h('a', { class: 'quiet-link', href: '#/today' },
+      glyph('scroll', 20), h('span', { class: 'grow' }, set.complete ? 'Bugünkü tekrarların tamamlandı: ' : `Bugünkü tekrarım ${set.done}/${set.total}: `, h('b', {}, set.items.map((it) => (it.done ? '✓ ' : '○ ') + it.title).join('  '))), icon('chevron', 18)));
+  }
+
   if (due.length) {
     add(main, h('div', { class: 'card memo-due' },
       h('div', { class: 'hd' }, glyph('scroll', 26), h('div', { class: 'grow' }, h('h3', {}, 'Tekrar zamanı'), h('div', { class: 'small muted' }, 'Sakin bir tekrar. Nasıl geçtiğini söylemen yeter.'))),
@@ -160,6 +168,7 @@ function renderMemory(main, ctx) {
 function memoCard(ctx, it, isDue) {
   const mastered = it.status === 'MASTERED';
   const last = it.lastReviewedAt ? `Son tekrar: ${formatShort(it.lastReviewedAt)}${it.lastResult ? ' · ' + REVIEW_RESULT_LABEL[it.lastResult] : ''}` : null;
+  const health = memoryHealth(it, ctx.today);
   const open = openReview.has(it.id) && !isDue;
   const card = h('div', { class: `card memo-card ${mastered ? 'mastered' : 'learning'}` },
     h('div', { class: 'memo-main', role: mastered ? 'button' : null, tabindex: mastered ? '0' : null,
@@ -170,7 +179,10 @@ function memoCard(ctx, it, isDue) {
         h('div', { class: 't' }, it.title),
         h('div', { class: 's' }, mastered ? `Ezberledim: ${formatShort(it.masteredAt)}` : `Öğreniyorum · Başladım: ${formatShort(it.startedAt)}`, it.type !== MEMO_TYPE.SURA ? ` · ${MEMO_TYPE_LABEL[it.type]}` : ''),
         last ? h('div', { class: 's muted' }, last) : null,
-        isDue ? h('span', { class: 'pill pill-amber', style: { marginTop: '6px' } }, 'Tekrar zamanı') : it.nextReviewAt && mastered ? h('div', { class: 's muted' }, `Sonraki tekrar: ${formatShort(it.nextReviewAt)}`) : null),
+        mastered ? h('div', { class: 'row wrap', style: { marginTop: '6px', gap: '6px' } },
+          isDue ? h('span', { class: 'pill pill-amber' }, 'Tekrar zamanı') : it.nextReviewAt ? h('span', { class: 's muted' }, `Sonraki tekrar: ${formatShort(it.nextReviewAt)}`) : null,
+          health ? h('span', { class: `memo-health h-${health}` }, HEALTH_LABEL[health]) : null,
+          inPool(it) ? h('span', { class: 'pill pill-green' }, 'Günlük tekrar') : null) : null),
       mastered ? h('span', { class: 'mastered-mark', 'aria-label': 'Ezberlendi' }, icon('check', 22)) : null));
   if (open) add(card, reviewButtons(ctx, it, 'Bugün tekrar ettim:'));
   return card;
@@ -185,7 +197,7 @@ function reviewBlock(ctx, it) {
 function reviewButtons(ctx, it, label) {
   const pick = (result) => {
     openReview.delete(it.id);
-    ctx.update((s) => recordReview(s, it.id, result, ctx.today, { by: 'child' }));
+    ctx.update((s) => recordDailyReview(s, it.id, result, ctx.today));
     ctx.toast(result === REVIEW_RESULT.SELF ? 'Harika, kaydettim.' : result === REVIEW_RESULT.ASSISTED ? 'Kaydettim. Yakında bir daha bakarız.' : 'Kaydettim. Birlikte biraz daha çalışırız.');
   };
   return h('div', { class: 'how memo-how' },

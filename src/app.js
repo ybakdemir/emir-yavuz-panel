@@ -7,6 +7,7 @@ import { h, clear } from './ui/dom.js';
 import { renderChildShell } from './ui/child/shell.js';
 import { renderParentShell } from './ui/parent/shell.js';
 import { renderPrint } from './ui/print.js';
+import { celebrate } from './ui/child/celebrate.js';
 
 const store = createStore({ storage: globalThis.localStorage });
 store.init();
@@ -27,15 +28,20 @@ const ctx = {
     document.body.append(t);
     setTimeout(() => t.remove(), ms);
   },
+  /** Milestone feedback: MEANINGFUL → warm toast, MILESTONE → cinematic sheet (ui/child/celebrate.js). */
+  celebrate(event, opts) { celebrate(ctx, event, opts); },
   /** All writes go through here so day-level side effects run once. */
   update(mutator) {
+    const afterUpdate = [];
     store.update((s) => {
       mutator(s);
       const adv = autoAdvance(s, todayKey());
-      if (adv?.type === 'mastered') ctx.toast('Yeni bir beceri: artık yapabiliyorsun!');
+      if (adv?.type === 'mastered') afterUpdate.push(() => celebrate(ctx, 'skill_mastered', { dinoKind: 'stegosaurus', kicker: 'Yeni beceri' }));
       const fresh = syncDiscoveries(s, todayKey());
       if (fresh.length) pendingDiscoveries = fresh;
     });
+    // Sheets are torn down by the re-render inside store.update, so celebrations open after it.
+    afterUpdate.forEach((fn) => fn());
   },
   takeDiscoveries() { const d = pendingDiscoveries; pendingDiscoveries = []; return d; },
   peekDiscoveries() { return pendingDiscoveries; },

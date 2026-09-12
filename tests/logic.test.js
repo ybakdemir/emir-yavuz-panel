@@ -20,7 +20,8 @@ test('weekday vs weekend schedule without duplicated lists', () => {
   const wd = ensureDay(s, '2026-09-14'); // Monday
   const we = ensureDay(s, '2026-09-12'); // Saturday
   assert.deepEqual(ids(itemsForDay(s.config, '2026-09-14', wd)), ['morning', 'homework', 'explorer', 'reading', 'quran', 'prayer', 'physical', 'skill', 'evening']);
-  assert.deepEqual(ids(itemsForDay(s.config, '2026-09-12', we)), ['morning', 'reading', 'quran', 'prayer', 'physical', 'skill', 'presentation', 'evening']);
+  // Little Explorer is a daily habit: it is on the weekend list too (schedule change is covered in daily.test.js)
+  assert.deepEqual(ids(itemsForDay(s.config, '2026-09-12', we)), ['morning', 'explorer', 'reading', 'quran', 'prayer', 'physical', 'skill', 'presentation', 'evening']);
   // homework counts only when it exists
   assert.ok(!ids(coreItemsForDay(s.config, '2026-09-14', wd)).includes('homework'));
   wd.homework = 'exists';

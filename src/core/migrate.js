@@ -2,7 +2,7 @@ import {
   SCHEMA_VERSION, STATUS, DEFAULT_ROUTINES, DEFAULT_ITEMS, DEFAULT_PHYSICAL, DEFAULT_SKILL_POOL,
   DEFAULT_GRADUATION, DEFAULT_REWARDS, DEFAULT_PRESENTATION, DEFAULT_EXPEDITION, DEFAULT_SETTINGS, DEFAULT_REVIEW,
 } from '../content/defaults.js';
-import { weekKey } from './dates.js';
+import { weekKey, todayKey } from './dates.js';
 import { emptyDay } from './completion.js';
 
 const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -30,7 +30,7 @@ export function buildInitialState(today, writer = 'init') {
     days: {},
     weeks: {},
     months: {},
-    expedition: { discovered: {} },
+    expedition: { discovered: {}, reasons: {}, milestoneSeen: { memory: 0, english: 0, month: 0 }, milestonesSince: today },
     achievements: [],
     // Learning memory layer — keyed by id (Firebase keeps keyed objects intact,
     // and drops them when empty; ensureShape puts the containers back).
@@ -38,9 +38,11 @@ export function buildInitialState(today, writer = 'init') {
     reading: { activeBookId: null },
     memorizationItems: {},
     memorizationReviews: {},
+    memorizationDaily: {},   // Daily Review Pool: today's frozen set per day key (core/dailyReview.js)
     memoryProjects: {},
     weeklyReflections: {},
     legacy: null,
+    upgrades: { explorerDaily: today }, // one-time data upgrades already applied (see ensureShape)
     meta: { updatedAt: 0, writer },
   };
 }
@@ -49,7 +51,7 @@ export function buildInitialState(today, writer = 'init') {
  * Restore containers that Firebase drops when empty, and fill any config
  * section a newer build introduced. Existing values are never overwritten.
  */
-export function ensureShape(state) {
+export function ensureShape(state, today = todayKey()) {
   const init = buildInitialState(state.createdAt || '1970-01-01');
   state.schemaVersion ||= SCHEMA_VERSION;
   state.config ||= {};
@@ -62,6 +64,13 @@ export function ensureShape(state) {
   state.config.physical.exercises ||= init.config.physical.exercises;
   state.config.expedition.regions ||= init.config.expedition.regions;
   state.config.expedition.items ||= init.config.expedition.items;
+  // Expedition items a newer build introduced are slotted in at their default
+  // position; nothing already in the list is moved, removed or re-discovered.
+  init.config.expedition.items.forEach((item, i) => {
+    if (!state.config.expedition.items.some((x) => x.id === item.id)) state.config.expedition.items.splice(Math.min(i, state.config.expedition.items.length), 0, clone(item));
+  });
+  state.config.expedition.milestones ||= clone(DEFAULT_EXPEDITION.milestones);
+  for (const k of Object.keys(DEFAULT_EXPEDITION.milestones)) if (state.config.expedition.milestones[k] === undefined) state.config.expedition.milestones[k] = DEFAULT_EXPEDITION.milestones[k];
   state.config.rewards.weekly.options ||= [];
   state.config.rewards.monthly.options ||= [];
   state.config.presentation.topics ||= [];
@@ -75,11 +84,18 @@ export function ensureShape(state) {
   for (const d of Object.values(state.days)) { d.items ||= {}; d.steps ||= {}; d.physical ||= {}; }
   state.expedition ||= { discovered: {} };
   state.expedition.discovered ||= {};
+  state.expedition.reasons ||= {};
+  state.expedition.milestoneSeen ||= { memory: 0, english: 0, month: 0 };
+  // Milestone discoveries only count from the day this build first saw the
+  // state, so an upgrade never hands out a burst for old history.
+  state.expedition.milestonesSince ||= today;
   state.achievements ||= [];
   // Learning memory layer: a state saved before it existed gets empty
   // collections and the default review schedule; nothing else is touched.
   state.config.review.intervals ||= clone(DEFAULT_REVIEW.intervals);
   if (state.config.review.needsWorkDays === undefined) state.config.review.needsWorkDays = DEFAULT_REVIEW.needsWorkDays;
+  if (state.config.review.dailyTarget === undefined) state.config.review.dailyTarget = DEFAULT_REVIEW.dailyTarget;
+  state.memorizationDaily ||= {};
   state.books ||= {};
   state.reading ||= { activeBookId: null };
   if (state.reading.activeBookId === undefined) state.reading.activeBookId = null;
@@ -88,6 +104,16 @@ export function ensureShape(state) {
   state.memoryProjects ||= {};
   state.weeklyReflections ||= {};
   if (state.legacy === undefined) state.legacy = null;
+  // One-time upgrade: Little Explorer became a daily habit. Applied from
+  // `today` on (schedule.daysFor), so every earlier day keeps the weekday
+  // rule and no past ratio or good day changes. Parents can still change the
+  // rule in Settings; the marker stops it from being re-applied.
+  state.upgrades ||= {};
+  if (!state.upgrades.explorerDaily) {
+    const ex = state.config.items.find((it) => it.id === 'explorer');
+    if (ex && ex.days === 'weekday' && !ex.daysNow) { ex.daysFrom = today; ex.daysNow = 'all'; }
+    state.upgrades.explorerDaily = today;
+  }
   state.meta ||= { updatedAt: 0, writer: 'unknown' };
   return state;
 }

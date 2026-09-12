@@ -63,7 +63,9 @@ export const DEFAULT_ROUTINES = {
 export const DEFAULT_ITEMS = [
   { id: 'morning', title: 'Sabah rutinim', kind: 'routine', days: 'all', icon: 'sun' },
   { id: 'homework', title: 'Okul ödevim', kind: 'homework', days: 'weekday', icon: 'pencil' },
-  { id: 'explorer', title: 'Little Explorer', subtitle: 'Bugünkü İngilizce çalışmamı yaptım', kind: 'simple', days: 'weekday', icon: 'compass' },
+  // Little Explorer is a daily English habit — the external app teaches, EPDS only records the day.
+  // (Configs saved with days:'weekday' get daysNow:'all' once in migrate.js, effective from that day on — see schedule.daysFor.)
+  { id: 'explorer', title: 'Little Explorer', subtitle: 'Bugünkü İngilizce çalışmamı yaptım', kind: 'simple', days: 'all', icon: 'compass' },
   { id: 'reading', title: '20 sayfa aile okuması', subtitle: 'Aile okuma zamanı', kind: 'simple', days: 'all', icon: 'book' },
   { id: 'quran', title: '3 ayet', kind: 'simple', days: 'all', icon: 'quran' },
   { id: 'prayer', title: 'Namaz', kind: 'simple', days: 'all', icon: 'prayer' },
@@ -172,6 +174,7 @@ export const DEFAULT_EXPEDITION = {
     // Jurassic Valley
     { id: 'jv_diplo', region: 'jurassic', type: 'card', dino: 'diplodocus', title: 'Diplodocus', fact: 'Boynu tek başına 8 metre uzunluğundaydı.' },
     { id: 'jv_brachio', region: 'jurassic', type: 'card', dino: 'brachiosaurus', title: 'Brachiosaurus', fact: '26 metre boyundaydı — 5 katlı bir bina kadar!' },
+    { id: 'jv_mamen', region: 'jurassic', type: 'card', dino: 'mamenchisaurus', title: 'Mamenchisaurus', fact: 'Boynu vücudunun yarısından uzundu — bilinen en uzun boyunlu dinozorlardan biri.' },
     { id: 'jv_fern', region: 'jurassic', type: 'fossil', title: 'Eğrelti Fosili', fact: 'Jura döneminde ormanlar dev eğreltilerle doluydu.' },
     { id: 'jv_stego', region: 'jurassic', type: 'card', dino: 'stegosaurus', title: 'Stegosaurus', fact: 'Sırtındaki plakalar güneşte ısınmasına yardım ediyordu.' },
     { id: 'jv_allo', region: 'jurassic', type: 'card', dino: 'allosaurus', title: 'Allosaurus', fact: 'Jura döneminin en güçlü avcısıydı.' },
@@ -198,6 +201,13 @@ export const DEFAULT_EXPEDITION = {
     { id: 'np_summit', region: 'peaks', type: 'location', title: 'Zirve', fact: 'Buraya kadar geldin. Gerçek bir kaşifsin.' },
   ],
   daysPerDiscovery: 2,      // expedition steps (good days + mastered skills + presentations) per discovery
+  // Milestone discoveries (core/expedition.js → milestoneCounts). Each is a
+  // whole discovery on its own, on top of the step count. Counted only from
+  // `expedition.milestonesSince` so an upgrade never releases a burst.
+  milestones: {
+    memoryDays: 7,           // complete daily-review days per discovery ("Hafızanı güçlü tuttun")
+    englishDays: 10,         // Little Explorer study days per discovery
+  },
 };
 
 export const DEFAULT_SETTINGS = {
@@ -227,7 +237,13 @@ export const REVIEW_RESULT_LABEL = { self: 'Kendim okudum', assisted: 'Biraz yar
 export const DEFAULT_REVIEW = {
   intervals: [1, 3, 7, 14, 30], // days until the next review; "Kendim okudum" advances one step
   needsWorkDays: 1,             // "Tekrar çalışmam gerekiyor" → review again after this many days
+  dailyTarget: 3,               // Daily Review Pool: how many pool items Today asks for (parent-editable, 1…pool size)
 };
+
+// Memory health — three calm words derived from the schedule and the last
+// outcome (core/dailyReview.js). Not a score, not a second algorithm.
+export const HEALTH = { STRONG: 'strong', REFRESH: 'refresh', TODAY: 'today' };
+export const HEALTH_LABEL = { strong: 'Sağlam', refresh: 'Tazelenmeli', today: 'Bugün çalış' };
 
 export const PROJECT_STATUS = { ACTIVE: 'ACTIVE', COMPLETED: 'COMPLETED', REPLACED: 'REPLACED' };
 export const PROJECT_STATUS_LABEL = { ACTIVE: 'Devam ediyor', COMPLETED: 'Tamamlandı', REPLACED: 'Değiştirildi' };

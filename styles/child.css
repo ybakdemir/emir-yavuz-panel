@@ -373,3 +373,40 @@
 .reflect-q { display: flex; flex-direction: column; gap: 6px; }
 .reflect-q > span { font-size: 14.5px; font-weight: 800; color: var(--ink-2); }
 .reflect-in { min-height: 46px; }
+
+/* ── Bugünkü Ezber Tekrarım — one compact card for the Daily Review Pool ── */
+.memo-daily .task-main { min-height: 72px; }
+.memo-count { min-width: 52px; height: 52px; padding: 0 10px; border-radius: 26px; border: 2.5px solid var(--cream-3); display: grid; place-items: center; flex: none; font-weight: 900; font-size: 15px; color: var(--ink-2); background: #fff; transition: all .2s var(--ease); }
+.memo-count.on { background: var(--green); border-color: var(--green); color: #fff; box-shadow: 0 4px 10px rgba(47, 118, 89, .3); }
+.memo-list { padding: 0 16px 6px 18px; border-top: 1px dashed var(--line-2); }
+.memo-row { padding: 9px 0; border-bottom: 1px dashed var(--line); }
+.memo-row:last-child { border-bottom: 0; }
+.memo-row-hd { display: flex; align-items: center; gap: 10px; min-height: 30px; flex-wrap: wrap; }
+.memo-tick { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--cream-3); display: grid; place-items: center; flex: none; color: transparent; background: #fff; }
+.memo-row.on .memo-tick { background: var(--green); border-color: var(--green); color: #fff; }
+.memo-title { font-size: 16.5px; font-weight: 800; }
+.memo-row.on .memo-title { color: var(--green-2); }
+.memo-res { font-size: 13px; font-weight: 800; color: var(--ink-3); margin-left: auto; }
+.memo-health { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: var(--r-pill); font-size: 12px; font-weight: 800; letter-spacing: .01em; margin-left: auto; }
+.memo-health.h-strong { background: var(--green-soft); color: var(--green-2); }
+.memo-health.h-refresh { background: var(--gold-soft); color: #7A4E14; }
+.memo-health.h-today { background: var(--clay-soft); color: #7B3322; }
+.memo-daily .memo-how { padding: 6px 0 2px 34px; }
+.memo-actions { padding-top: 10px; }
+.memo-daily.done .memo-list { border-top-color: var(--green-soft); }
+
+/* ── Milestone / meaningful feedback ── */
+.milestone-banner { width: 100%; text-align: left; font: inherit; margin-top: 14px; padding: 14px 16px; border-radius: var(--r-lg); background: linear-gradient(135deg, var(--gold-tint), #FFFDF9); color: var(--ink); display: flex; gap: 12px; align-items: center; cursor: pointer; border: 1px solid var(--gold-soft); box-shadow: var(--shadow-1); }
+.milestone-banner .glyph { color: var(--gold-2); --g2: var(--gold); flex: none; }
+.milestone-banner .t { font-weight: 900; font-size: 16px; }
+.milestone-banner .s { color: var(--ink-2); font-size: 14px; font-weight: 700; }
+.milestone-banner .ic:last-child { color: var(--ink-3); }
+.toast.toast-meaningful { display: flex; align-items: center; gap: 10px; padding: 14px 22px; font-size: 16px; background: linear-gradient(135deg, var(--forest-3), var(--forest)); border-color: rgba(217, 166, 74, .6); animation: rise .2s var(--ease), glow 1.6s var(--ease) 1; }
+.toast.toast-meaningful .glyph { color: var(--gold); --g2: #F1D7A3; flex: none; }
+@keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(217, 166, 74, .55) } 100% { box-shadow: 0 0 0 18px rgba(217, 166, 74, 0) } }
+.cine-why { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-md); background: rgba(217, 166, 74, .12); border: 1px solid rgba(217, 166, 74, .35); color: var(--ivory); font-size: 15px; font-weight: 800; }
+.cine-why .glyph { color: var(--gold); --g2: #F1D7A3; flex: none; }
+
+/* Production artwork slot (content/artwork.js): keeps the SVG box, rounded like a card. */
+img.dino-art { object-fit: contain; border-radius: 14px; }
+.memo-all { background: none; border: 0; font: inherit; font-size: 14px; font-weight: 800; color: var(--green-2); text-decoration: underline; text-decoration-color: var(--green-soft); text-underline-offset: 3px; padding: 8px 6px; min-height: 40px; cursor: pointer; }

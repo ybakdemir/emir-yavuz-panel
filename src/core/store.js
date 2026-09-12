@@ -19,7 +19,7 @@ export function createStore({ storage, now = () => new Date() } = {}) {
   function loadLocal() {
     try {
       const raw = storage?.getItem(LOCAL_KEY);
-      if (raw) return ensureShape(JSON.parse(raw));
+      if (raw) return ensureShape(JSON.parse(raw), todayKey(now()));
     } catch { /* corrupt local copy — fall through */ }
     return null;
   }
@@ -64,7 +64,7 @@ export function createStore({ storage, now = () => new Date() } = {}) {
 
     /** Replace state wholesale (remote adoption). */
     replace(next) {
-      state = ensureShape(next);
+      state = ensureShape(next, todayKey(now()));
       persistLocal();
       notify();
     },
