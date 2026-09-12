@@ -6,6 +6,7 @@ import { activeSkill, evaluateGraduation } from '../../core/skills.js';
 import { coreItemsForDay } from '../../core/schedule.js';
 import { getStatus, isCompleted } from '../../core/completion.js';
 import { independenceStats } from '../../core/analytics.js';
+import { weeklyMessageFor } from '../../core/messages.js';
 import { STATUS_LABEL, SKILL_STATUS_LABEL } from '../../content/defaults.js';
 import { taskIcon } from './components.js';
 
@@ -90,28 +91,10 @@ export function renderWeek(main, ctx) {
 function weeklyMessage(ctx, wk) {
   const custom = ctx.state.config.settings.weeklyMessage;
   if (custom) return custom;
-  const days = weekDays(wk).filter((k) => k <= ctx.today);
-  const st = independenceStats(ctx.state, days[0], days[days.length - 1]);
-  if (!st.days) return 'Yeni bir hafta. Küçük adımlar, büyük keşifler.';
-  if (st.rate >= 0.7) return 'Bu hafta işlerin çoğunu kendin yaptın. Bu tam bir kaşif işi.';
-  if (st.completionRate >= 0.7) return 'Güzel bir hafta gidiyor. Bir sonraki adım: hatırlatma olmadan denemek.';
-  return 'Her gün yeniden başlamak da bir beceri. Devam.';
+  return weeklyMessageFor(independenceStats(ctx.state, ...weekWindow(wk, ctx.today)));
 }
 
-function openDaySheet(ctx, key) {
-  const { state } = ctx;
-  const day = state.days[key];
-  const items = day ? coreItemsForDay(state.config, key, day) : [];
-  const close = openSheet([
-    h('div', { class: 'sheet-title' }, formatLong(key)),
-    !day ? h('div', { class: 'empty' }, 'Bu gün için kayıt yok.') : h('div', { class: 'stack' }, items.map((it) => {
-      const st = getStatus(day, it.id);
-      const title = it.kind === 'skill' ? (state.skills.pool.find((s) => s.id === day.skillId)?.title || it.title) : it.title;
-      return h('div', { class: 'row', style: { minHeight: '44px' } },
-        h('span', { class: `pill ${isCompleted(st) ? 'pill-green' : 'pill-sand'}` }, isCompleted(st) ? icon('check', 14) : null),
-        h('div', { class: 'grow', style: { fontWeight: 700 } }, title),
-        h('div', { class: 'small muted' }, st ? STATUS_LABEL[st] : 'Yapılmadı'));
-    })),
-    h('div', { class: 'sheet-actions' }, h('button', { class: 'btn btn-primary', onclick: () => close() }, 'Tamam')),
-  ]);
+function weekWindow(wk, today) {
+  const days = weekDays(wk).filter((k) => k <= today);
+  return [days[0], days[days.length - 1]];
 }
