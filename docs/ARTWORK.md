@@ -9,21 +9,37 @@ the SVG/CSS version until then, so nothing here blocks behaviour.
 ## Registry
 ```js
 // src/content/artwork.js
-export const ARTWORK = { mamenchisaurus: 'assets/dinos/mamenchisaurus.webp', /* … */ };
-export const SCENES  = { jurassic: 'assets/scenes/jurassic.webp', /* … */ };
+export const ARTWORK = {
+  worldHero: { src: 'assets/scenes/world-hero.webp', focus: '50% 60%' }, // Expedition hero (eager)
+  dinos:     { mamenchisaurus: 'assets/dinos/mamenchisaurus.webp', /* … */ }, // cards, reveal, detail (lazy)
+  scenes:    { green: 'assets/scenes/jurassic.webp', /* … */ },                // zone backdrops (reserved)
+  companion: 'assets/companion.webp',                                          // explorer companion (hero + map foot)
+};
 ```
-`dino(kind)` renders an `<img class="dino dino-art">` with the same 3:2 box as the
-SVG, so layouts (Today hero, Haftam note, Expedition cards, reveal sheet) do not move.
+Every slot is optional and `null`/empty by default. `dino(kind)` renders an `<img class="dino dino-art">`
+with the same 3:2 box as the SVG; `worldHero` replaces `art.worldScene()`, `companion` replaces
+`art.companionArt()`. `tests/artwork.test.js` fails the build if a registered path is a web URL.
+
+## World hero — `assets/scenes/world-hero.webp`
+The approved *Premium Friendly Expedition* concept (waterfall valley, sauropods, pterosaurs, golden light).
+Spec: **1600 × 900 px** (16:9), WebP, ≤ 300 KB. It is cropped to ~390 × 332 on phones with
+`object-position` = `focus`, so keep the subject in the centre-right and the lower-left third calm
+(the title, count and progress bar sit there over a green shade). Until the file exists the built-in
+SVG scene (`src/ui/art.js worldScene`) is drawn — same composition, so the layout will not move.
+
+## Companion — `assets/companion.webp`
+**512 × 512 px**, transparent background, ≤ 80 KB. A small friendly young dinosaur; shown at 96–120 px
+in the hero and 56 px in the map footer. Fallback: `companionArt()` SVG.
 
 ## Dinosaur cards — `assets/dinos/<kind>.webp`
 | kind | where it appears |
 |---|---|
 | brachiosaurus, triceratops, trex | Today hero (state-dependent) |
 | velociraptor | Haftam "Kaşif notu" |
-| diplodocus, brachiosaurus, mamenchisaurus, stegosaurus, allosaurus, velociraptor, ankylosaurus, triceratops, pteranodon, parasaurolophus, spinosaurus | Expedition cards + reveal sheet |
+| diplodocus, brachiosaurus, mamenchisaurus, stegosaurus, allosaurus, velociraptor, ankylosaurus, triceratops, pteranodon, parasaurolophus, spinosaurus | Expedition cards (3:2 artwork area, `object-fit: cover`), reveal sheet, detail sheet, Today discovery thumb |
 | stegosaurus, parasaurolophus | Milestone sheets (skill graduated, presentation) |
 
-Spec: **1200 × 800 px** (3:2), WebP, transparent or soft-vignette background, subject centred with ~8 % margin, ≤ 180 KB each. Style: *Friendly Expedition* — expressive, polished 3D/modern-illustration, warm light, not babyish. Also export a **360 × 240** thumbnail as `<kind>@1x.webp` if card grids feel heavy on 3G.
+Spec: **1200 × 800 px** (3:2), WebP, ≤ 180 KB each. Cards and the detail sheet fill the whole 3:2 area (`object-fit: cover`), so a painted scene background is fine; the reveal sheet and Today thumb show the same file contained. Locked cards keep drawing the SVG silhouette in mist even when artwork exists — the artwork is the reward. Style: *Friendly Expedition* — expressive, polished 3D/modern-illustration, warm light, not babyish. Also export a **360 × 240** thumbnail as `<kind>@1x.webp` if card grids feel heavy on 3G.
 
 ## Region backdrops — `assets/scenes/<tone>.webp`
 Tones: `warm` (Ana Kamp), `green` (Jura Vadisi), `amber` (Fosil Kanyonu), `blue` (Kretase Kıyısı), `ice` (Kuzey Zirveleri).

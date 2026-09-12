@@ -72,10 +72,13 @@ export function renderToday(main, ctx) {
 
   const fresh = ctx.peekDiscoveries();
   if (fresh.length) {
-    const { title, reason } = discoveryCopy(state, fresh[fresh.length - 1]);
+    const { item, reason } = discoveryCopy(state, fresh[fresh.length - 1]);
     // The Expedition page takes the pending discoveries and reveals the newest; the banner only navigates.
+    // Compact on purpose: a small thumb of the find, its name, the reason — the cinematic reveal lives on Keşif.
     add(main, h('a', { class: 'discovery-banner', href: '#/expedition' },
-      icon('map', 28), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Yeni keşif!'), h('div', { class: 's' }, [title, reason].filter(Boolean).join('. '))), icon('chevron', 22)));
+      h('div', { class: 'db-thumb', 'aria-hidden': 'true' }, item?.type === 'card' ? dino(item.dino, { size: 72 }) : glyph('fossil', 30)),
+      h('div', { class: 'grow' }, h('div', { class: 't' }, item ? `Yeni keşif: ${item.title}` : 'Yeni keşif!'), h('div', { class: 's' }, reason || 'Keşif haritasında yeni bir şey buldun.')),
+      h('span', { class: 'db-cta' }, 'Keşfe git', icon('chevron', 18))));
   }
 
   // A skill graduated today is a milestone worth seeing all day, not just once.

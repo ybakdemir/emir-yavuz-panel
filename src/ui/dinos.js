@@ -1,5 +1,5 @@
 import { svg } from './dom.js';
-import { ARTWORK } from '../content/artwork.js';
+import { dinoArt } from '../content/artwork.js';
 
 // Flat, two-tone dinosaur silhouettes (viewBox 240×160). Colours come from
 // CSS variables so the same drawing works on warm day screens and on the
@@ -165,17 +165,22 @@ const D = {
  * A dinosaur, drawn from the SVG set unless production artwork for it has been
  * registered in content/artwork.js (see docs/ARTWORK.md for the asset spec).
  * The image keeps the same 3:2 box and the `dino` class so layouts don't move.
+ * Raster art is lazy-loaded unless `eager` (hero / reveal sheet) is set.
  */
-export function dino(kind, { size = 120, cls = '' } = {}) {
-  const art = ARTWORK[kind];
+export function dino(kind, { size = 120, cls = '', eager = false } = {}) {
+  const art = dinoArt(kind);
   if (art) {
     const img = document.createElement('img');
-    img.src = art; img.alt = ''; img.width = size; img.height = Math.round(size * 2 / 3); img.loading = 'lazy'; img.decoding = 'async';
+    img.src = art; img.alt = ''; img.width = size; img.height = Math.round(size * 2 / 3);
+    img.loading = eager ? 'eager' : 'lazy'; img.decoding = 'async';
     img.className = `dino dino-${kind} dino-art ${cls}`;
     return img;
   }
   const inner = D[kind] || D.egg;
   return svg(inner, { size, viewBox: '0 0 240 160', cls: `dino dino-${kind} ${cls}` });
 }
+
+/** True when the kind has real registered artwork (cards can then drop the silhouette tint). */
+export const hasDinoArt = (kind) => !!dinoArt(kind);
 
 export const DINO_KINDS = Object.keys(D);

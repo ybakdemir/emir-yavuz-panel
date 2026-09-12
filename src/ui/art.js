@@ -212,3 +212,103 @@ export function worldDecor() {
 export function motif(name, size = 96) {
   return glyph(name, size, 'motif');
 }
+
+// ── Expedition world hero (800×450, slice-fitted). "Premium Friendly
+// Expedition": a waterfall valley at golden hour — volumetric sun, misted
+// blue ranges, a river, layered forest ridges and dinosaurs at meaningful
+// scale (sauropods on the ridge, pterosaurs in the light, a triceratops in
+// the foreground). Original inline SVG; content/artwork.js `worldHero`
+// replaces it with the approved AI concept when that file exists. The lower
+// third stays calm so the hero copy reads over the CSS shade.
+const sauropod = (x, y, s, fill) => `
+  <g transform="translate(${x} ${y}) scale(${s})" fill="${fill}" stroke="${fill}" stroke-linecap="round">
+    <path d="M-30 -2 C-58 4 -80 14 -102 30" stroke-width="9" fill="none"/>
+    <path d="M-74 14 C-88 20 -98 26 -110 34" stroke-width="4" fill="none"/>
+    <ellipse cx="0" cy="0" rx="36" ry="17" stroke="none"/>
+    <path d="M26 -6 C46 -28 58 -54 68 -84" stroke-width="11" fill="none"/>
+    <ellipse cx="72" cy="-90" rx="10" ry="6.5" stroke="none"/>
+    <rect x="-24" y="8" width="11" height="30" rx="5" stroke="none"/><rect x="-6" y="10" width="11" height="30" rx="5" stroke="none"/>
+    <rect x="10" y="9" width="11" height="30" rx="5" stroke="none"/><rect x="24" y="6" width="11" height="30" rx="5" stroke="none"/>
+  </g>`;
+const pterosaur = (x, y, s, fill, rot = 0) =>
+  `<path transform="translate(${x} ${y}) rotate(${rot}) scale(${s})" d="M0 6 C6 -3 12 -6 16 -1 C20 -6 26 -3 32 6 C26 1 21 2 16 7 C11 2 6 1 0 6z" fill="${fill}"/>`;
+const triceratops = (x, y, s, fill) => `
+  <g transform="translate(${x} ${y}) scale(${s})" fill="${fill}">
+    <ellipse cx="0" cy="0" rx="40" ry="20"/>
+    <path d="M36 4 C50 6 60 12 68 20" stroke="${fill}" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <path d="M-30 -22 C-56 -34 -74 -18 -70 6 C-68 20 -50 26 -32 20z"/>
+    <ellipse cx="-52" cy="8" rx="22" ry="15"/>
+    <path d="M-60 -6 L-74 -34 L-52 -8z"/><path d="M-44 -8 L-40 -34 L-34 -6z"/>
+    <rect x="-26" y="10" width="13" height="26" rx="6"/><rect x="-6" y="12" width="13" height="26" rx="6"/>
+    <rect x="12" y="11" width="13" height="26" rx="6"/><rect x="26" y="8" width="13" height="26" rx="6"/>
+  </g>`;
+const fern = (x, y, s, stroke, flip = 1) => `
+  <g transform="translate(${x} ${y}) scale(${s * flip} ${s})" fill="none" stroke="${stroke}" stroke-width="2.6" stroke-linecap="round">
+    <path d="M0 0 C4 -26 14 -42 30 -54"/><path d="M8 -20 C0 -22 -6 -20 -12 -12"/><path d="M12 -30 C4 -34 -2 -34 -8 -30"/><path d="M18 -40 C26 -46 32 -46 38 -42"/><path d="M14 -35 C22 -38 28 -36 32 -30"/><path d="M24 -48 C30 -52 36 -52 40 -48"/>
+  </g>`;
+
+export function worldScene() {
+  const inner = `
+    <defs>
+      <linearGradient id="ws-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#55869E"/><stop offset=".42" stop-color="#A9C2BE"/><stop offset=".62" stop-color="#E9D19E"/></linearGradient>
+      <radialGradient id="ws-sun" cx="76%" cy="20%" r="42%"><stop offset="0" stop-color="#FFF3D0" stop-opacity=".95"/><stop offset=".3" stop-color="#F1D7A3" stop-opacity=".5"/><stop offset="1" stop-color="#D9A64A" stop-opacity="0"/></radialGradient>
+      <linearGradient id="ws-fall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFDF9" stop-opacity=".95"/><stop offset="1" stop-color="#DCEAF3" stop-opacity=".55"/></linearGradient>
+      <linearGradient id="ws-river" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#DCEAF3" stop-opacity=".9"/><stop offset="1" stop-color="#3D7EA6" stop-opacity=".75"/></linearGradient>
+      <filter id="ws-soft" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="9"/></filter>
+      <filter id="ws-ray" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="5"/></filter>
+    </defs>
+    <rect width="800" height="450" fill="url(#ws-sky)"/>
+    <rect width="800" height="450" fill="url(#ws-sun)"/>
+    <circle cx="608" cy="92" r="30" fill="#FFF6DC"/>
+    <circle cx="608" cy="92" r="52" fill="#FFF3D0" opacity=".28" filter="url(#ws-soft)"/>
+    <!-- far range, in mist -->
+    <path d="M0 246 L64 196 L126 232 L206 152 L288 222 L356 176 L430 236 L520 160 L602 226 L682 184 L760 232 L800 208 L800 450 L0 450z" fill="#6A93A4" opacity=".55"/>
+    <path d="M0 262 L48 236 L110 256 L170 214 L240 258 L300 232 L360 268 L440 224 L500 262 L560 240 L640 270 L700 248 L760 276 L800 258 L800 450 L0 450z" fill="#557F90" opacity=".7"/>
+    <!-- volumetric light -->
+    <g fill="#FFF1C9" opacity=".16" filter="url(#ws-ray)"><polygon points="608,92 250,450 380,450"/><polygon points="608,92 430,450 500,450"/><polygon points="608,92 640,450 780,450"/><polygon points="608,92 0,250 0,360"/></g>
+    <!-- mid range with the waterfall cliff -->
+    <path d="M0 300 L84 246 L166 290 L246 222 L330 282 L400 250 L468 296 L556 240 L640 292 L720 256 L800 300 L800 450 L0 450z" fill="#3F6B75"/>
+    <path d="M296 262 L346 262 L352 300 L292 300z" fill="#355C66"/>
+    <path d="M318 262 C324 302 316 332 322 366" stroke="url(#ws-fall)" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <path d="M320 262 C326 302 318 332 324 366" stroke="#FFFDF9" stroke-width="5" opacity=".9" stroke-linecap="round" fill="none"/>
+    <ellipse cx="324" cy="368" rx="40" ry="12" fill="#FFFDF9" opacity=".6" filter="url(#ws-soft)"/>
+    <!-- mist bands -->
+    <ellipse cx="180" cy="306" rx="250" ry="24" fill="#F6F0E4" opacity=".34" filter="url(#ws-soft)"/>
+    <ellipse cx="620" cy="318" rx="230" ry="20" fill="#F6F0E4" opacity=".28" filter="url(#ws-soft)"/>
+    <!-- pterosaurs in the light -->
+    <g fill="#173F35" opacity=".8">${pterosaur(470, 118, 1.3, '#173F35', -8)}${pterosaur(524, 150, .95, '#173F35', 6)}${pterosaur(552, 104, .7, '#173F35', -14)}</g>
+    <!-- ridge 1 + sauropods against the sun -->
+    <path d="M0 342 C80 320 160 332 240 318 C330 302 400 328 480 314 C560 300 640 324 720 310 C760 302 785 308 800 312 L800 450 L0 450z" fill="#2B6A56"/>
+    ${sauropod(562, 326, 1, '#173F35')}${sauropod(466, 338, .62, '#173F35')}
+    <!-- river -->
+    <path d="M300 378 C350 384 400 400 456 412 C530 428 600 434 690 450 L560 450 C500 438 440 428 396 412 C356 398 326 388 296 384z" fill="url(#ws-river)"/>
+    <!-- foreground ridges -->
+    <path d="M0 384 C100 364 200 380 300 368 C420 354 520 380 640 364 C720 354 770 362 800 366 L800 450 L0 450z" fill="#215446"/>
+    ${triceratops(702, 388, .55, '#10302A')}
+    <path d="M0 414 C120 398 240 412 360 402 C480 392 600 414 720 404 C760 400 785 404 800 406 L800 450 L0 450z" fill="#173F35"/>
+    <path d="M0 438 C160 428 320 440 480 432 C640 424 720 436 800 430 L800 450 L0 450z" fill="#10302A"/>
+    ${fern(28, 446, 1.1, '#2F7659')}${fern(68, 450, .8, '#2F7659')}${fern(776, 448, 1, '#2F7659', -1)}${fern(740, 450, .7, '#2F7659', -1)}`;
+  const el = svg(inner, { viewBox: '0 0 800 450', cls: 'world-scene' });
+  el.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+  el.removeAttribute('width'); el.removeAttribute('height');
+  return el;
+}
+
+// ── Explorer companion (120×120): a small, friendly young sauropod with an
+// explorer's scarf. Purely visual identity — never speaks, never a feature.
+export function companionArt(size = 96, cls = '') {
+  const inner = `
+    <defs><radialGradient id="cp-b" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#4F9A72"/><stop offset="1" stop-color="#2F7659"/></radialGradient></defs>
+    <path d="M38 78 C22 82 14 92 10 104" stroke="#2F7659" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <ellipse cx="62" cy="80" rx="30" ry="22" fill="url(#cp-b)"/>
+    <ellipse cx="66" cy="90" rx="18" ry="9" fill="#9FCB9B" opacity=".85"/>
+    <rect x="42" y="92" width="12" height="20" rx="6" fill="#2F7659"/><rect x="66" y="94" width="12" height="20" rx="6" fill="#2F7659"/>
+    <path d="M80 66 C88 52 90 40 88 26" stroke="#2F7659" stroke-width="16" stroke-linecap="round" fill="none"/>
+    <circle cx="90" cy="22" r="15" fill="#3E8A66"/>
+    <ellipse cx="97" cy="26" rx="7" ry="4" fill="#9FCB9B" opacity=".8"/>
+    <circle cx="84" cy="18" r="5.2" fill="#fff"/><circle cx="85.4" cy="18" r="2.8" fill="#10241C"/><circle cx="86.6" cy="16.8" r="1" fill="#fff"/>
+    <path d="M74 36 C82 44 92 44 100 36" stroke="#D9A64A" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M74 38 L66 54 L78 46z" fill="#D9A64A"/>
+    <g fill="#9FCB9B" opacity=".9"><circle cx="52" cy="66" r="3"/><circle cx="64" cy="62" r="3.4"/><circle cx="76" cy="66" r="3"/></g>`;
+  return svg(inner, { size, viewBox: '0 0 120 120', cls: `companion ${cls}` });
+}
