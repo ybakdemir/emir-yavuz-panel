@@ -6,7 +6,7 @@ import { booksReading, booksCompleted, bookStats, activeBook, readingDaysForBook
 import { memoByStatus, dueItems } from '../../core/memorization.js';
 import { recordDailyReview, memoryHealth, inPool, dailyReviewSet } from '../../core/dailyReview.js';
 import { activeProject, projectHistory } from '../../core/projects.js';
-import { pageHero, sectionHead } from './components.js';
+import { pageHero, sectionHead, taskIcon, packArt } from './components.js';
 import { MEMO_TYPE, MEMO_TYPE_LABEL, REVIEW_RESULT, REVIEW_RESULT_LABEL, PROJECT_STATUS, PROJECT_TYPE_LABEL, HEALTH_LABEL } from '../../content/defaults.js';
 
 // ARŞİVİM — "my growing collection of things I have learned and completed".
@@ -24,11 +24,12 @@ export function renderArchive(main, ctx, parts = []) {
   return renderLanding(main, ctx);
 }
 
-// Compact editorial header on the secondary artwork, cropped to the valley
-// side so the archive reads as a notebook, not a fantasy map.
+// Compact editorial header on the archive hero (visual pack): the library
+// scene — shelves, books and the reading companion — so the archive reads
+// as a collection, not a map.
 function head(kicker, title, sub, back = null) {
   return pageHero({
-    variant: 'compact', hero: 'secondary', cls: 'hero-archive', label: title, kicker, title, sub,
+    variant: 'compact', hero: 'archive', cls: 'hero-archive', label: title, kicker, title, sub,
     extra: back ? [h('a', { class: 'arch-back', href: back.href }, icon('back', 18), back.label)] : [],
   });
 }
@@ -55,23 +56,25 @@ function renderLanding(main, ctx) {
 
   add(main, sectionHead('Koleksiyonlarım', 'Burada birikenler', { tight: true }));
   add(main, h('div', { class: 'arch-grid' },
-    collection('#/archive/books', 'library', 'fossil', 'Kitaplığım',
+    collection('#/archive/books', 'library', 'fossil', 'Kitaplığım', 'reading',
       bs.completedBooks || bs.reading
         ? [bs.completedBooks ? plural(bs.completedBooks, 'kitap tamamladım') : null, bs.reading ? plural(bs.reading, 'kitap okuyorum') : null].filter(Boolean).join(' · ')
         : 'İlk kitabın için yer hazır.'),
-    collection('#/archive/memory', 'scroll', 'forest', 'Ezberlerim',
+    collection('#/archive/memory', 'scroll', 'forest', 'Ezberlerim', null,
       memo.mastered.length || memo.learning.length
         ? [suras ? plural(suras, 'sure ezberledim') : null, others ? plural(others, 'ezber daha') : null, memo.learning.length ? plural(memo.learning.length, 'ezber öğreniyorum') : null].filter(Boolean).join(' · ')
         : 'Ezberlediklerin burada saklanır.'),
-    collection('#/archive/presentations', 'mic', 'sky', 'Sunumlarım',
+    collection('#/archive/presentations', 'mic', 'sky', 'Sunumlarım', 'presentation',
       pres ? plural(pres, 'sunum yaptım') : 'Anlattığın her konu burada kalır.')));
 
   add(main, h('div', { class: 'arch-foot' }, glyph('footprint', 18), 'Burası senin hikâyen. Buradaki hiçbir şey silinmez.'));
 }
 
-function collection(href, g, tone, title, line) {
+/** Collection row: the visual-pack icon for the slot (`key`) or the toned glyph tile. */
+function collection(href, g, tone, title, key, line) {
+  const art = key ? packArt(key, 52) : null;
   return h('a', { class: `arch-card tone-${tone}`, href },
-    h('div', { class: 'arch-ic' }, glyph(g, 34)),
+    h('div', { class: `arch-ic ${art ? 'art' : ''}` }, art || glyph(g, 34)),
     h('div', { class: 'grow' }, h('div', { class: 't' }, title), h('div', { class: 's' }, line)),
     h('span', { class: 'arch-chev' }, icon('chevron', 22)));
 }
@@ -223,7 +226,7 @@ function renderPresentations(main, ctx) {
   add(main, head('Sunumlarım', 'Sunumlarım', 'Anlattığım konular, haftalar boyunca.', { href: '#/archive', label: 'Arşivim' }));
   if (!list.length) { add(main, h('div', { class: 'card empty' }, 'İlk sunumun burada yerini alacak.')); return; }
   add(main, h('div', { class: 'stack' }, list.map((p) => h('div', { class: `card pres-row ${p.presented ? 'done' : ''}` },
-    h('div', { class: 'task-icon sky' }, glyph('mic', 26)),
+    taskIcon('mic', 'sky', '', 'presentation'),
     h('div', { class: 'grow' },
       h('div', { class: 'pres-date' }, p.presented && p.presentedOn ? formatLong(p.presentedOn) : weekLabel(p.wk)),
       h('div', { class: 't' }, p.topic || 'Konu seçilmemiş'),

@@ -2,7 +2,7 @@ import { h, svg } from '../dom.js';
 import { icon, footprintStamp } from '../icons.js';
 import { glyph, GLYPH_NAMES, heroScene, masteryBadge, companionArt } from '../art.js';
 import { dino } from '../dinos.js';
-import { ARTWORK, PREMIUM, premiumHero, dailyIcon } from '../../content/artwork.js';
+import { ARTWORK, PREMIUM, premiumHero, dailyIcon, packIcon } from '../../content/artwork.js';
 import { STATUS, STATUS_LABEL } from '../../content/defaults.js';
 
 // ── Design-system primitives (styles/system.css) ─────────────────────
@@ -135,14 +135,26 @@ export function howChips(status, onPick, { open = true, onToggle = null } = {}) 
 }
 
 /**
- * Category tile. With `id`, a premium daily icon (PREMIUM.daily) or the
- * Little Explorer identity is drawn as an image on a soft mint tile; without
- * one, the duotone glyph (or line icon) on the toned tile as before.
+ * Category tile. With `id`, a premium icon — the visual-pack icon for the
+ * slot (PREMIUM.icons), a daily routine icon (PREMIUM.daily) or the Little
+ * Explorer identity — is drawn as an image on a soft mint tile; without one,
+ * the duotone glyph (or line icon) on the toned tile as before.
  */
 export function taskIcon(name, tone = '', size = '', id = null) {
-  const art = id === 'explorer' ? PREMIUM.littleExplorer : id ? dailyIcon(id) : null;
+  const art = id === 'explorer' ? PREMIUM.littleExplorer : id ? packIcon(id) || dailyIcon(id) : null;
   if (art) return h('div', { class: `tile task-icon art ${id === 'explorer' ? 'identity' : ''} ${size}` }, h('img', { src: art, alt: '', loading: 'lazy', decoding: 'async', width: 48, height: 48 }));
   return h('div', { class: `tile task-icon ${tone} ${size}` }, GLYPH_NAMES.includes(name) ? glyph(name, size === 'lg' ? 34 : 28) : icon(name, size === 'lg' ? 30 : 26));
+}
+
+/**
+ * Visual-pack icon as a bare image (card heads, collection tiles, badges):
+ * `key` is a PREMIUM.icons slot; `size` the box in px. Falls back to
+ * `fallback()` (a glyph node) so a missing file never leaves a hole.
+ */
+export function packArt(key, size = 44, fallback = null, cls = '') {
+  const art = packIcon(key);
+  if (art) return h('img', { src: art, alt: '', class: `pack-art ${cls}`, width: size, height: size, loading: 'lazy', decoding: 'async' });
+  return fallback ? fallback() : null;
 }
 
 /** Routine step tile: the premium icon for the step when one exists, else the numbered / footprint tile. */

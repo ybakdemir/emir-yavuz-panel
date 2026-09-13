@@ -155,6 +155,9 @@ body:not(.is-parent) .card { background: var(--card); border: 0; border-radius: 
 .tile.art.identity { background: none; box-shadow: 0 3px 8px rgba(23, 63, 53, .22); }
 .tile.art.identity img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; filter: none; }
 .badge-art { display: block; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(74, 45, 16, .3)); }
+/* visual-pack icon drawn bare (card heads, collection rows, badges) */
+.pack-art { display: block; object-fit: contain; flex: none; filter: drop-shadow(0 2px 3px rgba(23, 63, 53, .2)); }
+.count-pill .pack-art { width: 18px; height: 18px; filter: none; }
 .companion-art { display: block; height: auto; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(16, 48, 42, .32)); }
 
 /* ── Speech bubble ───────────────────────────────────────────────────── */

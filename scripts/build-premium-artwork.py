@@ -135,6 +135,22 @@ def main():
         save(square(Image.open(p).convert('RGBA'), 192), f'icons/daily/{p.stem}.webp', 86)
     # Little Explorer identity: the rounded app icon without its black canvas.
     save(fit_width(rounded_icon(Image.open(SRC / 'icons/little-explorer/icon-02.png')), 192), 'icons/little-explorer/icon-02.webp', 88)
+    # Visual pack (2026-09-13, assets/artwork/premium/visual-pack/): semantic UI
+    # icons drawn at 40–60 px (192 = 3× 64); the Little Explorer identity is
+    # painted on a black canvas like icon-02, so it keeps its rounded square.
+    for p in sorted((SRC / 'visual-pack/icons').glob('*.png')):
+        im = Image.open(p).convert('RGBA')
+        if p.stem == 'little_explorer_english':
+            save(fit_width(rounded_icon(im), 192), f'icons/pack/{p.stem}.webp', 88)
+        else:
+            save(square(im, 192), f'icons/pack/{p.stem}.webp', 86)
+    # Arşivim hero (2.25:1 library scene): 1400 px covers the 680 px column at 2×.
+    save(fit_width(Image.open(SRC / 'visual-pack/heroes/archive-library-hero.png').convert('RGB'), 1400), 'heroes/archive.webp', 82)
+    # Keşif "Bölge bölge ilerle" banner (valley without the child; the HTML head sits over it).
+    save(fit_width(Image.open(SRC / 'visual-pack/exploration/dinosaur_valley_header_no_child.png').convert('RGB'), 1200), 'scenes/valley-header.webp', 80)
+    # explorer_map_background_clean.png is the same painting as maps/000006.png
+    # (already the Keşif Haritası ground); explorer_map_with_markers.png carries
+    # baked labels and markers, so it is never used — real state stays HTML.
     # App icons (content/appIcons.js): a 192 px rounded PNG per icon for the
     # Ayarlar picker and the favicon; the default (calendar) also gets the
     # platform sizes — 180 Apple touch icon, 512 manifest "any" + maskable.

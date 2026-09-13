@@ -4,7 +4,7 @@ import { glyph, masteryBadge } from '../art.js';
 import { formatShort } from '../../core/dates.js';
 import { skillHistory } from '../../core/skills.js';
 import { isCompleted } from '../../core/completion.js';
-import { pageHero, sectionHead, countPill, badgeArt, companion } from './components.js';
+import { pageHero, sectionHead, countPill, companion, taskIcon, packArt } from './components.js';
 
 const GROUPS = [
   { key: 'learning', title: 'Öğreniyorum', sub: 'Yeni başladığım beceriler', kicker: '1. adım', icon: 'seed', tone: 'learn' },
@@ -20,14 +20,16 @@ export function renderSkills(main, ctx) {
   // Compact editorial header on the secondary artwork — same world, progress-focused.
   add(main, pageHero({
     variant: 'compact', hero: 'secondary', label: 'Becerilerim', kicker: 'Yeni beceriler', title: 'Becerilerim', sub: 'Öğreniyorum, çalışıyorum, artık yapabiliyorum.',
-    aside: counts.mastered ? h('span', { class: 'count-pill' }, masteryBadge(16), `${counts.mastered}`) : null,
+    aside: counts.mastered ? h('span', { class: 'count-pill' }, packArt('mastery', 18, () => masteryBadge(16)), `${counts.mastered}`) : null,
   }));
 
   // The three-state journey, visible at a glance.
   add(main, h('div', { class: 'skill-path', 'aria-label': 'Beceri yolculuğu' },
     GROUPS.map((g, i) => [
       i ? h('div', { class: 'sp-arrow', 'aria-hidden': 'true' }, icon('chevron', 16)) : null,
-      h('div', { class: `sp-step ${g.tone}` }, h('div', { class: 'sp-ic' }, g.key === 'mastered' ? masteryBadge(30) : glyph(g.icon, 22)), h('div', { class: 'sp-t' }, g.title), h('div', { class: 'sp-n' }, counts[g.key])),
+      h('div', { class: `sp-step ${g.tone}` },
+        h('div', { class: `sp-ic ${g.key !== 'practicing' ? 'art' : ''}` }, g.key === 'mastered' ? packArt('mastery', 36, () => masteryBadge(30)) : g.key === 'learning' ? packArt('skill', 36, () => glyph(g.icon, 22)) : glyph(g.icon, 22)),
+        h('div', { class: 'sp-t' }, g.title), h('div', { class: 'sp-n' }, counts[g.key])),
     ])));
 
   for (const g of GROUPS) {
@@ -47,7 +49,7 @@ export function renderSkills(main, ctx) {
       const ind = hist.filter((x) => x.status === 'independent').length;
       const mastered = g.key === 'mastered';
       return h('div', { class: `card skill-card ${g.tone} ${active ? 'active' : ''}` },
-        mastered ? h('div', { class: 'skill-badge' }, badgeArt(64)) : h('div', { class: `task-icon ${g.tone === 'learn' ? 'forest' : 'gold'}` }, glyph(g.icon, 28)),
+        mastered ? h('div', { class: 'skill-badge' }, packArt('mastery', 64, () => masteryBadge(56))) : taskIcon(g.icon, g.tone === 'learn' ? 'forest' : 'gold', '', g.key === 'learning' ? 'skill' : null),
         h('div', { class: 'grow' },
           h('div', { class: 't' }, s.title),
           mastered

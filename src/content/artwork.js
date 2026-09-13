@@ -62,24 +62,54 @@ export const PREMIUM = {
     today: { src: `${WEB}/heroes/000001.webp`, focus: '62% 40%' },      // Bugün: explorer child + companion over the valley
     week: { src: `${WEB}/heroes/000002.webp`, focus: '60% 40%' },       // Haftam
     explore: { src: `${WEB}/heroes/000003.webp`, focus: '62% 40%' },    // Keşif: the child holds the map
-    secondary: { src: `${WEB}/heroes/000005.webp`, focus: '56% 42%' },  // Becerilerim / Arşivim compact header, Keşif adventure banner
+    // Becerilerim compact header, Keşif adventure banner. The compact band is
+    // shorter than the 4:3 painting, so the crop is anchored near the top:
+    // the companion's hat and face stay in frame on phones and tablets.
+    secondary: { src: `${WEB}/heroes/000005.webp`, focus: '56% 6%' },
+    // Arşivim (visual pack): the library scene — a sauropod reading among
+    // shelves, the valley behind. The phone band shows two thirds of the
+    // width; anchored towards the shelves so the reader, the open book and
+    // the library stay whole while the headline sits on the cliff/sky.
+    archive: { src: `${WEB}/heroes/archive.webp`, focus: '88% 50%' },
+  },
+  // Keşif "Bölge bölge ilerle" banner (visual pack, valley without the child).
+  scenes: {
+    valleyHeader: { src: `${WEB}/scenes/valley-header.webp`, focus: '50% 18%' },   // keeps the companion's hat in the wide banner
   },
   map: `${WEB}/maps/000006.webp`,                    // Keşif Haritası ground (nodes, trail and labels are HTML)
   sign: `${WEB}/ui/000007.webp`,                     // wooden plank, 9-sliced under .sign
   badge: `${WEB}/badges/000008.webp`,                // achievement badge (streak card, mastered skills, milestones)
-  littleExplorer: `${WEB}/icons/little-explorer/icon-02.webp`,  // the Little Explorer / English identity
+  littleExplorer: `${WEB}/icons/pack/little_explorer_english.webp`,  // the Little Explorer / English identity
+  // Semantic UI icons (visual pack, 2026-09-13), keyed by the UI slot they
+  // depict. Drawn through icons()/taskIcon(); a missing key keeps the glyph.
+  icons: {
+    morning: `${WEB}/icons/pack/morning_routine.webp`,           // Sabah rutinim
+    evening: `${WEB}/icons/pack/evening_routine.webp`,           // Akşam rutinim
+    physical: `${WEB}/icons/pack/daily_physical_five.webp`,      // Daily Physical Five
+    presentation: `${WEB}/icons/pack/weekly_presentation.webp`,  // Haftanın sunumu (Bugün, Haftam, Sunumlarım)
+    weeklyReward: `${WEB}/icons/pack/weekly_reward.webp`,        // Haftanın Seçimi
+    skill: `${WEB}/icons/pack/learning_stage.webp`,              // Haftanın becerisi / öğrenme aşaması (Becerilerim)
+    mastery: `${WEB}/icons/pack/mastery_badge.webp`,             // Artık yapabiliyorum (Becerilerim)
+    discovery: `${WEB}/icons/pack/today_discovery.webp`,         // Bugünün Keşfi
+    notes: `${WEB}/icons/pack/explorer_notes.webp`,              // Kaşif / Keşif Notları
+    reading: `${WEB}/icons/pack/reading.webp`,                   // 20 sayfa aile okuması, Kitaplığım
+    prayer: `${WEB}/icons/pack/prayer.webp`,                     // Namaz
+    homework: `${WEB}/icons/pack/homework.webp`,                 // Okul ödevim
+    social: `${WEB}/icons/pack/meet_people_social_skill.webp`,   // sosyal beceri (reserved: no such task yet)
+    water: `${WEB}/icons/pack/water.webp`,                       // su (reserved: no such task yet)
+  },
   // Daily routine icons, keyed by the real task / routine-step id they depict
   // (semantic match; steps without a match keep the app's glyph tiles).
   daily: {
     bag: `${WEB}/icons/daily/01_canta_hazirladim.webp`,        // Çantamı kontrol ettim
     tomorrow: `${WEB}/icons/daily/01_canta_hazirladim.webp`,   // Yarına hazırlandım (bag packed for tomorrow)
-    reading: `${WEB}/icons/daily/02_okuma_yaptim.webp`,        // 20 sayfa aile okuması
+    reading: `${WEB}/icons/pack/reading.webp`,                 // 20 sayfa aile okuması (visual pack)
     story: `${WEB}/icons/daily/02_okuma_yaptim.webp`,          // Masal veya Kuran dinledim
     bed: `${WEB}/icons/daily/03_yatagimi_topladim.webp`,       // Yatağımı topladım
     breakfast: `${WEB}/icons/daily/04_yemegimi_yedim.webp`,    // Kahvaltımı yaptım
     dua: `${WEB}/icons/daily/05_dua_ettim.webp`,               // Duamı yaptım
-    prayer: `${WEB}/icons/daily/05_dua_ettim.webp`,            // Namaz
-    homework: `${WEB}/icons/daily/06_odevimi_yaptim.webp`,     // Okul ödevim
+    prayer: `${WEB}/icons/pack/prayer.webp`,                   // Namaz (visual pack)
+    homework: `${WEB}/icons/pack/homework.webp`,               // Okul ödevim (visual pack)
     face: `${WEB}/icons/daily/07_yuzumu_yikadim.webp`,         // Yüzümü yıkadım
     dress: `${WEB}/icons/daily/08_giyindim.webp`,              // Giyindim
     pajama: `${WEB}/icons/daily/08_giyindim.webp`,             // Pijamamı giydim
@@ -93,6 +123,12 @@ export const premiumHero = (key) => PREMIUM.heroes?.[key] || null;
 
 /** Premium raster for a daily task / routine-step id, or null (→ glyph tile). */
 export const dailyIcon = (id) => PREMIUM.daily?.[id] || null;
+
+/** Semantic UI icon from the visual pack (PREMIUM.icons key), or null (→ glyph). */
+export const packIcon = (key) => PREMIUM.icons?.[key] || null;
+
+/** Premium scene for a banner slot ({ src, focus }) or null. */
+export const premiumScene = (key) => PREMIUM.scenes?.[key] || null;
 
 const entry = (v) => (typeof v === 'string' ? { src: v, focus: null } : v && v.src ? { src: v.src, focus: v.focus || null } : null);
 

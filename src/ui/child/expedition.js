@@ -2,12 +2,12 @@ import { h, add, svg, openSheet } from '../dom.js';
 import { icon, footprintStamp } from '../icons.js';
 import { dino, hasDinoArt } from '../dinos.js';
 import { glyph, zoneScene } from '../art.js';
-import { PREMIUM, dinoFocus, noteArt, premiumHero } from '../../content/artwork.js';
+import { PREMIUM, dinoFocus, noteArt, premiumHero, premiumScene, packIcon } from '../../content/artwork.js';
 import { PERIODS, PERIOD_LABEL, species, missingStats, STAT_KEYS, STAT_LABEL, FIELD_NOTES } from '../../content/dinopedia.js';
 import { expeditionView, milestoneCounts } from '../../core/expedition.js';
 import { formatShort, diffDays } from '../../core/dates.js';
 import { DISCOVERY_REASON } from '../../core/celebration.js';
-import { pageHero, sectionHead as sysSectionHead, sign, companion } from './components.js';
+import { pageHero, sectionHead as sysSectionHead, sign, companion, packArt } from './components.js';
 
 // Dinosaur Discovery Visual Redesign v1 (2026-09-12). The page is now
 // "Dinozor Keşif Üssü": a cinematic hero on real artwork, a species atlas
@@ -31,6 +31,11 @@ let atlasFilter = 'all'; // session-only UI state; never stored
 // order and states come from expeditionView(). Extra regions (if a family
 // ever adds one) continue along the same line.
 const MAP_NODES = [[13, 74], [42, 26], [58, 62], [74, 40], [89, 70]];
+// Zone header crops of the same map painting (PREMIUM.map), one landmark per
+// region tone: the palm shore for the base camp, the waterfall forest for the
+// Jurassic valley, the volcano for the canyon, the lake for the coast, the
+// far mountains for the peaks. Scenery only — every state is HTML.
+const ZONE_FOCUS = { warm: '82% 70%', green: '32% 32%', amber: '76% 22%', blue: '14% 78%', ice: '30% 12%' };
 const nodeAt = (i, n) => MAP_NODES[Math.min(i, MAP_NODES.length - 1)] || [10 + (80 * i) / Math.max(1, n - 1), 55];
 
 const sectionHead = (kicker, title, aside, opts = {}) => sysSectionHead(kicker, title, { count: aside || null, ...opts });
@@ -125,40 +130,50 @@ export function renderExpedition(main, ctx) {
   const pool = cards.filter((it) => species(it.dino)?.didYouKnow);
   const pick = pool.length ? pool[Math.abs(diffDays('2026-01-01', today)) % pool.length] : null;
   const notesEl = h('section', { class: 'card notes', id: 'kesif-notlari', 'aria-label': 'Keşif Notları' },
-    h('div', { class: 'card-head' }, glyph('book', 30), h('div', { class: 'grow' }, h('h2', {}, 'Keşif Notları'), h('div', { class: 'sub' }, 'Dinozorların dünyası'))),
+    h('div', { class: 'card-head' }, packArt('notes', 38, () => glyph('book', 30)), h('div', { class: 'grow' }, h('h2', {}, 'Keşif Notları'), h('div', { class: 'sub' }, 'Dinozorların dünyası'))),
     h('div', { class: 'note-list' }, FIELD_NOTES.map((n) => noteCard(n))));
   add(main, h('div', { class: 'two-up' },
     h('section', { class: 'card fact-card', 'aria-label': 'Bugünün keşfi' },
-      h('div', { class: 'fc-head' }, glyph('sun', 26), h('h3', {}, 'Bugünün Keşfi')),
+      h('div', { class: 'fc-head' }, packArt('discovery', 34, () => glyph('sun', 26)), h('h3', {}, 'Bugünün Keşfi')),
       h('div', { class: 'fc-k' }, 'Biliyor muydun?'),
       h('div', { class: 'fc-t' }, pick ? species(pick.dino).didYouKnow : 'Her keşif bir gelişim anıyla açılır.'),
       pick ? h('button', { type: 'button', class: 'btn btn-forest btn-sm', onclick: () => openSpecies(pick, state, regionName) }, 'Daha Fazla Bilgi', icon('chevron', 16)) : null,
-      h('div', { class: 'fc-art', 'aria-hidden': 'true' }, glyph('fossil', 44))),
+      packIcon('discovery') ? null : h('div', { class: 'fc-art', 'aria-hidden': 'true' }, glyph('fossil', 44))),   // the pack icon in the head carries the identity
     h('section', { class: 'card note-cta', 'aria-label': 'Kaşif notları' },
-      h('div', { class: 'fc-head' }, glyph('scroll', 26), h('h3', {}, 'Kaşif Notları')),
+      h('div', { class: 'fc-head' }, packArt('notes', 34, () => glyph('scroll', 26)), h('h3', {}, 'Kaşif Notları')),
       h('div', { class: 'fc-t' }, `${FIELD_NOTES.length} not seni bekliyor. Dinozorların dünyasını keşfet!`),
       h('button', { type: 'button', class: 'btn btn-forest btn-sm', onclick: () => notesEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 'Notları Aç', icon('chevron', 16)),
-      h('div', { class: 'fc-art print', 'aria-hidden': 'true' }, footprintStamp(40)))));
+      packIcon('notes') ? null : h('div', { class: 'fc-art print', 'aria-hidden': 'true' }, footprintStamp(40)))));
   add(main, notesEl);
 
-  // ── 5. Adventure banner (reference copy) on the secondary artwork — opens the "world" note
+  // ── 5. Adventure banner (reference copy) — opens the "world" note, so it
+  // wears that note's forest cover; the valley banner with the companion
+  // opens the zone map right below (no repeated character in a row).
   const worldNote = FIELD_NOTES.find((n) => n.id === 'world');
-  const banner = premiumHero('secondary');
-  const bannerArt = banner?.src || noteArt('world');
+  const bannerArt = noteArt('world') || premiumHero('secondary')?.src;
   add(main, h('button', { type: 'button', class: 'photo-banner', onclick: () => worldNote && openNote(worldNote) },
-    bannerArt ? h('img', { src: bannerArt, alt: '', loading: 'lazy', decoding: 'async', style: banner ? { objectPosition: '50% 30%' } : null }) : null,
+    bannerArt ? h('img', { src: bannerArt, alt: '', loading: 'lazy', decoding: 'async' }) : null,
     h('span', { class: 'pb-shade', 'aria-hidden': 'true' }),
     h('span', { class: 'pb-t' }, 'Doğayı keşfet,', h('br'), 'daha iyi bir gelecek için koru!'),
     h('span', { class: 'pb-leaf', 'aria-hidden': 'true' }, glyph('leaf', 22)), icon('chevron', 20)));
 
   // ── 6. Bölge bölge harita: zones + discovery cards (progression, unchanged).
+  // The panel opens on the valley banner (visual pack, no child) with the
+  // head laid over it; each zone header is a landmark crop of the map painting.
+  const valley = premiumScene('valleyHeader');
   const panel = h('section', { class: 'paper map', 'aria-label': 'Bölge haritası' },
-    sectionHead('Keşif Haritası', 'Bölge bölge ilerle', h('span', { class: 'count-pill' }, `${view.discoveredCount} / ${view.total}`), { sub: 'Her bölge bir gelişim anıyla açılır.' }));
+    h('div', { class: 'map-banner' },
+      valley ? h('img', { src: valley.src, alt: '', loading: 'lazy', decoding: 'async', style: { objectPosition: valley.focus } }) : null,
+      h('span', { class: 'mb-shade', 'aria-hidden': 'true' }),
+      h('div', { class: 'mb-body' },
+        sectionHead('Keşif Haritası', 'Bölge bölge ilerle', h('span', { class: 'count-pill' }, `${view.discoveredCount} / ${view.total}`), { sub: 'Her bölge bir gelişim anıyla açılır.' }))));
   const trailEl = h('div', { class: 'map-trail trail-line' });
   view.regions.forEach((region, idx) => {
     const reached = region.state !== 'locked';
     const zone = h('section', { class: `zone ${region.state} tone-${region.tone}`, id: `zone-${region.id}`, 'aria-label': region.name },
-      h('div', { class: 'zone-scene-wrap' }, zoneScene(region.tone), h('div', { class: 'zone-mist' })),
+      h('div', { class: 'zone-scene-wrap' },
+        PREMIUM.map ? h('img', { src: PREMIUM.map, alt: '', class: 'zone-map', loading: 'lazy', decoding: 'async', style: { objectPosition: ZONE_FOCUS[region.tone] || '50% 50%', transformOrigin: ZONE_FOCUS[region.tone] || '50% 50%' } }) : zoneScene(region.tone),
+        h('div', { class: 'zone-mist' })),
       h('div', { class: 'zone-hd' },
         h('div', { class: 'grow' },
           h('div', { class: 'zone-state' }, sign(region.state === 'complete' ? 'Keşfedildi' : region.state === 'active' ? 'Şu an buradasın' : 'Keşfedilecek', { size: 'sm' })),

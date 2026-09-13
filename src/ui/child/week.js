@@ -72,7 +72,7 @@ export function renderWeek(main, ctx) {
   // ── Skill of the week
   const skill = activeSkill(state);
   const skillCard = h('div', { class: 'card week-card wc-skill' }, motif('seed'),
-    h('div', { class: 'hd' }, taskIcon('seed', 'gold'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Becerisi'), h('div', { class: 'small muted' }, skill ? SKILL_STATUS_LABEL[skill.status] : ''))));
+    h('div', { class: 'hd' }, taskIcon('seed', 'gold', 'lg', 'skill'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Becerisi'), h('div', { class: 'small muted' }, skill ? SKILL_STATUS_LABEL[skill.status] : 'Bu hafta'))));
   if (skill) {
     const ev = evaluateGraduation(state, skill.id, today);
     add(skillCard, h('div', { class: 'bd' },
@@ -91,31 +91,39 @@ export function renderWeek(main, ctx) {
   // ── Presentation of the week
   const pres = state.weeks?.[wk]?.presentation || {};
   const setPres = (patch) => ctx.update((s) => { s.weeks[wk] ||= {}; s.weeks[wk].presentation = { ...(s.weeks[wk].presentation || {}), ...patch }; });
-  const presCard = h('div', { class: 'card week-card wc-pres' }, motif('mic'),
-    h('div', { class: 'hd' }, taskIcon('mic', 'sky'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Sunumu'), h('div', { class: 'small muted' }, `${state.config.presentation.targetMinutes} dakika`))),
+  const presState = pres.presented ? 'Sundum' : pres.prepared ? 'Hazırlandım' : pres.topic ? 'Konu seçildi' : 'Konu bekliyor';
+  const presCard = h('div', { class: `card week-card wc-pres ${pres.presented ? 'done' : ''}` }, motif('mic'),
+    h('div', { class: 'hd' }, taskIcon('mic', 'sky', 'lg', 'presentation'), h('div', { class: 'grow' }, h('h3', {}, 'Haftanın Sunumu'), h('div', { class: 'small muted' }, `${state.config.presentation.targetMinutes} dakika · ${presState}`)),
+      pres.presented ? h('span', { class: 'wc-done-mark', 'aria-label': 'Sunum yapıldı' }, icon('check', 18)) : null),
     h('div', { class: 'bd' },
       pres.topic
-        ? h('div', {}, h('div', { class: 'wc-title' }, pres.topic),
-          h('div', { class: 'row wrap', style: { marginTop: '10px' } },
+        ? h('div', {}, h('div', { class: 'wc-kicker' }, 'Bu haftanın konusu'), h('div', { class: 'wc-title' }, pres.topic),
+          h('div', { class: 'row wrap wc-chips' },
             h('button', { class: `chip ${pres.prepared ? 'on' : ''}`, onclick: () => setPres({ prepared: !pres.prepared }) }, pres.prepared ? icon('check', 16) : null, 'Hazırlandım'),
             h('button', { class: `chip ${pres.presented ? 'on' : ''}`, onclick: () => { const was = pres.presented; setPres(was ? { presented: false, presentedOn: null } : { presented: true, prepared: true, presentedOn: today }); if (!was) ctx.celebrate('presentation_done', { dinoKind: 'parasaurolophus', kicker: 'Haftanın sunumu', title: pres.topic || 'Haftanın sunumu' }); } }, pres.presented ? icon('check', 16) : null, 'Sundum'),
             h('button', { class: 'chip muted', onclick: () => setPres({ topic: null }) }, 'Değiştir')))
-        : h('div', {}, h('div', { class: 'small muted', style: { marginBottom: '8px' } }, 'Bu hafta ne anlatmak istersin?'),
-          h('div', { class: 'row wrap' }, state.config.presentation.topics.map((t) => h('button', { class: 'chip', onclick: () => setPres({ topic: t }) }, t))))));
+        : h('div', {}, h('div', { class: 'wc-kicker' }, 'Bu hafta ne anlatmak istersin?'),
+          h('div', { class: 'row wrap wc-chips' }, state.config.presentation.topics.map((t) => h('button', { class: 'chip', onclick: () => setPres({ topic: t }) }, t))))));
   add(main, presCard);
 
   // ── Weekly Choice
-  const choiceCard = h('div', { class: `card week-card wc-choice ${w.unlocked ? 'unlocked' : ''}` }, motif('gift'),
-    h('div', { class: 'hd' }, taskIcon('gift', 'gold'), h('div', { class: 'grow' }, h('h3', {}, r.title), h('div', { class: 'small muted' }, w.unlocked ? 'Açıldı!' : `${w.goodDays}/${w.needed} iyi gün` + (w.requirePresentation ? (w.presentationDone ? ' · sunum tamam' : ' · sunum bekliyor') : '')))));
+  // ── Haftanın Seçimi: N good days (+ the presentation) unlock the child's pick.
+  // The rule line is derived from the config; progress stays the seven day dots + a presentation chip.
+  const rule = `${w.needed} iyi gün${w.requirePresentation ? ' + haftanın sunumu' : ''}`;
+  const choiceCard = h('div', { class: `card week-card wc-choice ${w.unlocked ? 'unlocked' : ''} ${w.chosen ? 'chosen' : ''}` }, motif('gift'),
+    h('div', { class: 'hd' }, taskIcon('gift', 'gold', 'lg', 'weeklyReward'), h('div', { class: 'grow' }, h('h3', {}, r.title), h('div', { class: 'small muted' }, w.unlocked ? (w.chosen ? 'Seçimin yapıldı' : 'Açıldı — seçim senin!') : rule))));
   if (w.chosen) {
     add(choiceCard, h('div', { class: 'bd' }, h('div', { class: 'pill pill-gold' }, icon('check', 14), 'Seçimin'), h('div', { class: 'wc-title', style: { marginTop: '6px' } }, w.chosen)));
   } else if (w.unlocked) {
-    add(choiceCard, h('div', { class: 'bd stack' }, h('div', { class: 'small muted' }, 'Bu hafta sen seçiyorsun:'),
+    add(choiceCard, h('div', { class: 'bd stack' }, h('div', { class: 'wc-kicker' }, 'Bu hafta sen seçiyorsun:'),
       r.options.map((o) => h('button', { class: 'choice-opt', onclick: () => ctx.update((s) => chooseWeekly(s, wk, o, today)) }, icon('chevron', 18), o))));
   } else {
     add(choiceCard, h('div', { class: 'bd' },
-      h('div', { class: 'dots' }, days.map((k) => h('span', { class: dayCompletion(state, k).ratio >= goodRatio && state.days[k] ? 'ok' : '' }))),
-      h('div', { class: 'small muted', style: { marginTop: '8px' } }, `${w.needed} iyi gün${w.requirePresentation ? ' ve sunum' : ''} → haftanın seçimi senin.`)));
+      h('div', { class: 'wc-progress' },
+        h('div', { class: 'dots', role: 'img', 'aria-label': `${w.goodDays} / ${w.needed} iyi gün` }, days.map((k) => h('span', { class: dayCompletion(state, k).ratio >= goodRatio && state.days[k] ? 'ok' : '', title: dayNameShort(k) }))),
+        h('span', { class: 'wc-count' }, h('b', {}, w.goodDays), `/${w.needed} iyi gün`),
+        w.requirePresentation ? h('span', { class: `wc-pres-chip ${w.presentationDone ? 'on' : ''}` }, w.presentationDone ? icon('check', 14) : glyph('mic', 14), 'Sunum') : null),
+      h('div', { class: 'wc-hint wc-cta' }, 'Tamamla, bu haftanın seçimini sen yap!')));
   }
   add(main, choiceCard);
 
@@ -123,7 +131,7 @@ export function renderWeek(main, ctx) {
   const project = activeProject(state);
   if (project) {
     add(main, h('div', { class: 'card week-card wc-project' }, motif('leaf'),
-      h('div', { class: 'hd' }, taskIcon('leaf', 'gold'), h('div', { class: 'grow' }, h('h3', {}, 'Ayın Hafıza Projesi'), h('div', { class: 'small muted' }, `${PROJECT_TYPE_LABEL[project.type] || ''} · ${monthName(project.targetMonth + '-01')}`))),
+      h('div', { class: 'hd' }, taskIcon('leaf', 'gold', 'lg'), h('div', { class: 'grow' }, h('h3', {}, 'Ayın Hafıza Projesi'), h('div', { class: 'small muted' }, `${PROJECT_TYPE_LABEL[project.type] || ''} · ${monthName(project.targetMonth + '-01')}`))),
       h('div', { class: 'bd' },
         h('div', { class: 'wc-title' }, project.title),
         h('div', { class: 'wc-hint' }, 'Acele yok. Bu ay boyunca küçük parçalar hâlinde ezberliyoruz.'),
@@ -146,7 +154,7 @@ export function renderWeek(main, ctx) {
 function reflectionCard(ctx, wk) {
   const r = reflectionFor(ctx.state, wk);
   const card = h('div', { class: 'card week-card wc-reflect' }, motif('leaf'),
-    h('div', { class: 'hd' }, taskIcon('leaf', 'forest'), h('div', { class: 'grow' }, h('h3', {}, 'Haftamı Düşünüyorum'), h('div', { class: 'small muted' }, 'İstersen. Kısa cümleler yeter.'))));
+    h('div', { class: 'hd' }, taskIcon('leaf', 'forest', 'lg'), h('div', { class: 'grow' }, h('h3', {}, 'Haftamı Düşünüyorum'), h('div', { class: 'small muted' }, 'İstersen. Kısa cümleler yeter.'))));
   if (r?.skipped && !hasAnswers(r)) {
     add(card, h('div', { class: 'bd row wrap' }, h('div', { class: 'small muted grow' }, 'Bu hafta atladın — sorun değil.'),
       h('button', { class: 'btn btn-ghost btn-sm', onclick: () => ctx.update((s) => unskipReflection(s, wk)) }, 'Yine de yazayım')));
