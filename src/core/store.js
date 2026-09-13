@@ -48,7 +48,9 @@ export function createStore({ storage, now = () => new Date() } = {}) {
         state = buildInitialState(todayKey(now()), writer);
         const v1 = storage ? readLocalV1(storage) : null;
         if (v1) importLegacy(state, v1, 'localStorage', todayKey(now()));
-        state.meta.updatedAt = Date.now();
+        // A fresh install keeps updatedAt = 0 so an existing remote /v2 always
+        // outranks it in attachRemote (a second device must adopt the family's
+        // data, never overwrite it). The first real update stamps the time.
         persistLocal();
       }
       return state;

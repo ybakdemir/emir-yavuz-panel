@@ -1,12 +1,13 @@
-import { h, add, openSheet } from '../dom.js';
-import { icon } from '../icons.js';
+import { h, add, svg, openSheet } from '../dom.js';
+import { icon, footprintStamp } from '../icons.js';
 import { dino, hasDinoArt } from '../dinos.js';
-import { glyph, zoneScene, worldScene, companionArt } from '../art.js';
-import { ARTWORK, dinoFocus, noteArt } from '../../content/artwork.js';
+import { glyph, zoneScene } from '../art.js';
+import { PREMIUM, dinoFocus, noteArt, premiumHero } from '../../content/artwork.js';
 import { PERIODS, PERIOD_LABEL, species, missingStats, STAT_KEYS, STAT_LABEL, FIELD_NOTES } from '../../content/dinopedia.js';
 import { expeditionView, milestoneCounts } from '../../core/expedition.js';
-import { formatShort } from '../../core/dates.js';
+import { formatShort, diffDays } from '../../core/dates.js';
 import { DISCOVERY_REASON } from '../../core/celebration.js';
+import { pageHero, sectionHead as sysSectionHead, sign, companion } from './components.js';
 
 // Dinosaur Discovery Visual Redesign v1 (2026-09-12). The page is now
 // "Dinozor Keşif Üssü": a cinematic hero on real artwork, a species atlas
@@ -23,25 +24,16 @@ const REASON_SHORT = { mastered: 'Yeni beceri', presentations: 'Sunum', memory: 
 
 let atlasFilter = 'all'; // session-only UI state; never stored
 
-/** Hero artwork: the registered raster when present, else the built-in cinematic SVG. */
-function heroArt() {
-  const reg = ARTWORK.worldHero;
-  if (reg?.src) {
-    const img = h('img', { src: reg.src, alt: '', class: 'world-art', loading: 'eager', decoding: 'async', fetchpriority: 'high' });
-    if (reg.focus) img.style.objectPosition = reg.focus;
-    return img;
-  }
-  return worldScene();
-}
+// Where the region nodes sit on the Keşif Haritası ground (percent of the
+// 3:2 stage, which shows the middle of the 2:1 map). A winding trail from the
+// lake at the bottom-left up past the waterfall to the cliffs on the right;
+// the volcano stays clear. Positions are purely visual — the region list,
+// order and states come from expeditionView(). Extra regions (if a family
+// ever adds one) continue along the same line.
+const MAP_NODES = [[13, 74], [42, 26], [58, 62], [74, 40], [89, 70]];
+const nodeAt = (i, n) => MAP_NODES[Math.min(i, MAP_NODES.length - 1)] || [10 + (80 * i) / Math.max(1, n - 1), 55];
 
-/** Companion slot (map footer only): registered raster or the built-in friendly sauropod. */
-function companion(size) {
-  if (ARTWORK.companion) return h('img', { src: ARTWORK.companion, alt: '', class: 'companion companion-art', width: size, height: size, loading: 'lazy', decoding: 'async' });
-  return companionArt(size);
-}
-
-const sectionHead = (kicker, title, aside) => h('div', { class: 'exp-sec-hd' },
-  h('div', { class: 'grow' }, h('div', { class: 'kicker' }, kicker), h('h2', {}, title)), aside || null);
+const sectionHead = (kicker, title, aside, opts = {}) => sysSectionHead(kicker, title, { count: aside || null, ...opts });
 
 export function renderExpedition(main, ctx) {
   const { state, today } = ctx;
@@ -50,41 +42,58 @@ export function renderExpedition(main, ctx) {
   const cfg = state.config.expedition.milestones || {};
   const memNeed = Math.max(1, cfg.memoryDays || 7), engNeed = Math.max(1, cfg.englishDays || 10);
   const fresh = new Set(ctx.takeDiscoveries());
-  const pctDone = view.total ? (view.discoveredCount / view.total) * 100 : 0;
   const currentZone = view.regions.find((r) => r.state === 'active') || [...view.regions].reverse().find((r) => r.state === 'complete') || view.regions[0];
   const regionName = Object.fromEntries(view.regions.map((r) => [r.id, r.name]));
   const discovered = state.expedition?.discovered || {};
   const cards = state.config.expedition.items.filter((it) => it.type === 'card');
   const speciesFound = cards.filter((it) => discovered[it.id]).length;
 
-  // ── 1. Base: cinematic hero on real artwork. Real progress only; no points, no task counts.
-  const hero = h('section', { class: 'exp-hero', 'aria-label': 'Dinozor Keşif Üssü' },
-    h('div', { class: 'exp-hero-art', 'aria-hidden': 'true' }, heroArt()),
-    h('div', { class: 'exp-hero-shade', 'aria-hidden': 'true' }),
-    h('div', { class: 'exp-hero-body' },
-      h('div', { class: 'kicker' }, 'Keşif yolculuğu'),
-      h('h1', {}, 'Dinozor Keşif Üssü'),
-      h('p', { class: 'exp-hero-sub' }, 'Her gelişim anı yeni bir keşfe dönüşür.'),
-      h('div', { class: 'exp-hero-meta' },
-        h('div', { class: 'exp-count' }, h('b', {}, view.discoveredCount), h('span', {}, ` / ${view.total} keşif`)),
-        h('div', { class: 'exp-zone' }, glyph('fossil', 16), `${speciesFound} / ${cards.length} tür`),
-        currentZone ? h('div', { class: 'exp-zone' }, glyph('map', 16), currentZone.name) : null),
-      h('div', { class: 'exp-progress', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(view.total), 'aria-valuenow': String(view.discoveredCount) },
-        h('i', { style: { width: `${pctDone}%` } }))));
+  // ── 1. Hero (reference 03-EXPLORE): "KEŞİF ATLASI" sign, the invitation, one line. Progress lives on the map below.
+  add(main, pageHero({
+    variant: 'full', hero: 'explore', cls: 'exp-hero', label: 'Keşif Atlası',
+    kicker: 'Keşif Atlası', title: 'Dünyanın en harika canlılarını keşfet!', sparkle: true, sub: 'Dinozorlar, doğa ve çok daha fazlası seni bekliyor!',
+    extra: [h('a', { href: '#/parent', class: 'parent-link', 'aria-label': 'Ebeveyn modu' }, icon('gear', 22))],
+  }));
 
-  const nextInfo = view.next
-    ? h('div', { class: 'exp-next' },
-      h('div', { class: 'exp-next-t' }, glyph('footprint', 18), 'Sıradaki keşif bir gelişim anıyla açılır: sunum, yeni beceri ya da kilometre taşı.'),
-      h('div', { class: 'exp-milestones' },
-        h('span', { class: 'exp-ms' }, glyph('book', 14), `Hafıza ${ms.memoryDays % memNeed}/${memNeed}`),
-        h('span', { class: 'exp-ms' }, glyph('compass', 14), `İngilizce ${ms.englishDays % engNeed}/${engNeed}`)))
-    : h('div', { class: 'exp-next' }, h('div', { class: 'exp-next-t' }, glyph('flag', 18), 'Haritanın tamamını keşfettin.'));
+  // ── 2. Keşif Haritası — torn parchment overlapping the hero, the premium
+  // map ground (000006) as the stage, real region nodes and a dashed trail
+  // laid over it in HTML/SVG. Same progression data as the detailed zone map
+  // further down; a node jumps to its zone.
+  const jump = (id) => { const el = document.getElementById(`zone-${id}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+  const n = view.regions.length;
+  const pts = view.regions.map((_, i) => nodeAt(i, n));
+  const route = pts.map(([x, y], i) => {
+    if (!i) return `M${x * 1.5} ${y}`;
+    const [px, py] = pts[i - 1];
+    return `Q${((px + x) / 2) * 1.5} ${py + (y - py) * 0.15 + (i % 2 ? 10 : -10)} ${x * 1.5} ${y}`;
+  }).join(' ');
+  const routeEl = svg(`<path d="${route}" fill="none" stroke="#5E3A16" stroke-width="4" stroke-linecap="round" stroke-dasharray="9 8" opacity=".78" vector-effect="non-scaling-stroke"/>`, { viewBox: '0 0 150 100', cls: 'mp-route' });
+  routeEl.setAttribute('preserveAspectRatio', 'none');
+  add(main, h('section', { class: 'paper torn map-paper', 'aria-label': 'Keşif haritası' },
+    h('div', { class: 'mp-head' },
+      h('div', { class: 'grow' }, h('h2', {}, 'Keşif Haritası'), h('div', { class: 'mp-sub' }, 'Ayak izlerini takip et, yeni dinozorları aç!')),
+      sign(view.next ? 'Daha fazla keşif seni bekliyor!' : 'Haritanın tamamı keşfedildi!', { size: '2', cls: 'mp-sign' })),
+    h('div', { class: 'mp-stage', role: 'list' },
+      PREMIUM.map ? h('img', { src: PREMIUM.map, alt: '', class: 'mp-ground', loading: 'eager', decoding: 'async' }) : null,
+      routeEl,
+      view.regions.map((region, idx) => {
+        const last = idx === n - 1;
+        const [x, y] = pts[idx];
+        return h('button', { type: 'button', class: `mp-node ${region.state} ${last ? 'last' : ''} ${x < 25 ? 'edge-l' : x > 75 ? 'edge-r' : ''}`, role: 'listitem', style: { left: `${x}%`, top: `${y}%` },
+          'aria-label': `${region.name} · ${region.found}/${region.total}${region.state === 'active' ? ' · buradasın' : region.state === 'locked' ? ' · kilitli' : ' · keşfedildi'}`, onclick: () => jump(region.id) },
+          region.state === 'active' ? sign(`Buradasın ${idx + 1}/${n}`, { size: 'sm', cls: 'mp-here' }) : null,
+          h('span', { class: 'mp-rock' },
+            region.state === 'locked' && last ? dino('trex', { size: 64, silhouette: true }) : region.state === 'complete' ? icon('check', 24) : footprintStamp(region.state === 'active' ? 28 : 22),
+            region.state === 'locked' ? h('span', { class: 'mp-lock' }, icon('lock', 12)) : null),
+          h('span', { class: 'mp-name' }, region.name));
+      })),
+    h('div', { class: 'mp-foot' },
+      h('span', { class: 'count-pill' }, glyph('footprint', 14), `${view.discoveredCount} / ${view.total} keşif`),
+      h('span', { class: 'count-pill soft' }, glyph('fossil', 14), `${speciesFound} / ${cards.length} tür`),
+      view.next ? h('span', { class: 'mp-ms' }, `Hafıza ${ms.memoryDays % memNeed}/${memNeed} · İngilizce ${ms.englishDays % engNeed}/${engNeed}`) : null)));
 
-  add(main, h('section', { class: 'exp-top' }, hero, nextInfo));
-
-  // ── 2. Tür Atlası: every species the map can reveal, filterable by period.
-  // Discovered species are vivid and first; the rest wait in mist but stay
-  // readable — the atlas is knowledge, the map is the reward.
+  // ── 3. Öne Çıkan Dinozorlar: every species the map can reveal, filterable by period.
+  // Discovered species are vivid and first; the rest wait in mist but stay readable.
   const shelf = h('div', { class: 'sp-shelf', role: 'list' });
   const pills = h('div', { class: 'period-pills', role: 'tablist', 'aria-label': 'Dönem filtresi' });
   const paintAtlas = () => {
@@ -107,33 +116,59 @@ export function renderExpedition(main, ctx) {
   add(pills, [{ id: 'all', label: 'Tümü' }, ...PERIODS].map((p) =>
     h('button', { class: 'pp', type: 'button', role: 'tab', dataset: { id: p.id }, onclick: () => { atlasFilter = p.id; paintAtlas(); } }, p.label)));
   paintAtlas();
-  add(main, h('section', { class: 'atlas', 'aria-label': 'Tür Atlası' },
-    sectionHead('Tür Atlası', 'Keşfedilecek türler', h('span', { class: 'sec-count' }, `${speciesFound} / ${cards.length}`)),
+  add(main, h('section', { class: 'card atlas', 'aria-label': 'Öne Çıkan Dinozorlar' },
+    h('div', { class: 'card-head' }, glyph('compass', 30), h('div', { class: 'grow' }, h('h2', {}, 'Öne Çıkan Dinozorlar')),
+      h('button', { type: 'button', class: 'link-arrow aside', onclick: () => { atlasFilter = 'all'; paintAtlas(); } }, 'Tümünü Gör', icon('chevron', 16))),
     pills, shelf));
 
-  // ── 3. Keşif Notları: the presentation's general slides, always readable.
-  add(main, h('section', { class: 'notes', 'aria-label': 'Keşif Notları' },
-    sectionHead('Keşif Notları', 'Dinozorların dünyası'),
-    h('div', { class: 'note-list' }, FIELD_NOTES.map((n) => noteCard(n)))));
+  // ── 4. Bugünün Keşfi + Kaşif Notları (two-up)
+  const pool = cards.filter((it) => species(it.dino)?.didYouKnow);
+  const pick = pool.length ? pool[Math.abs(diffDays('2026-01-01', today)) % pool.length] : null;
+  const notesEl = h('section', { class: 'card notes', id: 'kesif-notlari', 'aria-label': 'Keşif Notları' },
+    h('div', { class: 'card-head' }, glyph('book', 30), h('div', { class: 'grow' }, h('h2', {}, 'Keşif Notları'), h('div', { class: 'sub' }, 'Dinozorların dünyası'))),
+    h('div', { class: 'note-list' }, FIELD_NOTES.map((n) => noteCard(n))));
+  add(main, h('div', { class: 'two-up' },
+    h('section', { class: 'card fact-card', 'aria-label': 'Bugünün keşfi' },
+      h('div', { class: 'fc-head' }, glyph('sun', 26), h('h3', {}, 'Bugünün Keşfi')),
+      h('div', { class: 'fc-k' }, 'Biliyor muydun?'),
+      h('div', { class: 'fc-t' }, pick ? species(pick.dino).didYouKnow : 'Her keşif bir gelişim anıyla açılır.'),
+      pick ? h('button', { type: 'button', class: 'btn btn-forest btn-sm', onclick: () => openSpecies(pick, state, regionName) }, 'Daha Fazla Bilgi', icon('chevron', 16)) : null,
+      h('div', { class: 'fc-art', 'aria-hidden': 'true' }, glyph('fossil', 44))),
+    h('section', { class: 'card note-cta', 'aria-label': 'Kaşif notları' },
+      h('div', { class: 'fc-head' }, glyph('scroll', 26), h('h3', {}, 'Kaşif Notları')),
+      h('div', { class: 'fc-t' }, `${FIELD_NOTES.length} not seni bekliyor. Dinozorların dünyasını keşfet!`),
+      h('button', { type: 'button', class: 'btn btn-forest btn-sm', onclick: () => notesEl.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, 'Notları Aç', icon('chevron', 16)),
+      h('div', { class: 'fc-art print', 'aria-hidden': 'true' }, footprintStamp(40)))));
+  add(main, notesEl);
 
-  // ── 4. Keşif Haritası: zones + discovery cards (progression, unchanged).
-  const panel = h('section', { class: 'cinematic map', 'aria-label': 'Keşif haritası' },
-    sectionHead('Keşif Haritası', 'Bölge bölge ilerle', h('span', { class: 'sec-count' }, `${view.discoveredCount} / ${view.total}`)));
-  const trailEl = h('div', { class: 'map-trail' });
+  // ── 5. Adventure banner (reference copy) on the secondary artwork — opens the "world" note
+  const worldNote = FIELD_NOTES.find((n) => n.id === 'world');
+  const banner = premiumHero('secondary');
+  const bannerArt = banner?.src || noteArt('world');
+  add(main, h('button', { type: 'button', class: 'photo-banner', onclick: () => worldNote && openNote(worldNote) },
+    bannerArt ? h('img', { src: bannerArt, alt: '', loading: 'lazy', decoding: 'async', style: banner ? { objectPosition: '50% 30%' } : null }) : null,
+    h('span', { class: 'pb-shade', 'aria-hidden': 'true' }),
+    h('span', { class: 'pb-t' }, 'Doğayı keşfet,', h('br'), 'daha iyi bir gelecek için koru!'),
+    h('span', { class: 'pb-leaf', 'aria-hidden': 'true' }, glyph('leaf', 22)), icon('chevron', 20)));
+
+  // ── 6. Bölge bölge harita: zones + discovery cards (progression, unchanged).
+  const panel = h('section', { class: 'paper map', 'aria-label': 'Bölge haritası' },
+    sectionHead('Keşif Haritası', 'Bölge bölge ilerle', h('span', { class: 'count-pill' }, `${view.discoveredCount} / ${view.total}`), { sub: 'Her bölge bir gelişim anıyla açılır.' }));
+  const trailEl = h('div', { class: 'map-trail trail-line' });
   view.regions.forEach((region, idx) => {
     const reached = region.state !== 'locked';
-    const zone = h('section', { class: `zone ${region.state} tone-${region.tone}`, 'aria-label': region.name },
+    const zone = h('section', { class: `zone ${region.state} tone-${region.tone}`, id: `zone-${region.id}`, 'aria-label': region.name },
       h('div', { class: 'zone-scene-wrap' }, zoneScene(region.tone), h('div', { class: 'zone-mist' })),
       h('div', { class: 'zone-hd' },
         h('div', { class: 'grow' },
-          h('div', { class: 'zone-state' }, region.state === 'complete' ? 'Keşfedildi' : region.state === 'active' ? 'Şu an buradasın' : 'Keşfedilecek'),
+          h('div', { class: 'zone-state' }, sign(region.state === 'complete' ? 'Keşfedildi' : region.state === 'active' ? 'Şu an buradasın' : 'Keşfedilecek', { size: 'sm' })),
           h('div', { class: 'n' }, region.name),
           h('div', { class: 'tg' }, region.tagline)),
         h('div', { class: 'zone-count' }, `${region.found}/${region.total}`)),
       h('div', { class: 'finds' }, region.items.map((it) => discoveryCard(it, { state, view, fresh, tone: region.tone, regionName }))));
     if (!reached) zone.setAttribute('aria-disabled', 'true');
     add(trailEl, h('div', { class: `zone-wrap ${region.state}` },
-      h('div', { class: 'zone-node', 'aria-hidden': 'true' }, region.state === 'complete' ? icon('check', 18) : h('span', {}, idx + 1)), zone));
+      h('div', { class: `trail-post zone-node ${region.state !== 'locked' ? 'on' : ''}`, 'aria-hidden': 'true' }, region.state === 'complete' ? icon('check', 18) : h('span', {}, idx + 1)), zone));
   });
   add(panel, trailEl,
     h('div', { class: 'map-foot' },
@@ -154,14 +189,16 @@ export function renderExpedition(main, ctx) {
 function speciesCard(it, sp, on, opts) {
   const open = () => openSpecies(it, opts.state, opts.regionName);
   const art = dino(it.dino, { size: 320 });
-  return h('article', { class: `sp-card ${on ? 'on' : 'off'} ${hasDinoArt(it.dino) ? 'has-art' : 'no-art'} ${opts.fresh.has(it.id) ? 'fresh' : ''}`, role: 'listitem' },
+  const isNew = opts.fresh.has(it.id);
+  return h('article', { class: `sp-card ${on ? 'on' : 'off'} ${hasDinoArt(it.dino) ? 'has-art' : 'no-art'} ${isNew ? 'fresh' : ''}`, role: 'listitem' },
     h('button', { type: 'button', class: 'sp-btn', 'aria-label': `${sp?.name || it.title} — tür kartını aç`, onclick: open },
-      h('div', { class: 'sp-cover' }, art, h('div', { class: 'sp-shade', 'aria-hidden': 'true' })),
-      h('span', { class: 'sp-period' }, PERIOD_LABEL[sp?.period] || TYPE_SHORT.card),
-      h('span', { class: `sp-state ${on ? 'on' : ''}` }, on ? icon('check', 12) : null, on ? 'Keşfedildi' : 'Keşfedilmedi'),
+      h('div', { class: 'sp-cover' }, art, on ? null : h('div', { class: 'sp-mist', 'aria-hidden': 'true' }),
+        isNew ? h('span', { class: 'sp-new' }, 'YENİ') : on ? null : h('span', { class: 'sp-state' }, icon('lock', 11), PERIOD_LABEL[sp?.period] || TYPE_SHORT.card)),
       h('div', { class: 'sp-body' },
-        h('div', { class: 'sp-name' }, sp?.name || it.title),
-        h('div', { class: 'sp-tag' }, sp?.tagline || it.fact))));
+        h('div', { class: 'grow' },
+          h('div', { class: 'sp-name' }, sp?.name || it.title),
+          h('div', { class: 'sp-tag' }, sp?.tagline || it.fact)),
+        h('span', { class: 'chev-btn', 'aria-hidden': 'true' }, icon('chevron', 18)))));
 }
 
 /** Keşif Notu row: cover thumb, title, teaser. */

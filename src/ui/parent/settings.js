@@ -4,6 +4,7 @@ import { LOCAL_KEY } from '../../core/store.js';
 import { ensureShape } from '../../core/migrate.js';
 import { pcard, field, textInput, checkbox, selectInput } from './common.js';
 import { daysFor, setItemDays } from '../../core/schedule.js';
+import { APP_ICONS, appIcon } from '../../content/appIcons.js';
 
 const DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 
@@ -19,6 +20,18 @@ export function renderSettings(body, ctx) {
     field('Ebeveyn PIN (boş = kapalı)', textInput(st.parentPin, (v) => set((c) => { c.settings.parentPin = v.replace(/\D/g, '').slice(0, 6); }), { inputmode: 'numeric', placeholder: '4–6 rakam' })),
     h('div', { style: { height: '10px' } }),
     field('Haftam ekranı mesajı (boş = otomatik)', textInput(st.weeklyMessage, (v) => set((c) => { c.settings.weeklyMessage = v; })))));
+
+  // ── App icon: the choice is a synced setting; the favicon follows it at once,
+  // an installed app's launcher icon is set by the OS at install time (calendar).
+  const current = appIcon(st.appIcon).id;
+  add(grid, pcard('İkonu Değiştir', 'home',
+    h('div', { class: 'icon-pick', role: 'radiogroup', 'aria-label': 'Uygulama ikonu' },
+      APP_ICONS.map((ic) => h('button', { type: 'button', class: `icon-opt ${ic.id === current ? 'on' : ''}`, role: 'radio', 'aria-checked': ic.id === current ? 'true' : 'false',
+        onclick: () => { if (ic.id !== current) set((c) => { c.settings.appIcon = ic.id; }); } },
+        h('img', { src: ic.src, alt: '', width: 72, height: 72, decoding: 'async' }),
+        h('span', { class: 'icon-l' }, ic.label),
+        ic.hint ? h('span', { class: 'icon-h' }, ic.hint) : null))),
+    h('div', { class: 'small muted', style: { marginTop: '10px' } }, 'Seçim tüm cihazlarda saklanır. Ana ekrana eklenmiş uygulamanın ikonu sistem tarafından belirlenir ve varsayılan (Calendar) kalır.')));
 
   // ── Daily Physical Five pattern
   const ph = state.config.physical;

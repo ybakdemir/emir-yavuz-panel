@@ -1,5 +1,5 @@
 import { h, add, openSheet } from '../dom.js';
-import { icon } from '../icons.js';
+import { icon, footprintStamp } from '../icons.js';
 import { weekKey, weekDays, weekLabel, dayNameShort, fromKey, formatLong, formatShort } from '../../core/dates.js';
 import { dayCompletion, weeklyStatus, chooseWeekly } from '../../core/rewards.js';
 import { activeSkill, evaluateGraduation } from '../../core/skills.js';
@@ -11,9 +11,8 @@ import { STATUS_LABEL, SKILL_STATUS_LABEL, PROJECT_TYPE_LABEL, REFLECTION_PROMPT
 import { activeProject } from '../../core/projects.js';
 import { reflectionFor, saveReflection, skipReflection, unskipReflection, isReflectionWindow, hasAnswers } from '../../core/reflections.js';
 import { monthName } from '../../core/dates.js';
-import { taskIcon } from './components.js';
+import { taskIcon, pageHero, sectionHead, bubble, badgeArt, companion } from './components.js';
 import { motif, glyph } from '../art.js';
-import { dino } from '../dinos.js';
 
 export function renderWeek(main, ctx) {
   const { state, today } = ctx;
@@ -21,24 +20,55 @@ export function renderWeek(main, ctx) {
   const days = weekDays(wk);
   const goodRatio = state.config.rewards.goodDayRatio;
 
-  add(main, h('header', { class: 'week-head' }, h('div', {}, h('div', { class: 'kicker' }, 'Haftalık yolculuk'), h('h1', {}, 'Bu Hafta')), h('div', { class: 'week-range' }, weekLabel(wk))));
+  const goodDays = days.filter((k) => state.days[k] && dayCompletion(state, k).ratio >= goodRatio).length;
+  const name = state.config.settings.childName || 'Emir';
+  const w = weeklyStatus(state, wk);
+  const r = state.config.rewards.weekly;
 
-  // ── Mon–Sun strip
-  add(main, h('div', { class: 'week-strip' }, days.map((k) => {
-    const c = dayCompletion(state, k);
-    const future = k > today;
-    const cls = !state.days[k] || c.total === 0 ? 'none' : c.ratio === 1 ? 'full' : c.ratio >= goodRatio ? 'good' : 'some';
-    return h('div', { class: `wday ${k === today ? 'today' : ''} ${future ? 'future' : ''}`, role: future ? null : 'button', tabindex: future ? null : '0',
-      onclick: () => { if (!future) openDaySheet(ctx, k); } },
-      h('div', { class: 'dn' }, dayNameShort(k)), h('div', { class: 'dd' }, fromKey(k).getDate()),
-      h('div', { class: `dot ${cls}` }, cls === 'full' || cls === 'good' ? icon('check', 16) : cls === 'some' ? h('span', { style: { fontSize: '11px', fontWeight: 900 } }, `${c.done}`) : null));
-  })));
+  // ── hero (reference 02-WEEK): "HAFTAM" sign, "Harika gidiyorsun Emir!", one line about the week
+  add(main, pageHero({
+    variant: 'full', hero: 'week', label: 'Haftam', kicker: 'Haftam', title: `Harika gidiyorsun ${name}!`,
+    sub: 'Bu hafta da sağlıklı alışkanlıklarla daha güçlü bir sen!', cls: 'hero-week',
+  }));
 
-  // ── encouraging message
-  add(main, h('div', { class: 'msg' },
-    h('div', { class: 'msg-dino' }, dino('velociraptor', { size: 84, silhouette: true })),
-    h('div', { class: 'grow' }, h('div', { class: 'msg-kicker' }, 'Kaşif notu'), h('div', { class: 'msg-txt' }, weeklyMessage(ctx, wk)))));
+  // ── torn parchment: "Bu Haftaki Yolculuğum" + week range, seven day circles on a row
+  add(main, h('section', { class: 'paper torn week-paper', 'aria-label': 'Bu haftaki yolculuğum' },
+    h('div', { class: 'wp-head' }, h('h2', {}, 'Bu Haftaki Yolculuğum'), h('span', { class: 'wp-range' }, weekLabel(wk))),
+    h('div', { class: 'week-strip', 'aria-label': 'Haftanın günleri' }, days.map((k) => {
+      const c = dayCompletion(state, k);
+      const future = k > today, isToday = k === today;
+      const cls = !state.days[k] || c.total === 0 ? 'none' : c.ratio === 1 ? 'full' : c.ratio >= goodRatio ? 'good' : 'some';
+      return h('div', { class: `wday ${isToday ? 'today' : ''} ${future ? 'future' : ''} d-${cls}`, role: future ? null : 'button', tabindex: future ? null : '0',
+        'aria-label': `${dayNameShort(k)} ${fromKey(k).getDate()}`, onclick: () => { if (!future) openDaySheet(ctx, k); },
+        onkeydown: (e) => { if (!future && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDaySheet(ctx, k); } } },
+        h('div', { class: 'dot' },
+          isToday && cls !== 'full' && cls !== 'good' ? h('span', { class: 'rays', 'aria-hidden': 'true' }) : null,
+          cls === 'full' || cls === 'good' ? icon('check', 22) : cls === 'some' ? h('b', {}, `${c.done}`) : footprintStamp(18)),
+        h('div', { class: 'dn' }, dayNameShort(k)),
+        isToday ? h('span', { class: 'today-pill' }, 'Bugün') : null);
+    }))));
 
+  // ── "N iyi gün" card (reference 02-WEEK): the achievement badge, the count, the weekly note, a bubble and the companion
+  add(main, h('section', { class: 'card streak', 'aria-label': 'Bu haftaki iyi günler' },
+    h('div', { class: 'streak-badge', 'aria-hidden': 'true' }, badgeArt(84)),
+    h('div', { class: 'grow' },
+      h('div', { class: 'streak-n' }, `${goodDays} İyi Gün`),
+      h('div', { class: 'streak-t' }, goodDays ? 'Harika bir istikrar!' : 'Yeni bir hafta başlıyor!'),
+      h('div', { class: 'streak-s' }, weeklyMessage(ctx, wk))),
+    h('div', { class: 'streak-side' }, bubble('İstikrar, keşfin en güçlü arkadaşıdır!', { tone: 'sunny', side: 'left' }),
+      h('div', { class: 'streak-dino', 'aria-hidden': 'true' }, companion(96)))));
+
+  // ── "Bu Hafta" summary: planned tasks, good days (with bar), this week's achievement — derived, nothing new is stored
+  const planned = coreItemsForDay(state.config, today, state.days[today] || { homework: 'unknown', items: {} }).length;
+  const achievement = w.chosen ? `Seçimin: ${w.chosen}` : w.unlocked ? `${r.title} açıldı — seçim senin!` : `${w.needed} iyi gün${w.requirePresentation ? ' ve sunum' : ''} → ${r.title.toLowerCase()} senin.`;
+  add(main, h('section', { class: 'card week-sum', 'aria-label': 'Bu hafta' },
+    h('div', { class: 'card-head' }, h('h2', {}, 'Bu Hafta'), h('a', { class: 'link-arrow aside', href: `#/print/${wk}` }, 'Detayları gör', icon('chevron', 16))),
+    h('div', { class: 'stats' },
+      h('div', { class: 'stat' }, h('div', { class: 'st-hd' }, h('span', { class: 'st-ic clay' }, glyph('compass', 22)), h('span', { class: 'st-l' }, 'Planladığım Görevler')), h('div', { class: 'st-v' }, planned), h('div', { class: 'st-t' }, 'görev')),
+      h('div', { class: 'stat' }, h('div', { class: 'st-hd' }, h('span', { class: 'st-ic' }, icon('check', 22)), h('span', { class: 'st-l' }, 'Tamamladığım Günler')), h('div', { class: 'st-v' }, goodDays, h('small', {}, `/ ${days.length}`)), h('div', { class: 'bar', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(days.length), 'aria-valuenow': String(goodDays) }, h('i', { style: { width: `${(goodDays / days.length) * 100}%` } }))),
+      h('div', { class: 'stat' }, h('div', { class: 'st-hd' }, h('span', { class: 'st-ic gold' }, glyph('gift', 22)), h('span', { class: 'st-l' }, 'Bu Haftaki Başarım')), h('div', { class: 'st-t' }, achievement)))));
+
+  add(main, sectionHead('Haftanın hedefleri', 'Bu haftanın yolu', { cls: 'sec-on-jungle' }));
   // ── Skill of the week
   const skill = activeSkill(state);
   const skillCard = h('div', { class: 'card week-card wc-skill' }, motif('seed'),
@@ -75,8 +105,6 @@ export function renderWeek(main, ctx) {
   add(main, presCard);
 
   // ── Weekly Choice
-  const w = weeklyStatus(state, wk);
-  const r = state.config.rewards.weekly;
   const choiceCard = h('div', { class: `card week-card wc-choice ${w.unlocked ? 'unlocked' : ''}` }, motif('gift'),
     h('div', { class: 'hd' }, taskIcon('gift', 'gold'), h('div', { class: 'grow' }, h('h3', {}, r.title), h('div', { class: 'small muted' }, w.unlocked ? 'Açıldı!' : `${w.goodDays}/${w.needed} iyi gün` + (w.requirePresentation ? (w.presentationDone ? ' · sunum tamam' : ' · sunum bekliyor') : '')))));
   if (w.chosen) {
@@ -105,8 +133,14 @@ export function renderWeek(main, ctx) {
   // ── Haftamı Düşünüyorum — optional, weekend only, three short prompts, skippable.
   if (isReflectionWindow(today)) add(main, reflectionCard(ctx, wk));
 
+  // ── parchment quote scroll (reference copy) — a leaf and footprints; the companion already stands on the streak card
+  add(main, h('div', { class: 'quote-scroll', 'aria-label': 'Haftanın sözü' },
+    h('div', { class: 'qs-leaf', 'aria-hidden': 'true' }, glyph('leaf', 34)),
+    h('div', { class: 'qs-paper' }, '“Her yeni hafta, yeni bir keşif fırsatıdır!”'),
+    h('div', { class: 'qs-prints', 'aria-hidden': 'true' }, footprintStamp(22), footprintStamp(22))));
+
   add(main, h('div', { class: 'row', style: { marginTop: '18px', justifyContent: 'center' } },
-    h('a', { class: 'btn btn-ghost', href: `#/print/${wk}` }, icon('printer', 20), 'Haftamı yazdır')));
+    h('a', { class: 'btn btn-ghost on-jungle', href: `#/print/${wk}` }, icon('printer', 20), 'Haftamı yazdır')));
 }
 
 function reflectionCard(ctx, wk) {

@@ -13,8 +13,8 @@ import { dueItems } from '../../core/memorization.js';
 import { dailyReviewSet, expandDailySet, recordDailyReview } from '../../core/dailyReview.js';
 import { eventForItem } from '../../core/celebration.js';
 import { REVIEW_RESULT, REVIEW_RESULT_LABEL, HEALTH_LABEL } from '../../content/defaults.js';
-import { ring, trail, howChips, taskIcon, checkCircle, stamp, ICON_TONE } from './components.js';
-import { heroScene, exerciseGlyph, glyph } from '../art.js';
+import { howChips, taskIcon, stepTile, checkCircle, stamp, ICON_TONE, pageHero, bubble, companion } from './components.js';
+import { exerciseGlyph, glyph } from '../art.js';
 import { discoveryCopy } from './celebrate.js';
 
 /** Items whose subtitle is the habit itself and stays after completion. */
@@ -49,22 +49,24 @@ export function renderToday(main, ctx) {
   const allDone = core.length > 0 && doneCount === core.length;
   const comeback = isComeback(state, today);
 
-  // ── hero: greeting, date, encouragement, progress — inside one scenic card
+  // ── hero (reference 01-TODAY): date sign, "Merhaba Emir ✧", the day's question, one encouraging line.
   const remaining = core.length - doneCount;
-  const headline = allDone ? 'Bugünün keşfi tamamlandı!' : doneCount === 0 ? 'Bugünkü keşfe hazır mısın?' : remaining === 1 ? 'Son bir adım kaldı' : 'Harika gidiyorsun, kaşif';
-  const subline = allDone ? 'Her görevi kendi yolunla bitirdin.' : doneCount === 0 ? `${core.length} görev seni bekliyor.` : `${remaining} görev kaldı — yolun açık.`;
-  add(main,
-    h('section', { class: `hero ${allDone ? 'complete' : ''}`, 'aria-label': 'Bugün' },
-      heroScene(),
-      h('a', { href: '#/parent', class: 'parent-link', 'aria-label': 'Ebeveyn modu' }, icon('gear', 20)),
-      h('div', { class: 'hero-body' },
-        h('div', { class: 'hero-date' }, formatLong(today)),
-        h('h1', { class: 'hello' }, `Merhaba ${name}`),
-        h('div', { class: 'hero-copy' },
-          h('div', { class: 'hero-title' }, headline),
-          h('div', { class: 'hero-sub' }, subline)),
-        h('div', { class: 'hero-progress' }, ring(doneCount, core.length, 74, 'hero'), trail(doneCount, core.length))),
-      h('div', { class: 'hero-dino' }, dino(allDone ? 'trex' : doneCount > 0 ? 'triceratops' : 'brachiosaurus', { silhouette: true }))));
+  const headline = allDone ? 'Bugünün keşfi tamamlandı!' : doneCount === 0 ? 'Bugünkü keşfe hazır mısın?' : remaining === 1 ? 'Son bir adım kaldı!' : 'Harika gidiyorsun, kaşif!';
+  const subline = allDone ? 'Her görevi kendi yolunla bitirdin.' : doneCount === 0 ? 'Harika şeyler seni bekliyor!' : `${remaining} görev kaldı — yolun açık.`;
+  add(main, pageHero({
+    variant: 'full', hero: 'today', cls: `hero-today ${allDone ? 'complete' : ''}`, label: 'Bugün',
+    kicker: formatLong(today), title: `Merhaba ${name}`, sparkle: true, sub: headline, sub2: subline,
+    extra: [h('a', { href: '#/parent', class: 'parent-link', 'aria-label': 'Ebeveyn modu' }, icon('gear', 22))],
+  }));
+
+  // ── torn parchment overlapping the hero: "Bugünün görevleri · 0/7 · seven footprints · bubble"
+  const mood = allDone ? 'Bugün harikaydın!' : doneCount === 0 ? 'Harika bir gün seni bekliyor!' : remaining === 1 ? 'Son adım — hadi!' : 'Böyle devam, kaşif!';
+  add(main, h('section', { class: 'paper torn progress-paper', 'aria-label': 'Bugünün görevleri' },
+    h('div', { class: 'pp-title' }, 'Bugünün görevleri'),
+    h('div', { class: 'pp-row' },
+      h('div', { class: 'pp-count', role: 'img', 'aria-label': `${doneCount} / ${core.length} görev tamamlandı` }, h('b', {}, doneCount), h('span', {}, `/${core.length}`)),
+      h('div', { class: 'pp-prints', 'aria-hidden': 'true' }, core.map((it, i) => h('span', { class: `pp-print ${i < doneCount ? 'on' : ''}` }, footprintStamp(15))))),
+    h('div', { class: 'pp-bubble' }, bubble(mood), glyph('leaf', 18))));
 
   if (comeback && doneCount > 0) {
     add(main, h('div', { class: 'note' }, icon('hand', 22), 'Geri dönmek güzel. Bugün yeniden başlıyoruz.'));
@@ -118,16 +120,23 @@ export function renderToday(main, ctx) {
   if (review.total && !placed) add(list, renderDailyReviewCard(review, ctx));
   add(main, list);
 
+  // ── moss strip under the list (reference: "Küçük adımlar, büyük keşifler!")
+  add(main, h('div', { class: 'moss tasks-foot' },
+    h('span', { class: 'stone', 'aria-hidden': 'true' }, footprintStamp(22)),
+    h('div', { class: 'grow' }, allDone ? 'Bugünün işi bitti. Yarın yeni bir keşif!' : 'Küçük adımlar, büyük keşifler!'),
+    h('span', { class: 'leaf', 'aria-hidden': 'true' }, glyph('leaf', 22))));
   if (allDone) {
+    // The companion joins the "day done" moment — the one character slot on this screen.
     add(main, h('div', { class: 'day-done' },
-      h('div', { class: 'trail on' }, footprintStamp(22), footprintStamp(22), footprintStamp(22)),
-      h('div', { class: 'grow' }, h('div', { class: 't' }, 'Kamp ateşi yandı.'), h('div', { class: 's' }, 'Bugünün işi bitti. Yarın yeni bir keşif.'))));
+      h('div', { class: 'dd-companion', 'aria-hidden': 'true' }, companion(84)),
+      h('div', { class: 'grow' }, h('div', { class: 't' }, 'Kamp ateşi yandı.'), h('div', { class: 's' }, 'Bugünün işi bitti. Yarın yeni bir keşif.'),
+        h('div', { class: 'trail on' }, footprintStamp(20), footprintStamp(20), footprintStamp(20)))));
   }
 
   // Weekend: let the child add homework if there is some.
   if (dayType(today, day) === 'weekend' && day.homework !== 'exists') {
     add(main, h('div', { class: 'row', style: { marginTop: '14px', justifyContent: 'center' } },
-      h('button', { class: 'btn btn-ghost btn-sm', onclick: () => ctx.update((s) => { ensureDay(s, today).homework = 'exists'; }) }, icon('plus', 18), 'Bugün ödevim var')));
+      h('button', { class: 'btn btn-ghost btn-sm on-jungle', onclick: () => ctx.update((s) => { ensureDay(s, today).homework = 'exists'; }) }, icon('plus', 18), 'Bugün ödevim var')));
   }
 }
 
@@ -165,8 +174,8 @@ function renderCard(item, day, ctx) {
 }
 
 function mainRow(item, { title, sub, done, onTap, expandable = false, open = false, onCheck }) {
-  return h('div', { class: 'task-main', role: 'button', tabindex: '0', onclick: onTap, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(); } } },
-    taskIcon(item.icon, ICON_TONE[item.id] || ''),
+  return h('div', { class: `task-main ${expandable && open ? 'is-open' : ''}`, role: 'button', tabindex: '0', onclick: onTap, onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(); } } },
+    taskIcon(item.icon, ICON_TONE[item.id] || '', expandable && open ? 'lg' : '', item.id),
     h('div', { class: 'grow' }, h('div', { class: 'task-title' }, title), sub ? h('div', { class: 'task-sub' }, sub) : null),
     expandable ? h('span', { class: `task-chev ${open ? 'open' : ''}`, 'aria-hidden': 'true' }, icon('chevronDown', 22)) : null,
     checkCircle(done, onCheck));
@@ -213,7 +222,7 @@ function renderRoutineCard(card, item, day, ctx, a) {
             if (p.all && !isCompleted(getStatus(d, item.id))) { setStatus(d, item.id, DEFAULT_COMPLETION); justDone.add(item.id); howOpen.clear(); howOpen.add(item.id); }
             if (!nowOn && isCompleted(getStatus(d, item.id))) setStatus(d, item.id, null);
           });
-        } }, h('div', { class: 'step-check' }, icon('check', 20)), h('div', { class: 'step-txt' }, st.label));
+        } }, stepTile(st.id, steps.indexOf(st), on), h('div', { class: 'step-txt grow' }, st.label), h('div', { class: 'step-check' }, icon('check', 20)));
       }))));
   }
   if (a.done) add(card, a.how());

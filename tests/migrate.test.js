@@ -127,3 +127,27 @@ test('attachRemote: a denied /data read does not break v2 sync (auth != null rul
   await new Promise((r) => setTimeout(r, 700));
   assert.equal(writes, 1);                     // local state still pushed to /v2
 });
+
+test('attachRemote: a fresh install (second device) adopts the existing remote v2 instead of overwriting it', async () => {
+  // phone: has real data on the shared node
+  const node = { v2: null, subs: [] };
+  const adapter = () => ({ readV2: async () => node.v2, readV1: async () => null, write: async (s) => { node.v2 = JSON.parse(JSON.stringify(s)); node.subs.forEach((cb) => cb(node.v2)); }, onChange: (cb) => node.subs.push(cb) });
+  const phone = createStore({ storage: new MemoryStorage() }); phone.init();
+  await phone.attachRemote(adapter());
+  phone.update((s) => { s.config.settings.appIcon = 'growth'; s.days['2026-09-12'] = { items: { reading: { status: 'independent' } }, steps: {} }; });
+  await new Promise((r) => setTimeout(r, 700));
+  assert.equal(node.v2.config.settings.appIcon, 'growth');
+  // tablet: brand-new install, boots later than the phone's last write
+  const tablet = createStore({ storage: new MemoryStorage() }); tablet.init();
+  assert.equal(tablet.state.meta.updatedAt, 0);
+  await tablet.attachRemote(adapter());
+  await new Promise((r) => setTimeout(r, 700));
+  assert.equal(tablet.state.config.settings.appIcon, 'growth');
+  assert.equal(tablet.state.days['2026-09-12'].items.reading.status, 'independent');
+  assert.equal(node.v2.config.settings.appIcon, 'growth'); // remote untouched by the empty device
+  // and a change on the tablet reaches the phone live
+  tablet.update((s) => { s.config.settings.appIcon = 'dinosaur'; });
+  await new Promise((r) => setTimeout(r, 700));
+  assert.equal(phone.state.config.settings.appIcon, 'dinosaur');
+  assert.equal(phone.state.days['2026-09-12'].items.reading.status, 'independent');
+});

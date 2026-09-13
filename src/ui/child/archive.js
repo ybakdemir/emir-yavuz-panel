@@ -6,6 +6,7 @@ import { booksReading, booksCompleted, bookStats, activeBook, readingDaysForBook
 import { memoByStatus, dueItems } from '../../core/memorization.js';
 import { recordDailyReview, memoryHealth, inPool, dailyReviewSet } from '../../core/dailyReview.js';
 import { activeProject, projectHistory } from '../../core/projects.js';
+import { pageHero, sectionHead } from './components.js';
 import { MEMO_TYPE, MEMO_TYPE_LABEL, REVIEW_RESULT, REVIEW_RESULT_LABEL, PROJECT_STATUS, PROJECT_TYPE_LABEL, HEALTH_LABEL } from '../../content/defaults.js';
 
 // ARŞİVİM — "my growing collection of things I have learned and completed".
@@ -23,12 +24,13 @@ export function renderArchive(main, ctx, parts = []) {
   return renderLanding(main, ctx);
 }
 
+// Compact editorial header on the secondary artwork, cropped to the valley
+// side so the archive reads as a notebook, not a fantasy map.
 function head(kicker, title, sub, back = null) {
-  return h('header', { class: 'arch-head' },
-    back ? h('a', { class: 'arch-back', href: back.href }, icon('back', 18), back.label) : null,
-    h('div', { class: 'kicker' }, kicker),
-    h('h1', {}, title),
-    sub ? h('div', { class: 'arch-sub' }, sub) : null);
+  return pageHero({
+    variant: 'compact', hero: 'secondary', cls: 'hero-archive', label: title, kicker, title, sub,
+    extra: back ? [h('a', { class: 'arch-back', href: back.href }, icon('back', 18), back.label)] : [],
+  });
 }
 
 const plural = (n, one, many = one) => `${n} ${n === 1 ? one : many}`;
@@ -51,6 +53,7 @@ function renderLanding(main, ctx) {
       glyph('scroll', 26), h('div', { class: 'grow' }, h('div', { class: 't' }, 'Bugün tekrar zamanı'), h('div', { class: 's' }, due.map((d) => d.title).join(' · '))), icon('chevron', 20)));
   }
 
+  add(main, sectionHead('Koleksiyonlarım', 'Burada birikenler', { tight: true }));
   add(main, h('div', { class: 'arch-grid' },
     collection('#/archive/books', 'library', 'fossil', 'Kitaplığım',
       bs.completedBooks || bs.reading
@@ -94,7 +97,7 @@ function renderBooks(main, ctx) {
 
   add(main, head('Kitaplığım', 'Kitaplığım', 'Okuduğum her kitap rafta kalır.', { href: '#/archive', label: 'Arşivim' }));
 
-  add(main, h('div', { class: 'section-title st-fossil' }, glyph('book', 18), 'Şu An Okuyorum'));
+  add(main, sectionHead('Kitaplığım', 'Şu an okuyorum', { tight: true }));
   if (!reading.length) add(main, h('div', { class: 'card empty' }, 'Şu an okunan bir kitap yok. Anne ya da baba yeni bir kitap ekleyebilir.'));
   else add(main, h('div', { class: 'stack' }, reading.map((b) => {
     const days = readingDaysForBook(state, b.id).length;
@@ -106,7 +109,7 @@ function renderBooks(main, ctx) {
         active?.id === b.id ? h('span', { class: 'pill pill-amber', style: { marginTop: '6px' } }, icon('book', 14), 'Aile okuması') : null));
   })));
 
-  add(main, h('div', { class: 'section-title st-mastered' }, glyph('footprint', 18), 'Tamamladığım Kitaplar', h('span', { class: 'st-sub' }, done.length ? plural(done.length, 'kitap') : '')));
+  add(main, sectionHead('Raf', 'Tamamladığım kitaplar', { count: done.length ? h('span', { class: 'count-pill' }, plural(done.length, 'kitap')) : null }));
   if (!done.length) add(main, h('div', { class: 'card empty' }, 'İlk tamamlanan kitap burada yerini alacak.'));
   else add(main, h('div', { class: 'shelf' }, done.map((b) => h('div', { class: 'shelf-item' },
     bookCover(b, { size: 'lg' }),
@@ -143,18 +146,18 @@ function renderMemory(main, ctx) {
 
   const group = (title, g, tone, items, opts = {}) => {
     if (!items.length && !opts.always) return;
-    add(main, h('div', { class: `section-title st-${tone}` }, glyph(g, 18), title, items.length ? h('span', { class: 'st-sub' }, plural(items.length, 'ezber')) : null));
+    add(main, sectionHead(opts.kicker || 'Ezber', title, { count: items.length ? h('span', { class: 'count-pill' }, plural(items.length, 'ezber')) : null, tight: !!opts.always }));
     if (!items.length) { add(main, h('div', { class: 'card empty' }, opts.empty || 'Şimdilik boş.')); return; }
     add(main, h('div', { class: 'stack' }, items.map((it) => memoCard(ctx, it, dueIds.has(it.id)))));
   };
 
   const suras = [...memo.mastered.filter((i) => i.type === MEMO_TYPE.SURA), ...memo.learning.filter((i) => i.type === MEMO_TYPE.SURA)];
   const rest = [...memo.mastered.filter((i) => i.type !== MEMO_TYPE.SURA), ...memo.learning.filter((i) => i.type !== MEMO_TYPE.SURA)];
-  group('Sürelerim', 'quran', 'forest', suras, { always: true, empty: 'İlk sure burada yerini alacak.' });
-  group('Diğer Ezberlerim', 'scroll', 'practice', rest);
+  group('Sürelerim', 'quran', 'forest', suras, { always: true, empty: 'İlk sure burada yerini alacak.', kicker: 'Kur\'an' });
+  group('Diğer Ezberlerim', 'scroll', 'practice', rest, { kicker: 'Şiir · Şarkı · Diğer' });
 
   if (projects.length) {
-    add(main, h('div', { class: 'section-title st-mastered' }, glyph('leaf', 18), 'Hafıza Projelerim'));
+    add(main, sectionHead('Aylık', 'Hafıza projelerim'));
     add(main, h('div', { class: 'stack' }, projects.map((p) => h('div', { class: `card memo-card ${p.status === PROJECT_STATUS.ACTIVE ? 'active' : ''}` },
       h('div', { class: 'task-icon gold' }, glyph('leaf', 26)),
       h('div', { class: 'grow' },

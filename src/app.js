@@ -8,6 +8,7 @@ import { renderChildShell } from './ui/child/shell.js';
 import { renderParentShell } from './ui/parent/shell.js';
 import { renderPrint } from './ui/print.js';
 import { celebrate } from './ui/child/celebrate.js';
+import { applyAppIcon } from './content/appIcons.js';
 
 const store = createStore({ storage: globalThis.localStorage });
 store.init();
@@ -54,6 +55,7 @@ function route() {
   document.body.dataset.day = todayKey();
   document.querySelectorAll('.sheet-overlay').forEach((el) => el.remove());
   document.body.classList.toggle('is-parent', parts[0] === 'parent');
+  applyAppIcon(store.state.config.settings.appIcon);
   if (parts[0] === 'parent') return renderParentShell(root, ctx, parts.slice(1));
   if (parts[0] === 'print') return renderPrint(root, ctx, parts[1]);
   return renderChildShell(root, ctx, parts[0] || 'today', parts.slice(1));

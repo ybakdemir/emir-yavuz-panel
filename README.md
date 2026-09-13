@@ -25,8 +25,9 @@ src/content/defaults.js seed content: routines, daily items, physical pattern, s
                         graduation thresholds, rewards, presentation topics, expedition map
 src/content/dinopedia.js dinosaur atlas: species cards (six facts + "Biliyor muydun?"), periods,
                         Keşif Notları — reference content, opens nothing
-src/content/artwork.js  raster artwork registry (hero, species, note covers) → assets/
-assets/                 WebP artwork: scenes/ (hero, note covers), dinos/ (species cards)
+src/content/artwork.js  raster artwork registry (ARTWORK: species, note covers · PREMIUM: heroes, map, sign, badge, icons)
+assets/                 WebP artwork: scenes/, dinos/ (species cards), artwork/premium/ (PNG originals) → artwork/web/ (built)
+scripts/build-premium-artwork.py   rebuilds assets/artwork/web from the premium PNGs (Pillow + numpy)
 src/core/               pure logic (tested)
   dates.js              local-time date keys (v1's UTC bug is gone)
   schedule.js           which items apply to a day (weekday/weekend/homework)
@@ -49,7 +50,7 @@ src/ui/parent/          Dashboard · Routines · Skills · Presentations · Rewa
 src/ui/print.js         "Haftamı yazdır" paper mode
 src/ui/art.js           original SVG art: duotone task glyphs, exercise pictograms, hero
                         landscape, expedition zone scenes, mastery badge, desktop backdrop
-styles/                 tokens, base components, child, parent, print
+styles/                 tokens, base components, system (child design system), child, parent, print
 legacy/index.html       v1 (star economy) kept verbatim as an archive
 docs/                   AUDIT.md (phase 0), V2_REPORT.md (delivery report),
                         FIREBASE_RULES.md (required RTDB rules), PREVIEW_READINESS.md

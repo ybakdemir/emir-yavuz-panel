@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { ARTWORK, dinoArt, dinoFocus, noteArt } from '../src/content/artwork.js';
+import { ARTWORK, PREMIUM, dinoArt, dinoFocus, noteArt, premiumHero, dailyIcon } from '../src/content/artwork.js';
 import { DEFAULT_EXPEDITION } from '../src/content/defaults.js';
 import { FIELD_NOTES } from '../src/content/dinopedia.js';
 
@@ -12,7 +12,8 @@ import { FIELD_NOTES } from '../src/content/dinopedia.js';
 const SLOTS = ['worldHero', 'dinos', 'scenes', 'notes', 'companion'];
 const isLocal = (p) => typeof p === 'string' && p.length > 0 && !/^(https?:)?\/\//i.test(p) && !p.startsWith('/') && !p.startsWith('data:');
 const src = (v) => (typeof v === 'string' ? v : v?.src);
-const all = () => [ARTWORK.worldHero?.src, ARTWORK.companion, ...Object.values(ARTWORK.dinos).map(src), ...Object.values(ARTWORK.scenes).map(src), ...Object.values(ARTWORK.notes)].filter(Boolean);
+const premium = () => [...Object.values(PREMIUM.heroes).map(src), PREMIUM.map, PREMIUM.sign, PREMIUM.badge, PREMIUM.littleExplorer, ...Object.values(PREMIUM.daily)].filter(Boolean);
+const all = () => [ARTWORK.worldHero?.src, ARTWORK.companion, ...Object.values(ARTWORK.dinos).map(src), ...Object.values(ARTWORK.scenes).map(src), ...Object.values(ARTWORK.notes), ...premium()].filter(Boolean);
 
 test('artwork registry has exactly the documented slots', () => {
   assert.deepEqual(Object.keys(ARTWORK).sort(), [...SLOTS].sort());
@@ -46,4 +47,12 @@ test('dinoArt / dinoFocus / noteArt fall back to null so the SVG is drawn', () =
   assert.equal(dinoArt('not-a-dino'), null);
   assert.equal(noteArt('what'), ARTWORK.notes.what);
   assert.equal(noteArt('nope'), null);
+});
+
+test('premium package: web derivatives exist for every slot and helpers fall back to null', () => {
+  for (const k of ['today', 'week', 'explore', 'secondary']) assert.ok(premiumHero(k)?.src, k);
+  assert.equal(premiumHero('nope'), null);
+  assert.ok(dailyIcon('face')); assert.ok(dailyIcon('homework')); assert.ok(dailyIcon('teeth'));
+  assert.equal(dailyIcon('physical'), null); // no matching premium icon → glyph tile
+  for (const p of premium()) assert.ok(p.endsWith('.webp') && p.startsWith('assets/artwork/web/'), p);
 });

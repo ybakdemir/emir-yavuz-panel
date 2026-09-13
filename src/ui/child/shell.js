@@ -9,10 +9,10 @@ import { renderArchive } from './archive.js';
 
 const PAGES = {
   today: { label: 'Bugün', icon: 'today', render: renderToday },
-  week: { label: 'Haftam', icon: 'calendar', render: renderWeek },
-  expedition: { label: 'Keşif', icon: 'map', render: renderExpedition },
-  skills: { label: 'Becerilerim', icon: 'seed', render: renderSkills },
-  archive: { label: 'Arşivim', icon: 'archive', render: renderArchive },
+  week: { label: 'Haftam', icon: 'chartBars', render: renderWeek },
+  expedition: { label: 'Keşif', icon: 'compass', render: renderExpedition },
+  skills: { label: 'Becerilerim', icon: 'trophy', render: renderSkills },
+  archive: { label: 'Arşivim', icon: 'books', render: renderArchive },
 };
 
 /** `parts` = hash segments after the page (Arşivim has sub-pages: books, memory, presentations). */
@@ -29,5 +29,5 @@ export function renderChildShell(root, ctx, page, parts = []) {
     h('nav', { class: 'nav', 'aria-label': 'Ana menü' },
       h('div', { class: 'nav-inner' },
         Object.entries(PAGES).map(([k, v]) => h('a', { href: '#/' + k, class: k === page ? 'on' : '', 'aria-current': k === page ? 'page' : null },
-          h('span', { class: 'nav-ic' }, icon(v.icon, 24)), h('span', {}, v.label))))));
+          h('span', { class: 'nav-ic' }, icon(v.icon, 26)), h('span', { class: 'nav-l' }, v.label), h('span', { class: 'nav-dot', 'aria-hidden': 'true' }))))));
 }

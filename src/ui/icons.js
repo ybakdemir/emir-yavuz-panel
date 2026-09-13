@@ -47,6 +47,13 @@ const P = {
   library: '<path d="M4 4h4v16H4zM10 4h4v16h-4z"/><path d="M15.5 5.2l3.8-1 4 15.5-3.8 1z"/>',
   leaf: '<path d="M4 20c0-9 5-14 16-16-1 11-6 16-14 16z"/><path d="M4 20c4-6 8-9 12-12"/>',
   clockSmall: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  trophy: '<path d="M8 4h8v6a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 14v3M9 21h6M10 17h4v4h-4z"/>',
+  books: '<path d="M4 6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M5 10a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M4 14a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M6 18a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2z"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.4 1 2.5h6c0-1.1.3-1.9 1-2.5A6 6 0 0 0 12 3z"/>',
+  notebook: '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M12 8h4M12 12h4"/>',
+  binoculars: '<circle cx="7" cy="15" r="4"/><circle cx="17" cy="15" r="4"/><path d="M9 6h6v6H9zM9 8H6l-2 6M15 8h3l2 6"/>',
+  chartBars: '<path d="M6 20v-6M12 20V4M18 20v-9"/>',
 };
 
 export function icon(name, size = 24, cls = '') {

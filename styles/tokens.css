@@ -21,9 +21,9 @@
   --line-2: rgba(23, 63, 53, .18);
 
   /* brand family */
-  --forest: #173F35;        /* Deep Forest */
-  --forest-2: #10302A;
-  --forest-3: #215446;
+  --forest: #1E4B38;        /* Deep Forest — headline green (reference) */
+  --forest-2: #143427;
+  --forest-3: #2F6A4C;      /* sub-headline green */
   --green: #2F7659;         /* Explorer Green — primary action / done */
   --green-2: #245E46;
   --green-soft: #D6E8DB;
@@ -42,6 +42,37 @@
   --night: #2E3F6B;         /* evening / moon accent (small doses) */
   --night-soft: #DDE2F2;
 
+  /* expedition world (visual alignment 2026-09-13, design-references/01..03):
+     tan wood signs with dark lettering, torn parchment, cream cards over
+     dark jungle foliage, yellow highlights. */
+  --wood: #B8874C;          /* signpost plank (tan) */
+  --wood-2: #8A5F2E;        /* plank shadow edge */
+  --wood-3: #D2A66B;        /* plank highlight */
+  --wood-ink: #4A2D10;      /* lettering on wood — dark brown */
+  --wood-line: rgba(107, 67, 32, .22);
+  --parchment: #F4ECDA;     /* torn map paper */
+  --parchment-2: #EADFC6;   /* parchment fold, locked tiles */
+  --parchment-3: #D9CBA8;   /* parchment edge */
+  --card: #FBF7EE;          /* cream card over foliage */
+  --row: #FFFFFF;           /* white row inside a cream card */
+  --mist: rgba(246, 240, 228, .55);
+  --sun: #F7E8CC;           /* hero sky, top */
+  --sun-2: #EBD3A0;         /* hero haze */
+  --canopy: #2B6A56;        /* hero ridge */
+  --map-line: rgba(23, 63, 53, .16);
+  --jungle: #1D4A2E;        /* page ground: foliage mid */
+  --jungle-2: #123421;      /* foliage shadow */
+  --jungle-3: #2F6F3F;      /* foliage light leaf */
+  --jungle-4: #4C9350;      /* leaf highlight */
+  --mint: #E3F0E2;          /* soft mint behind supportive icons */
+  --moss: #B7CDA0;          /* soft green strip ("Küçük adımlar…") */
+  --moss-2: #94B37E;
+  --sunny: #F4C54A;         /* yellow highlight (today, YENİ, dot) */
+  --sunny-2: #E0A92A;
+  --sunny-soft: #FBE9A6;
+  --leaf-check: #4E9247;    /* green day circle */
+  --leaf-check-2: #3A7A38;
+
   /* cinematic (expedition, collection detail) */
   --navy: #0E1B2B;
   --navy-2: #14283A;
@@ -58,9 +89,13 @@
 
   /* shape & depth */
   --r-xl: 28px; --r-lg: 22px; --r-md: 16px; --r-sm: 12px; --r-pill: 999px;
-  --shadow-1: 0 1px 2px rgba(23, 63, 53, .05), 0 6px 18px rgba(23, 63, 53, .07);
-  --shadow-2: 0 2px 6px rgba(23, 63, 53, .08), 0 14px 36px rgba(23, 63, 53, .16);
+  --shadow-1: 0 1px 2px rgba(10, 30, 20, .06), 0 6px 18px rgba(10, 30, 20, .16);
+  --shadow-2: 0 2px 6px rgba(10, 30, 20, .10), 0 14px 36px rgba(10, 30, 20, .28);
+  --shadow-row: 0 1px 2px rgba(23, 63, 53, .05), 0 3px 10px rgba(23, 63, 53, .08);
   --shadow-hero: 0 18px 44px rgba(16, 48, 42, .30);
+  --shadow-wood: 0 2px 0 var(--wood-2), 0 4px 10px rgba(74, 45, 16, .35);
+  /* type scale (child) */
+  --fs-h1: 36px; --fs-h2: 22px; --fs-h3: 19px; --fs-kicker: 12.5px; --fs-body: 17px; --fs-sub: 14.5px;
   --tap: 56px;
   --nav-h: 76px;
   --gutter: 16px;

@@ -10,7 +10,7 @@ the SVG/CSS version until then, so nothing here blocks behaviour.
 ```js
 // src/content/artwork.js
 export const ARTWORK = {
-  worldHero: { src: 'assets/scenes/world-hero.webp', focus: '50% 45%' },       // Expedition hero (eager)
+  worldHero: { src: 'assets/scenes/valley.webp', focus: '62% 42%' },           // page hero on every child screen (eager)
   dinos:     { trex: { src: 'assets/dinos/trex.webp', focus: '55% 45%' }, /* … */ }, // atlas, map cards, reveal, detail (lazy)
   scenes:    { green: 'assets/scenes/jurassic.webp', /* … */ },                // zone backdrops (reserved)
   notes:     { what: 'assets/dinos/triceratops.webp', /* … */ },               // Keşif Notları covers (note id → path)
@@ -31,13 +31,13 @@ logo, no visible signature** and enough resolution were used.
 
 | file | source | use |
 |---|---|---|
-| `assets/scenes/world-hero.webp` 1600×900, 225 KB | pptx slide 11 image (sauropod herd in a mossy forest) | Expedition hero (eager) |
+| `assets/scenes/world-hero.webp` 1600×900, 225 KB | pptx slide 11 image (sauropod herd in a mossy forest) | cover of note "Dinozorlar yaşarken dünya" · Keşif photo banner |
 | `assets/dinos/trex.webp` 1200×800, 175 KB | `Trex.jpg` (3D render, ferns) | T-Rex atlas card / map card / reveal / detail |
 | `assets/dinos/triceratops.webp` 1200×800, 176 KB | pptx slide 13 image (model in green foliage), light denoise | Triceratops · also cover of note "Dinozor nedir?" |
 | `assets/dinos/brachiosaurus.webp` 1200×800, 76 KB | pptx slide 19 image (misty swamp) | Brachiosaurus |
 | `assets/dinos/diplodocus.webp` 1200×800, 131 KB | `diplodocus.jpg` (3D render, shoreline) | Diplodocus · also cover of note "Üç büyük dönem" |
 | `assets/dinos/spinosaurus.webp` 1200×800, 81 KB | `Spinosaurus.jpg` (3D render, storm) | Spinosaurus · also cover of note "Nasıl yok oldular?" |
-| `assets/scenes/valley.webp` 1200×800, 198 KB | `Apatosaurus.png` (lush valley, light rays) | cover of note "Dinozorlar yaşarken dünya" |
+| `assets/scenes/valley.webp` 1200×800, 198 KB | `Apatosaurus.png` (lush valley, light rays) | page hero on Bugün / Haftam / Keşif / Becerilerim / Arşivim (eager) — closest owned scene to design-references/01..03 |
 | `assets/scenes/dusk.webp` 1200×800, 139 KB | `titanosaurus.jpg` (sauropod at dusk) | cover of note "Nasıl ortaya çıktılar?" |
 
 Total 1.2 MB; only the hero is eager. Species without a clean source keep the SVG silhouette: **mamenchisaurus**
@@ -56,6 +56,37 @@ pteranodon, parasaurolophus** (no image supplied).
   `titanosaurus 3.jpg`, pptx `image5`, `image11`, `image14` (DinosaurPictures.org watermark), `Mamenchisaurus 2.jpg` /
   pptx `image16` (© Sergey Krasovskiy), `TRICERATOPS.jpg` (BBC Earth logo), pptx `image3` (Jurassic Park logo).
 
+## Premium artwork package (final visual integration, 2026-09-13)
+Source of truth: `assets/artwork/premium/**.png` (untouched, never renamed). The app references the web derivatives that
+`python3 scripts/build-premium-artwork.py` writes to `assets/artwork/web/**.webp` (Pillow + numpy; nothing upscaled,
+aspect ratios kept). Registered in `src/content/artwork.js` as `PREMIUM` (+ `ARTWORK.companion`); every slot is optional and
+falls back to the SVG/CSS treatment. Dynamic text is never baked into an image: signs, headlines, counts and nodes are HTML.
+
+| original | web derivative | where |
+|---|---|---|
+| `heroes/000001.png` 1448×1086 | `heroes/000001.webp` 1200×900, 247 KB | Bugün hero (`PREMIUM.heroes.today`, focus 62% 40%) |
+| `heroes/000002.png` | `heroes/000002.webp` 222 KB | Haftam hero |
+| `heroes/000003.png` | `heroes/000003.webp` 211 KB | Keşif hero (the child holds the map) |
+| `heroes/000005.png` | `heroes/000005.webp` 186 KB | Becerilerim / Arşivim compact header (Arşivim zooms to the valley side), Keşif "Doğayı keşfet" banner |
+| `maps/000006.png` 1774×887 | `maps/000006.webp` 1500×750 RGBA, 265 KB | Keşif Haritası ground; white outside the torn sheet made transparent; nodes/trail/labels are HTML+SVG (`MAP_NODES` in `ui/child/expedition.js`) |
+| `ui/000007.png` (plank) | `ui/000007.webp` 720×238 RGBA, 41 KB | `.sign` 9-slice `border-image` — date, HAFTAM, KEŞİF ATLASI, map wayfinding, zone state labels |
+| `badges/000008.png` | `badges/000008.webp` 360 px RGBA, 43 KB | Haftam streak card (76 px), mastered skill cards (64 px) |
+| `characters/000004.png` (cream backdrop) | `characters/000004.webp` 480 px RGBA cut-out, 51 KB | `ARTWORK.companion`: Haftam streak card, Today "Kamp ateşi yandı", Keşif map footer, empty "Artık Yapabiliyorum" shelf |
+| `icons/daily/*.png` 1254² | `icons/daily/*.webp` 192² RGBA, 7–12 KB | routine steps + task tiles (`PREMIUM.daily`, keyed by task/step id) |
+| `icons/little-explorer/icon-02.png` (on black) | `icon-02.webp` 192² RGBA rounded | the Little Explorer task tile |
+
+Daily icon mapping (semantic): bag → Çantamı kontrol ettim / Yarına hazırlandım; okuma → 20 sayfa aile okuması / Masal veya
+Kuran dinledim; yatak → Yatağımı topladım; yemek → Kahvaltımı yaptım; dua → Duamı yaptım / Namaz; ödev → Okul ödevim; yüz →
+Yüzümü yıkadım; giyindim → Giyindim / Pijamamı giydim; diş → Dişlerimi fırçaladım. `10_su_ictim` (water) has no task in the
+product and is intentionally unmapped. Tasks without a match (Sabah/Akşam rutinim, Daily Physical Five, Haftanın becerisi /
+sunumu, 3 ayet, Ezber tekrarı) keep the app's duotone glyph tiles.
+
+## App icons — `src/content/appIcons.js`
+`assets/artwork/premium/app-icons/{calendar,dinosaur,growth}.png` → `assets/artwork/web/app-icons/*-192.png` (rounded, transparent;
+Ayarlar › İkonu Değiştir picker + favicon). `calendar` is the default and the only real platform icon: `calendar-180.png`
+(Apple touch icon), `calendar-512.png` + `calendar-maskable-512.png` (`manifest.webmanifest`). The choice is
+`config.settings.appIcon` (synced); an installed app's launcher icon is fixed by the OS at install time, so it stays calendar.
+
 ## World hero — `assets/scenes/world-hero.webp`
 The approved *Premium Friendly Expedition* concept (waterfall valley, sauropods, pterosaurs, golden light).
 Spec: **1600 × 900 px** (16:9), WebP, ≤ 300 KB. It is cropped to ~390 × 332 on phones with
@@ -63,9 +94,8 @@ Spec: **1600 × 900 px** (16:9), WebP, ≤ 300 KB. It is cropped to ~390 × 332 
 (the title, count and progress bar sit there over a green shade). Until the file exists the built-in
 SVG scene (`src/ui/art.js worldScene`) is drawn — same composition, so the layout will not move.
 
-## Companion — `assets/companion.webp`
-**512 × 512 px**, transparent background, ≤ 80 KB. A small friendly young dinosaur; shown at 96–120 px
-in the hero and 56 px in the map footer. Fallback: `companionArt()` SVG.
+## Companion — `ARTWORK.companion`
+Registered: `assets/artwork/web/characters/000004.webp` (see the premium table). Fallback: `companionArt()` SVG.
 
 ## Dinosaur cards — `assets/dinos/<kind>.webp`
 | kind | where it appears |

@@ -1,0 +1,224 @@
+/* ── Design system (child mode) ──────────────────────────────────────
+   Visual alignment pass 2026-09-13 against the canonical references in
+   design-references/01-TODAY.png, 02-WEEK.png, 03-EXPLORE.png.
+
+   The language: a full-bleed illustrated hero (premium artwork package,
+   assets/artwork/web) with deep-forest headline type laid over it; a torn
+   parchment card overlapping the hero's bottom edge; cream cards with white
+   rows floating over a dark jungle ground; the wooden plank (000007) under
+   every major label; yellow highlights; a floating pill navigation.
+
+   Surface levels: A illustrated world (hero, map, banner) · B parchment
+   (journey, map, discovery, quote) · C cream functional card / white row ·
+   D green-moss emphasis (done, encouragement, primary action).
+   Screens compose these primitives and add only what is truly
+   screen-specific in child.css. Tokens live in tokens.css.
+
+   Primitives
+     .phero        full-bleed scenic page header (full / compact variants)
+     .sign         tan wooden signpost label (hero kicker, map wayfinding)
+     .paper.torn   parchment card with a torn edge, overlaps the hero
+     .card         cream card; .row-card white row inside it
+     .sec-hd       card section head: [glyph] title (+ sub) + right aside
+     .tile         cream icon tile, glyph coloured by tone
+     .bubble       speech bubble
+     .moss         soft green strip (encouragement line)
+     .stat         stat tile (week summary)
+     .chev-btn     round cream chevron button
+*/
+
+/* Page ground: dark jungle foliage — the cards float over it (never on parent pages). */
+body:not(.is-parent) {
+  background-color: var(--jungle);
+  background-image:
+    linear-gradient(180deg, rgba(18, 52, 33, .12) 0, rgba(18, 52, 33, .12) 60%, rgba(18, 52, 33, .45) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='560' viewBox='0 0 520 560'%3E%3Cg transform='translate(20 60) rotate(-30) scale(1.3)' fill='%232F6F3F' fill-opacity='0.50'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(150 20) rotate(15) scale(1.0)' fill='%233B8247' fill-opacity='0.45'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(300 70) rotate(-55) scale(1.2)' fill='%23245A33' fill-opacity='0.50'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(400 10) rotate(40) scale(0.9)' fill='%234C9350' fill-opacity='0.35'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(60 220) rotate(25) scale(1.1)' fill='%23245A33' fill-opacity='0.50'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(210 180) rotate(-20) scale(1.4)' fill='%232F6F3F' fill-opacity='0.45'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(370 230) rotate(70) scale(1.0)' fill='%233B8247' fill-opacity='0.40'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(470 300) rotate(-40) scale(1.2)' fill='%23245A33' fill-opacity='0.45'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(10 380) rotate(-70) scale(1.0)' fill='%233B8247' fill-opacity='0.40'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(160 350) rotate(35) scale(1.2)' fill='%23245A33' fill-opacity='0.50'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(300 410) rotate(-15) scale(1.3)' fill='%232F6F3F' fill-opacity='0.45'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(430 440) rotate(55) scale(0.9)' fill='%234C9350' fill-opacity='0.30'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(120 480) rotate(-45) scale(1.1)' fill='%23245A33' fill-opacity='0.45'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(260 520) rotate(20) scale(1.0)' fill='%233B8247' fill-opacity='0.40'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(20 520) rotate(60) scale(0.9)' fill='%232F6F3F' fill-opacity='0.40'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3Cg transform='translate(460 140) rotate(-10) scale(0.8)' fill='%234C9350' fill-opacity='0.25'%3E%3Cpath d='M0 0C18-34 62-40 96-8 62 34 18 30 0 0Z'/%3E%3Cpath d='M4 0h84' stroke='%23000' stroke-opacity='.18' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: auto, 520px 560px;
+}
+body:not(.is-parent) h1, body:not(.is-parent) h2, body:not(.is-parent) h3 { color: var(--forest); }
+
+/* ── Wooden signpost (premium plank 000007, 9-sliced; text stays HTML) ── */
+.sign {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 5px 14px;
+  font-size: var(--fs-kicker); font-weight: 900; letter-spacing: .08em; text-transform: uppercase; line-height: 1;
+  color: var(--wood-ink); text-shadow: 0 1px 0 rgba(255, 240, 210, .45);
+  border: 0 solid transparent; border-width: 10px 24px; padding: 0 2px;
+  border-image: url("../assets/artwork/web/ui/000007.webp") 36 96 36 96 fill / 10px 24px / 0 stretch;
+  filter: drop-shadow(0 2px 0 rgba(74, 45, 16, .45)) drop-shadow(0 4px 8px rgba(0, 0, 0, .28));
+  transform: rotate(-1.5deg); transform-origin: left center;
+  position: relative; max-width: 100%; white-space: nowrap; box-sizing: border-box;
+}
+.sign.sign-soft { transform: none; }
+.sign .ic, .sign .glyph { color: var(--wood-ink); --g2: rgba(74, 45, 16, .35); flex: none; }
+.sign.sign-sm { min-height: 28px; border-width: 8px 18px; font-size: 10.5px; }
+.sign.sign-2 { white-space: normal; text-align: center; line-height: 1.15; border-width: 12px 22px; padding: 2px 4px; }
+
+/* ── Card hierarchy ──────────────────────────────────────────────────── */
+body:not(.is-parent) .card { background: var(--card); border: 0; border-radius: 26px; box-shadow: var(--shadow-2); }
+.row-card { background: var(--row); border-radius: 18px; box-shadow: var(--shadow-row); }
+.card-pad { padding: 18px; }
+.card-head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 8px; }
+.card-head .glyph, .card-head .ic { flex: none; }
+.card-head h2, .card-head h3 { font-size: var(--fs-h2); font-weight: 900; letter-spacing: -.02em; line-height: 1.1; color: var(--forest); overflow-wrap: anywhere; }
+.card-head .sub { font-size: 14px; font-weight: 700; color: var(--forest-3); margin-top: 3px; line-height: 1.25; }
+.card-head .aside { margin-left: auto; flex: none; }
+.link-arrow { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; font-size: 14px; font-weight: 900; color: var(--forest); text-decoration: none; background: none; border: 0; padding: 4px 0 4px 6px; cursor: pointer; }
+.link-arrow .ic { color: var(--forest); }
+
+/* ── Section head (inside cards) ───────────────────────────────────── */
+.sec-hd { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; min-width: 0; }
+.sec-hd > .grow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.sec-hd h2 { font-size: var(--fs-h2); font-weight: 900; letter-spacing: -.02em; line-height: 1.1; color: var(--forest); overflow-wrap: anywhere; }
+.sec-hd .sec-sub { font-size: 14px; font-weight: 700; color: var(--forest-3); line-height: 1.3; }
+.sec-hd .sign { display: none; }              /* kickers are hero-only in the reference; kept in DOM for screen readers */
+.sec-hd .sec-glyph { flex: none; color: var(--gold-2); --g2: var(--sunny); }
+.sec-hd.tight { margin-top: 0; }
+.count-pill { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: var(--r-pill); background: var(--sunny-soft); color: var(--forest); font-weight: 900; font-size: 13px; letter-spacing: .01em; white-space: nowrap; box-shadow: inset 0 0 0 1px rgba(224, 169, 42, .35); }
+.count-pill.soft { background: var(--cream-2); color: var(--forest); box-shadow: none; }
+.count-pill.dark { background: var(--forest); color: var(--sunny); box-shadow: none; }
+.count-pill .ic, .count-pill .glyph { color: currentColor; }
+
+/* ── Scenic page hero (full-bleed) ───────────────────────────────────── */
+.phero {
+  --hero-h: 356px;
+  position: relative; overflow: hidden; min-height: var(--hero-h);
+  margin: 0 calc(-1 * var(--gutter)); border-radius: 0 0 6px 6px;
+  background: linear-gradient(180deg, var(--sun) 0%, var(--sun-2) 20%, #97B39A 36%, var(--canopy) 52%, var(--jungle) 100%);
+  color: var(--forest); isolation: isolate; display: flex; flex-direction: column;
+}
+.phero-art { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.phero-art .hero-scene, .phero-art .world-scene, .phero-art .world-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; object-position: 62% 42%; }
+/* sunlit haze behind the headline (top-left, over the painted sky) and a foliage fade at the foot */
+.phero-shade { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    radial-gradient(100% 70% at 10% 10%, rgba(252, 244, 222, .92), rgba(252, 244, 222, .72) 34%, rgba(252, 244, 222, .28) 58%, rgba(252, 244, 222, 0) 76%),
+    linear-gradient(180deg, rgba(252, 244, 222, .18) 0%, rgba(252, 244, 222, 0) 26%),
+    linear-gradient(180deg, rgba(18, 52, 33, 0) 72%, rgba(18, 52, 33, .5) 100%); }
+.phero-body { position: relative; z-index: 3; padding: calc(12px + env(safe-area-inset-top)) 20px 20px; flex: 1; display: flex; flex-direction: column; }
+.phero .sign { align-self: flex-start; margin-left: 2px; }
+.phero-top { display: flex; align-items: flex-start; gap: 10px; }
+.phero-top .grow { min-width: 0; padding-right: 44px; }
+/* full heroes: the companion stands on the right third of the artwork — copy stays left of it */
+.phero.full .phero-top .grow { padding-right: 88px; }
+.phero.full h1 { font-size: 33px; }
+.phero h1 { font-size: var(--fs-h1); font-weight: 900; color: var(--forest); letter-spacing: -.025em; line-height: 1.02; margin-top: 10px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .55), 0 2px 12px rgba(250, 240, 214, .9), 0 0 24px rgba(250, 240, 214, .7); overflow-wrap: anywhere; }
+.phero h1 .spark { display: inline-block; width: .5em; height: .5em; margin-left: .12em; vertical-align: .55em; }
+.phero-sub { font-size: 18px; font-weight: 800; color: var(--forest-3); margin-top: 6px; max-width: 24ch; line-height: 1.2; text-shadow: 0 1px 0 rgba(255, 255, 255, .5), 0 2px 10px rgba(250, 240, 214, .9); }
+.phero-sub2 { font-size: 15px; font-weight: 700; color: var(--forest-3); margin-top: 4px; max-width: 26ch; line-height: 1.25; text-shadow: 0 1px 0 rgba(255, 255, 255, .5), 0 2px 8px rgba(250, 240, 214, .9); }
+.phero-aside { flex: none; margin-top: 2px; }
+.phero-foot { margin-top: auto; position: relative; z-index: 3; }
+.phero-dino { position: absolute; right: 4px; bottom: 14px; z-index: 1; width: 40%; max-width: 170px; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(16, 48, 42, .45)); }
+.phero-dino .dino { width: 100%; height: auto; --dino-a: #D9A64A; --dino-b: #F1D7A3; --dino-c: #10241C; }
+.phero .parent-link, .phero .arch-back { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 16px; z-index: 4; min-width: 44px; height: 44px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; padding: 0 10px; color: #6E7A72; background: rgba(255, 253, 249, .96); box-shadow: 0 4px 12px rgba(0, 0, 0, .18); text-decoration: none; font-size: 13px; font-weight: 900; }
+.phero .parent-link { padding: 0; }
+
+/* compact: shorter editorial band — Becerilerim, Arşivim (secondary artwork, same type) */
+.phero.compact { --hero-h: 264px; }
+.phero.compact h1 { font-size: 34px; }
+.phero.compact .phero-sub { font-size: 16px; }
+.phero.compact .phero-dino { display: none; }
+.phero.photo { --hero-h: 344px; }
+
+/* ── Torn parchment (overlaps the hero) ─────────────────────────────── */
+.paper {
+  position: relative; border-radius: 24px; color: var(--ink);
+  background-color: var(--parchment);
+  background-image:
+    radial-gradient(120% 60% at 50% 0%, rgba(255, 253, 249, .5), rgba(255, 253, 249, 0) 60%),
+    radial-gradient(80% 40% at 100% 100%, rgba(217, 203, 168, .45), rgba(217, 203, 168, 0) 70%);
+  box-shadow: var(--shadow-2);
+}
+.paper.torn { margin: -42px 2px 0; z-index: 3; border-radius: 22px 28px 20px 30px / 26px 20px 30px 22px; }
+.paper.torn::before { content: ''; position: absolute; inset: -5px -3px -4px -5px; z-index: -1; border-radius: 30px 22px 34px 24px / 22px 32px 20px 30px; background: #E7DCC3; transform: rotate(-.8deg); box-shadow: 0 10px 26px rgba(0, 0, 0, .25); }
+.paper.torn::after { content: ''; position: absolute; inset: -3px -5px -6px -3px; z-index: -1; border-radius: 24px 34px 22px 28px / 30px 22px 28px 24px; background: #EFE5CE; transform: rotate(.9deg); }
+.paper-pad { padding: 18px 18px 20px; }
+
+/* ── Icon tiles ──────────────────────────────────────────────────────── */
+.tile { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; flex: none;
+  background: var(--tone-soft, #F1EADA); color: var(--tone-ink, var(--green-2)); --g2: var(--tone, var(--green)); box-shadow: inset 0 0 0 1px rgba(23, 63, 53, .05); }
+.tile.lg { width: 56px; height: 56px; border-radius: 18px; }
+.tile.sm { width: 38px; height: 38px; border-radius: 12px; }
+.tile.dawn { --tone: #F0B840; --tone-soft: #FBF0D4; --tone-ink: #B9782A; }
+.tile.sky { --tone: var(--sky); --tone-soft: #E3EDF3; --tone-ink: var(--sky-ink); }
+.tile.fossil { --tone: var(--fossil); --tone-soft: #F0E7D8; --tone-ink: #6B4E33; }
+.tile.forest { --tone: var(--green); --tone-soft: #E6EFE3; --tone-ink: var(--green-2); }
+.tile.clay { --tone: var(--clay); --tone-soft: #F6E4DA; --tone-ink: #8A3E24; }
+.tile.gold, .tile.amber { --tone: var(--sunny); --tone-soft: #FBF1D3; --tone-ink: #8A5A18; }
+.tile.night { --tone: var(--night); --tone-soft: #E4E7F2; --tone-ink: #2E3F6B; }
+.tile.wood { --tone: var(--wood-3); --tone-soft: #F1E3CC; --tone-ink: var(--wood-2); }
+
+/* premium raster icon on a soft mint tile (daily routine icons, PREMIUM.daily) */
+.tile.art { background: var(--mint); box-shadow: inset 0 0 0 1px rgba(23, 63, 53, .06); overflow: hidden; }
+.tile.art img { width: 86%; height: 86%; object-fit: contain; display: block; filter: drop-shadow(0 2px 2px rgba(23, 63, 53, .18)); }
+/* the Little Explorer identity is its own rounded icon — it fills the tile */
+.tile.art.identity { background: none; box-shadow: 0 3px 8px rgba(23, 63, 53, .22); }
+.tile.art.identity img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; filter: none; }
+.badge-art { display: block; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(74, 45, 16, .3)); }
+.companion-art { display: block; height: auto; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(16, 48, 42, .32)); }
+
+/* ── Speech bubble ───────────────────────────────────────────────────── */
+.bubble { position: relative; padding: 10px 14px; border-radius: 18px; background: var(--row); color: var(--forest); font-size: 13px; font-weight: 800; line-height: 1.25; box-shadow: var(--shadow-row); }
+.bubble::after { content: ''; position: absolute; left: 22px; bottom: -8px; width: 16px; height: 16px; background: inherit; clip-path: polygon(0 0, 100% 0, 30% 100%); }
+.bubble.left::after { left: -7px; bottom: auto; top: 18px; clip-path: polygon(100% 0, 100% 100%, 0 40%); }
+.bubble.sunny { background: var(--sunny-soft); }
+
+/* ── Moss strip ──────────────────────────────────────────────────────── */
+.moss { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 18px 22px 16px 24px / 20px 16px 24px 18px; background: linear-gradient(180deg, var(--moss), var(--moss-2)); color: var(--forest); font-size: 16px; font-weight: 900; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 3px 10px rgba(0, 0, 0, .15); }
+.moss .stone { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #7FA56F, #4F7A45); color: var(--forest-2); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .18); }
+.moss .leaf { flex: none; color: var(--jungle-3); --g2: var(--jungle-4); margin-left: auto; }
+.moss .grow { text-align: center; }
+
+/* ── Stat tile ───────────────────────────────────────────────────────── */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--row); border-radius: 18px; padding: 12px 10px 12px; box-shadow: var(--shadow-row); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stat .st-hd { display: flex; align-items: center; gap: 8px; }
+.stat .st-ic { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex: none; background: #E6EFE3; color: var(--green-2); --g2: var(--green); }
+.stat .st-ic.gold { background: #FBF1D3; color: #B9782A; --g2: var(--sunny); }
+.stat .st-ic.clay { background: #F6E4DA; color: #8A3E24; --g2: var(--clay); }
+.stat .st-l { font-size: 12px; font-weight: 800; color: var(--forest-3); line-height: 1.15; }
+.stat .st-v { font-size: 30px; font-weight: 900; color: var(--forest); line-height: 1; letter-spacing: -.02em; }
+.stat .st-v small { font-size: 13px; font-weight: 800; color: var(--ink-3); margin-left: 3px; letter-spacing: 0; }
+.stat .st-t { font-size: 12.5px; font-weight: 700; color: var(--forest-3); line-height: 1.3; }
+.bar { height: 10px; border-radius: 6px; background: #E5E9E1; overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--leaf-check-2), var(--leaf-check)); transition: width .5s var(--ease); }
+
+/* ── Round chevron button / CTA ─────────────────────────────────────── */
+.chev-btn { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: #EFE9DA; color: var(--forest); box-shadow: inset 0 0 0 1px rgba(23, 63, 53, .06); }
+.btn-forest { background: var(--forest-3); color: #fff; box-shadow: 0 4px 12px rgba(30, 75, 56, .3); }
+.btn-forest:hover { background: var(--forest); }
+
+/* ── Trail line (detail map) ─────────────────────────────────────────── */
+.trail-line { position: relative; }
+.trail-line::before { content: ''; position: absolute; left: 13px; top: 24px; bottom: 24px; border-left: 3px dashed rgba(107, 67, 32, .45); }
+.trail-post { position: absolute; left: -28px; top: 14px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; z-index: 2;
+  background: linear-gradient(180deg, var(--wood-3), var(--wood)); border: 2px solid var(--wood-2); color: var(--wood-ink); font-weight: 900; font-size: 13px; box-shadow: 0 0 0 5px var(--parchment), 0 3px 6px rgba(107, 67, 32, .3); }
+.trail-post.on { background: linear-gradient(180deg, #F9DC7A, var(--sunny)); border-color: var(--sunny-2); color: var(--forest-2); }
+
+/* ── Sheet artwork slot ──────────────────────────────────────────────── */
+.sheet-art { --scene-a: var(--canopy); --scene-b: var(--forest); position: relative; width: 100%; border-radius: 20px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(170deg, var(--scene-a), var(--scene-b)); box-shadow: 0 10px 26px rgba(23, 63, 53, .25), inset 0 0 0 1px rgba(246, 240, 228, .2); margin-bottom: 14px; }
+.sheet-art.tone-warm { --scene-a: #8A5A3C; --scene-b: #3B2617; }
+.sheet-art.tone-amber { --scene-a: #A66B3E; --scene-b: #5C3A22; }
+.sheet-art.tone-blue { --scene-a: #3D7EA6; --scene-b: #23506B; }
+.sheet-art.tone-ice { --scene-a: #7FA3B8; --scene-b: #3C5F74; }
+.sheet-art.tone-green { --scene-a: var(--canopy); --scene-b: var(--forest); }
+.sheet-art img { width: 100%; height: 100%; max-width: none; object-fit: cover; border-radius: 0; display: block; }
+.sheet-art svg.dino { width: 74%; max-width: 340px; height: auto; --dino-a: #E0B36A; --dino-b: #F3DDAF; --dino-c: #10241C; filter: drop-shadow(0 10px 16px rgba(0, 0, 0, .35)); }
+
+/* ── Shared small pieces ─────────────────────────────────────────────── */
+.kicker { font-size: var(--fs-kicker); font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-2); }
+.lbl-gold { font-size: var(--fs-kicker); letter-spacing: .14em; text-transform: uppercase; color: var(--gold-2); font-weight: 900; }
+.fact-box { padding: 12px 14px; border-radius: var(--r-md); background: linear-gradient(135deg, var(--gold-tint), var(--gold-soft)); color: #3B2617; font-size: 16px; font-weight: 700; line-height: 1.4; border: 1px solid rgba(217, 166, 74, .35); }
+.fact-box .k { font-size: 11.5px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #7A4E14; margin-bottom: 3px; }
+.why-line { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-md); background: var(--green-tint); border: 1px solid var(--green-soft); color: var(--forest); font-size: 15px; font-weight: 800; }
+.why-line .glyph { color: var(--green-2); --g2: var(--green-soft); flex: none; }
+
+@media (min-width: 700px) {
+  .phero { --hero-h: 420px; }
+  .phero h1 { font-size: 44px; }
+  .phero.compact { --hero-h: 300px; }
+}
+@media (min-width: 960px) {
+  .phero { --hero-h: 460px; }
+  .phero h1 { font-size: 48px; }
+}

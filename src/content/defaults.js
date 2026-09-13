@@ -217,6 +217,7 @@ export const DEFAULT_SETTINGS = {
   childName: 'Emir',
   parentPin: '',            // empty = parent mode is not PIN-protected yet
   weeklyMessage: '',        // optional custom message on My Week (empty = auto)
+  appIcon: 'calendar',      // content/appIcons.js id — favicon + Ayarlar; the launcher icon stays the default
 };
 
 // ── Learning memory layer (books, memorization, memory project, reflection) ──
