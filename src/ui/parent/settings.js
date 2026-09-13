@@ -50,7 +50,7 @@ export function renderSettings(body, ctx) {
   const DAY_OPTS = [['all', 'her gün'], ['weekday', 'hafta içi'], ['weekend', 'hafta sonu']];
   add(grid, pcard('Günlük görevler', 'list',
     h('div', { class: 'small muted', style: { marginBottom: '6px' } }, 'Bir görevi geçici olarak kapatabilirsiniz; geçmiş kayıtlar korunur. Gün kuralı bugünden itibaren geçerli olur.'),
-    state.config.items.map((it, i) => h('div', { class: 'list-row' },
+    state.config.items.map((it, i) => h('div', { class: 'list-row task-row' },
       h('div', { class: 'grow', style: { fontWeight: 800 } }, it.title),
       ['skill', 'presentation'].includes(it.kind)
         ? h('span', { class: 'small muted' }, it.kind === 'skill' ? 'aktif beceri varken' : 'hafta sonu')

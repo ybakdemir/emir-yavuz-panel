@@ -48,6 +48,23 @@ body.is-parent { background: var(--cream); }
 .table .input { min-width: 120px; }
 .list-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .list-row:last-child { border-bottom: 0; }
+/* Settings › Günlük görevler: three real columns — title | day rule | on/off.
+   `select.input` is 100 % wide by default and out-specifies `.input-sm`, so in
+   a plain flex row it swallowed the row and the title wrapped underneath it.
+   The card is ~370 px wide inside the settings grid, so the rule column is
+   sized for its three short options, and the title column can never go under 0. */
+.task-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 140px) 44px; gap: 10px; align-items: center; }
+.task-row > .grow { min-width: 0; overflow-wrap: anywhere; line-height: 1.25; }
+.task-row select.input, .task-row .input-sm { width: 100%; min-width: 0; text-align: left; }
+.task-row > .small.muted { justify-self: end; text-align: right; line-height: 1.2; }
+.task-row > .row { justify-self: end; min-height: 40px; }
+@media (max-width: 480px) {
+  /* narrow phones: title + checkbox on the first line, the day rule underneath */
+  .task-row { grid-template-columns: minmax(0, 1fr) 44px; row-gap: 6px; }
+  .task-row > .grow { grid-column: 1; grid-row: 1; }
+  .task-row > .row { grid-column: 2; grid-row: 1; }
+  .task-row select.input, .task-row .input-sm, .task-row > .small.muted { grid-column: 1; grid-row: 2; justify-self: start; text-align: left; width: 160px; }
+}
 .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--ink-3); background: var(--cream); }
 .icon-btn:hover { color: var(--clay); }
 .status-seg { display: inline-flex; gap: 3px; background: var(--cream-2); padding: 3px; border-radius: var(--r-pill); flex-wrap: wrap; }
